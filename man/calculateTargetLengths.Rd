@@ -1,0 +1,27 @@
+\name{calculateTargetLengths}
+\alias{calculateTargetLengths}
+\title{Plot target length for paired end}
+\usage{
+  calculateTargetLengths(bamfile, save_dir, trim = 0.4)
+}
+\arguments{
+  \item{bamfile}{Path to a bam file}
+
+  \item{save_dir}{Path to a piplein results dir}
+
+  \item{trim}{Amount of data to be trimmed at the edges}
+}
+\value{
+  Target length table and writes two files in
+  {save_dir}/reports/images/TargetLenghts.[pdf|png]"
+}
+\description{
+  Calculate and plot a histogram of mapped target lengths
+  after trimmming of trim/2 of the data points at the lower
+  and upper end of the distribution
+}
+\author{
+  Jens Reeder, Melanie Huntley
+}
+\keyword{internal}
+

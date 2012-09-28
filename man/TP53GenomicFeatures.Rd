@@ -1,0 +1,27 @@
+\name{TP53GenomicFeatures}
+\alias{TP53GenomicFeatures}
+\title{Demo genomic features around the TP53 gene}
+\usage{
+  TP53GenomicFeatures()
+}
+\value{
+  A list of GRanges objects containing the genomic features
+}
+\description{
+  Build the genomic features of the TP53 demo region
+}
+\details{
+  Returns a list of genomic features (gene, exons,
+  transcripts) annotating a region of UCSC hg19 sequence
+  centered on the region of the TP53 gene, with 1 Mb
+  flanking sequence on each side. This is intended as a
+  test/demonstration to run the NGS pipeline in conjunction
+  with the \code{LungCancerLines} data package.
+}
+\author{
+  Gregoire Pau
+}
+\seealso{
+  TP53Genome, buildGenomicFeaturesFromTxDb, runPipeline
+}
+

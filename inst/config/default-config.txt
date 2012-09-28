@@ -1,0 +1,77 @@
+## template
+template_config: ## optional
+
+## input
+input_file:
+input_file2:
+paired_ends: TRUE
+quality_encoding: ## will be detected if empty, possible choices: sanger, solexa, illumina1.3, illumina1.5, illumina1.8
+subsample_nbreads: ## optional
+chunk_size: 1e6
+max_nbchunks: ## optional
+
+## output
+save_dir:
+overwrite_save_dir: never ## possible choices: never, erase, overwrite
+prepend_str:
+remove_processedfastq: TRUE
+remove_chunkdir: TRUE
+tmp_dir: ## for temporary chunk_dirs
+
+## system
+num_cores: 1
+version: ## never set this value manually, will be set for you
+chunk_dir: ## never set this value manually, will be set for you
+
+## path
+path.genomic_features:
+path.gsnap_genomes:
+
+## debug
+debug.level: INFO ## possible choices: ERROR, WARN, INFO, DEBUG
+debug.tracemem: TRUE
+
+## trim reads
+trimReads.do: FALSE
+trimReads.length:
+
+## filter quality
+filterQuality.do: TRUE
+filterQuality.minQuality: 23
+filterQuality.minFrac: 0.7
+
+## detect adapter contamination
+detectAdapterContam.do: TRUE
+detectAdapterContam.force_paired_end_adapter: FALSE
+
+## detect ribosomal RNA
+detectRRNA.do: TRUE
+detectRRNA.rrna_genome:
+
+## shortread reports
+shortReadReport.do: TRUE
+shortReadReport.subsample_nbreads: 20e6 ## optional
+
+## aligner
+alignReads.genome:
+alignReads.max_mismatches: ## will be determined if empty
+alignReads.sam_id:
+alignReads.snp_index: ## optional
+alignReads.splice_index: ## optional
+alignReads.additional_parameters: 
+alignReads.nbthreads_perchunk: ## optional, if unspecified this value is equal to min(4, num_cores)
+
+## count genomic features
+countGenomicFeatures.do: TRUE
+countGenomicFeatures.gfeatures:
+
+## variants
+analyzeVariants.do: TRUE
+analyzeVariants.use_read_length: FALSE
+analyzeVariants.with_qual: TRUE
+analyzeVariants.bqual: 23
+analyzeVariants.bin_fraction: 0.1
+
+## coverage
+coverage.extendReads: FALSE
+coverage.fragmentLength:

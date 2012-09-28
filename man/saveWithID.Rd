@@ -1,0 +1,32 @@
+\name{saveWithID}
+\alias{saveWithID}
+\title{Save an R object}
+\usage{
+  saveWithID(data, orig_name, id, save_dir,
+    compress = TRUE, format = "RData")
+}
+\arguments{
+  \item{data}{The data to store}
+
+  \item{orig_name}{The original name of the data}
+
+  \item{id}{A meaningful id the is prepended to the stored
+  objects name}
+
+  \item{save_dir}{The directory where the data should be
+  saved in}
+
+  \item{compress}{Save the data compressed or not}
+
+  \item{format}{Choice of 'RData' or 'tab'(ular)}
+}
+\value{
+  Name of the stored file
+}
+\description{
+  Exists so objects can be serialized and reloaded with the
+  a unique identifier in the symbol. Stores the data object
+  with a new nane
+}
+\keyword{internal}
+

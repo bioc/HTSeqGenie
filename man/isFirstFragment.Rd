@@ -1,0 +1,23 @@
+\name{isFirstFragment}
+\alias{isFirstFragment}
+\title{Does a SAM flag indicate the first fragment}
+\usage{
+  isFirstFragment(flag)
+}
+\arguments{
+  \item{flag}{A flag from the BAM/SAM file}
+}
+\value{
+  Logical
+}
+\description{
+  Compute wether a SAM/BAM flag indicates a first fragment.
+  Method is not foolproff, as it ignores a lot of SAM
+  semantics. E.g the SAM spec says: "If 0x1 is unset, no
+  assumptions can be made about 0x2, 0x8, 0x20, 0x40 and
+  0x80". For our purpose this should be enough, but we
+  should keep an open eye for a more robust implementation
+  in Rsamtools.
+}
+\keyword{internal}
+

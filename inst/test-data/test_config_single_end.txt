@@ -1,0 +1,15 @@
+## template
+template_config: RNASeq-TP53-config.txt
+
+## input
+input_file: inst/test-data/unit_tests_1.fastq
+paired_ends: FALSE
+quality_encoding: illumina1.5
+
+## output
+save_dir: test_se
+overwrite_save_dir: erase
+prepend_str: test_se
+
+## aligner
+alignReads.sam_id: test_se

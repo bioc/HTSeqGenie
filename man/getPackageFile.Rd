@@ -1,0 +1,27 @@
+\name{getPackageFile}
+\alias{getPackageFile}
+\title{Get a package file}
+\usage{
+  getPackageFile(filename, package = "HTSeqGenie",
+    mustWork = TRUE)
+}
+\arguments{
+  \item{filename}{Name of package file}
+
+  \item{package}{Name of the package the file is coming
+  from}
+
+  \item{mustWork}{Boolean, will stop the code if set tot
+  TRUE and file not found otherwise returns Nothing.}
+}
+\value{
+  relative path to requested file
+}
+\description{
+  Magically get package files from the inst directory,
+  which will be in different location, depending on whether
+  we run in: - local mode: if interactive() is TRUE -
+  package mode: if interactive() is FALSE
+}
+\keyword{internal}
+

@@ -1,0 +1,22 @@
+\name{detectAdapterContam}
+\alias{detectAdapterContam}
+\title{Detect sequencing adapter contamination}
+\usage{
+  detectAdapterContam(lreads, save_dir = NULL)
+}
+\arguments{
+  \item{lreads}{List of reads as ShortRead objects}
+
+  \item{save_dir}{Save directory of a pipeline run}
+}
+\value{
+  Boolean vector indicating vector contamination for each
+  read
+}
+\description{
+  For each read or pair of read, search for specific
+  Illumina adapter sequences in the read. Flag if at least
+  one read has significant overlap with adapter.
+}
+\keyword{internal}
+

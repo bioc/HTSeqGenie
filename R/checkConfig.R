@@ -1,0 +1,303 @@
+##' Check configuration
+##'
+##' Performs all configuration checks
+##' 
+##' @return Nothing. Individial checks will throw error instead.
+##' @keywords internal
+##' @export
+checkConfig <- function() {
+  ## check config parts
+  checkConfig.template()
+  checkConfig.disable()
+  checkConfig.input()
+  checkConfig.output()
+  checkConfig.system()
+  checkConfig.debug()
+  checkConfig.trimReads()
+  checkConfig.filterQuality()
+  checkConfig.detectAdapterContam()
+  checkConfig.detectRRNA()
+  checkConfig.shortReadReport()
+  checkConfig.alignReads()
+  checkConfig.countGenomicFeatures()
+  checkConfig.analyzeVariants()
+  checkConfig.coverage()
+  checkConfig.noextraparameters()
+  
+  ## tag current version
+  updateConfig(list(version=sessionInfo()$otherPkgs$HTSeqGenie$Version))
+  
+  ## everything OK
+  invisible(TRUE)
+}
+
+## read template configuration file (and recursively if needed)
+checkConfig.template <- function() {
+  template_config <- try(getConfig("template_config"), silent=TRUE)
+  if (class(template_config)=="try-error") template_config <- "default-config.txt"
+
+  if (!is.null(template_config)) {
+    ## first try: test if the file exists in the current path
+    ff <- template_config
+    
+    ## second try: test if the file exists in HTSEQGENIE_CONFIG
+    if (!file.exists(ff)) {
+      HTSEQGENIE_CONFIG <- Sys.getenv("HTSEQGENIE_CONFIG")
+      if (!is.null(HTSEQGENIE_CONFIG))  ff <- file.path(HTSEQGENIE_CONFIG, template_config)
+    } 
+    
+    ## third try: test if the file exists in the config directory
+    if (!file.exists(ff)) ff <- getPackageFile(file.path("config", template_config), mustWork=FALSE)
+
+    ## load ff
+    if (file.exists(ff)) {
+      cat(paste("checkConfig.R/checkConfig.template: loading template config=", ff), "\n")
+      updateConfig(list(template_config="")) ## remove template_config parameter from current config
+      current_config <- getConfig() ## save current config
+      loadConfig(ff) ## load template_config
+      checkConfig.template() ## update config recursively
+      updateConfig(current_config)      
+    } else stop("checkConfig.R/checkConfig.template: cannot open file indicated by config parameter template_config=", getConfig("template_config"))
+  }
+}
+
+checkConfig.input <- function() {
+  ## input file
+  file1 <- getConfig("input_file", stop.ifempty=TRUE)
+  if (regexpr(" ", file1)>0) stop("'input_file' contains a whitespace: ", file1)
+  if(! file.exists(file1)) stop("Input file 1 does not exist:", file1)
+  
+  ## input file 2
+  paired_ends <- getConfig.logical("paired_ends", stop.ifempty=TRUE)
+  if (paired_ends){
+    file2 <- getConfig("input_file2", stop.ifempty=TRUE)
+    if (regexpr(" ", file2)>0) stop("'input_file2' contains a whitespace: ", file2)
+    if(! file.exists(file2)) stop("Input file 2 does not exist:", file2)
+    if(file2==file1) stop("Input files are identical. Check your config file!")
+  }
+  else {
+    p <- getConfig("input_file2")
+    if (!is.null(p)) stop("'paired_ends' is FALSE but input_file2=", p)
+  }
+
+  ## detect quality
+  cquals <- detectQualityInFASTQFile(file1)
+  if (is.null(cquals)) stop("cannot open/detect quality of FASTQ file=", file1)
+  
+  ## set quality_encoding if unspecified
+  quality_encoding <- getConfig("quality_encoding")
+  if (is.null(quality_encoding)) {
+    cat("possible qualities of filename=", file1, " are: ", paste(cquals, collapse=", "), "\n", sep="")
+    quality_encoding <- cquals[1]
+    cat("quality_encoding is not set! setting quality_encoding to", quality_encoding, "\n")
+    updateConfig(list(quality_encoding=quality_encoding))
+  }
+  
+  ## check if quality_encoding is compatible with the detected quality
+  if (!(quality_encoding %in% cquals)) {
+    stop("config parameter 'quality_encoding' is set to [", quality_encoding, "] but possible qualities of filename=", file1, " are [", paste(cquals, collapse=", "), "]\n")
+  }
+  
+  getConfig.integer("chunk_size", stop.ifempty=TRUE) 
+  getConfig.integer("subsample_nbreads")
+  getConfig.integer("max_nbchunks")
+}
+
+checkConfig.output <- function() {
+  ## save_dir
+  save_dir <- getConfig("save_dir", stop.ifempty=TRUE)
+  if (regexpr(" ", save_dir)>0) stop("'save_dir' contains a whitespace: ", save_dir)
+  
+  overwrite_save_dir <- getConfig("overwrite_save_dir", stop.ifempty=TRUE)
+  if (!(overwrite_save_dir %in% c("never", "erase","overwrite"))) {
+    stop("config parameter 'overwrite_save_dir' must be either 'never', 'erase' or 'overwrite'")
+  }
+  if (overwrite_save_dir=="never" && file.exists(save_dir)) stop("I won't overwrite data present in save_dir=", save_dir)
+
+  ## prepend_str
+  prepend_str <- getConfig("prepend_str", stop.ifempty=TRUE)
+  if (regexpr(" ", prepend_str)>0) stop("'prepend_str' contains a whitespace: ", prepend_str)
+
+  getConfig.logical("remove_processedfastq", stop.ifempty=TRUE)
+  getConfig.logical("remove_chunkdir", stop.ifempty=TRUE)
+
+  ## tmp_dir
+  tmp.dir = getConfig('tmp_dir')
+  if(!(is.null(tmp.dir))){
+    if(!file.exists(tmp.dir)){
+      stop("tmp_dir does not exists")
+    }
+  }
+  ## chunk.dir is auto set from tmp_dir or save_dir
+  if(is.null(getConfig('chunk_dir'))){
+    setChunkDir()
+  }
+  getConfig("chunk_dir", stop.ifempty=TRUE)
+}
+
+checkConfig.system <- function() {
+  ## check num_cores
+  p <- "num_cores"
+  a <- getConfig.integer(p)
+  if (a<=0) stop("config parameter '", p, "' must be a non-zero positive integer")
+}
+
+checkConfig.debug <- function() {
+  getConfig.logical("debug.tracemem", stop.ifempty=TRUE)
+  level <- getConfig("debug.level", stop.ifempty=TRUE)
+  if (!(level %in% c("ERROR", "WARN","INFO", "DEBUG"))) {
+    stop("config parameter 'debug.level' must be either ERROR, WARN, INFO or DEBUG")
+  }
+}
+
+checkConfig.trimReads <- function() {
+  trimReads.do <- getConfig.logical("trimReads.do", stop.ifempty=TRUE)
+  if (trimReads.do) {
+    p <- "trimReads.length"
+    a <- getConfig.integer(p, stop.ifempty=TRUE)
+    if (a<=0) stop("config parameter '", p, "' must be a non-zero positive integer")
+  }
+}
+
+checkConfig.filterQuality <- function() {
+  filterQuality.do <- getConfig.logical("filterQuality.do", stop.ifempty=TRUE)
+  if (filterQuality.do) {
+    p <- "filterQuality.minQuality"
+    a <- getConfig.integer(p, stop.ifempty=TRUE)
+    if (a<0 || a>40) stop("config parameter '", p, "' must be an integer between 0 and 40")
+    
+    p <- "filterQuality.minFrac"
+    a <- getConfig.numeric(p, stop.ifempty=TRUE)
+    if (a<0 || a>1) stop("config parameter '", p, "' must be a number between 0 and 1")
+  }
+}
+
+checkConfig.detectAdapterContam <- function() {
+  getConfig.logical("detectAdapterContam.do", stop.ifempty=TRUE)
+  getConfig.logical("detectAdapterContam.force_paired_end_adapter", stop.ifempty=TRUE)
+}
+
+checkConfig.detectRRNA <- function() {
+  detectRRNA.do <- getConfig.logical("detectRRNA.do", stop.ifempty=TRUE)
+  if (detectRRNA.do) {    
+    ## check if the genome exists
+    p <- "detectRRNA.rrna_genome"
+    a <- getConfig("path.gsnap_genomes", stop.ifempty=TRUE)
+    genome <- getConfig(p, stop.ifempty=TRUE)
+    dirname <- file.path(a, genome)
+    if (!file.exists(dirname)) stop("cannot find the gsnap genome indicated by '", p, "' at=", dirname) 
+  }
+}
+
+checkConfig.shortReadReport <- function() {
+  shortReadReport.do <- getConfig.logical("shortReadReport.do", stop.ifempty=TRUE)
+  if (shortReadReport.do) {
+    a <- getConfig.integer("shortReadReport.subsample_nbreads")
+    if (!is.null(a) && a<0) stop("shortReadReport.subsample_nbreads must be a positive integer")
+  }
+}
+
+checkConfig.alignReads <- function() {
+  ## alignReads.genome
+  genome <- getConfig("alignReads.genome", stop.ifempty=TRUE)
+  
+  ## check if the genome exists
+  p <- "alignReads.genome"
+  a <- getConfig("path.gsnap_genomes", stop.ifempty=TRUE)
+  genome <- getConfig(p, stop.ifempty=TRUE)
+  dirname <- file.path(a, genome)
+  if (!file.exists(dirname)) stop("cannot find the gsnap genome indicated by '", p, "' at=", dirname) 
+  
+  ## alignReads.max_mismatches
+  max_mismatches <- getConfig.integer("alignReads.max_mismatches")
+  if (!is.null(max_mismatches) && max_mismatches<0) stop("config parameter 'alignReads.max_mismatches' must be a positive integer")
+  
+  ## alignReads.sam_id
+  sam_id <- getConfig("alignReads.sam_id")
+  if (!is.null(sam_id)) {
+    if (regexpr(" ", sam_id)>0) stop("'alignReads.sam_id' contains a whitespace: ", sam_id)
+  }
+
+  ## alignReads.nbthreads_perchunk
+  num_cores <- getConfig.integer("num_cores", stop.ifempty=TRUE)
+  nbthreads_perchunk <- getConfig.integer("alignReads.nbthreads_perchunk")
+  if (is.null(nbthreads_perchunk)) {
+    nbthreads_perchunk <- min(4, num_cores) ## set to min(4, num_cores) if empty
+    updateConfig(list(alignReads.nbthreads_perchunk=nbthreads_perchunk)) 
+  }
+  if (nbthreads_perchunk<1 || nbthreads_perchunk>num_cores) stop("config parameter 'alignReads.nbthreads_perchunk' must be within (1;num_cores)")
+  
+  ## optional
+  getConfig("alignReads.snp_index")
+  getConfig("alignReads.splice_index")
+  getConfig("alignReads.additional_parameters")
+
+  ## check that buildGsnapParams() works with the given parameters
+  a <- try(buildGsnapParams(), silent=TRUE)
+  if (class(a)=="try-error") stop("cannot build valid gsnap parameters: ", a)
+  
+  invisible()
+}
+
+checkConfig.noextraparameters <- function() {
+  ## read default config
+  dconfig <- parseDCF(getPackageFile(file.path("config", "default-config.txt")))
+
+  ## only parameters present in the default configuration file are allowed
+  allowed_parameters <- names(dconfig)
+  current_parameters <- names(getConfig())
+  z <- setdiff(current_parameters, allowed_parameters)
+  if (length(z)>0) {
+    stop("unsupported config parameter(s): ", paste(z, collapse=", "))
+  }
+  invisible()
+}
+
+checkConfig.countGenomicFeatures <- function () {
+  ## countGenomicFeatures.do
+  countGenomicFeatures.do <- getConfig.logical("countGenomicFeatures.do", stop.ifempty=TRUE)
+  if (countGenomicFeatures.do) {
+    gpath <- getConfig("path.genomic_features", stop.ifempty=TRUE)
+    gfeatures <- getConfig("countGenomicFeatures.gfeatures", stop.ifempty=TRUE)
+  
+    ## test existence of path.genomic_features/countGenomicFeatures.gfeatures
+    filename <- file.path(gpath, gfeatures)
+    if (!file.exists(filename)) stop("checkConfig.R/checkConfig.countGenomicFeatures: cannot open path.genomic_features/countGenomicFeatures.gfeatures=", filename)
+  }
+}
+
+checkConfig.analyzeVariants <- function() {
+  ## analyzeVariants.do
+  analyzeVariants.do <- getConfig.logical("analyzeVariants.do", stop.ifempty=TRUE)
+  if (analyzeVariants.do) {
+    ## analyzeVariants.use_read_length
+    getConfig.logical("analyzeVariants.use_read_length", stop.ifempty=TRUE)
+
+    ## analyzeVariants.bin_fraction
+    bin_fraction <- getConfig.numeric("analyzeVariants.bin_fraction", stop.ifempty=TRUE)
+    if (bin_fraction<0 || bin_fraction>1) stop("checkConfig.R/checkConfig.analyzeVariants: 'analyzeVariants.bin_fraction' must be a number between 0 and 1")
+    
+    ## analyzeVariants.with_qual
+    analyzeVariants.with_qual <- getConfig.logical("analyzeVariants.with_qual", stop.ifempty=TRUE)
+    if (analyzeVariants.with_qual) {
+      ## analyzeVariants.bqual
+      analyzeVariants.bqual <- getConfig.numeric("analyzeVariants.bqual", stop.ifempty=TRUE)
+    }
+  }
+}
+
+checkConfig.coverage <- function() {
+  ## coverage.extendReads
+  coverage.extendReads <- getConfig.logical("coverage.extendReads", stop.ifempty=TRUE)
+
+  ## coverage.fragmentLength
+  coverage.fragmentLength <- getConfig.numeric("coverage.fragmentLength")
+  if (!is.null(coverage.fragmentLength) && !coverage.extendReads) {
+    stop("checkConfig.R/checkConfig.coverage: 'coverage.extendReads' is FALSE but 'coverage.fragmentLength' is not empty")
+  }
+}
+
+checkConfig.disable <- function() {
+  updateConfig(list(detectRRNA.do="FALSE"))
+  updateConfig(list(analyzeVariants.do="FALSE"))
+}

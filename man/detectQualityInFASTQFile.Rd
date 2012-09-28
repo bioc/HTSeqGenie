@@ -1,0 +1,24 @@
+\name{detectQualityInFASTQFile}
+\alias{detectQualityInFASTQFile}
+\title{Detect quality protocol from a FASTQ file}
+\usage{
+  detectQualityInFASTQFile(filename, nreads = 5000)
+}
+\arguments{
+  \item{filename}{Path to a FASTQ or gzipped-FASTQ file}
+
+  \item{nreads}{Number of reads to test quality on. Default
+  is 5000.}
+}
+\value{
+  A character vector containing the compatible qualities.
+  NULL if none.
+}
+\description{
+  Detect quality protocol from a FASTQ file
+}
+\author{
+  Jens Reeder
+}
+\keyword{internal}
+

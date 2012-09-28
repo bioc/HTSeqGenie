@@ -1,0 +1,27 @@
+\name{alignReadsChunk}
+\alias{alignReadsChunk}
+\title{Genomic alignment}
+\usage{
+  alignReadsChunk(fp1, fp2 = NULL, save_dir = NULL)
+}
+\arguments{
+  \item{fp1}{Path to FastQ file}
+
+  \item{fp2}{Path to second FastQ file if paired end data,
+  NULL if single ended}
+
+  \item{save_dir}{Save directory}
+}
+\value{
+  Nothing
+}
+\description{
+  Genomic alignment using gsnap.
+}
+\details{
+  Aligns reads in fp1 and fp2 to genome specified via
+  global config variable alignReads.genome. Gsnap output is
+  converted into BAM files and sorted + indexed.
+}
+\keyword{internal}
+

@@ -1,0 +1,46 @@
+Package: HTSeqGenie
+Imports: BiocGenerics (>= 0.2.0), IRanges (>= 1.14.3), 
+	 GenomicRanges (>= 1.7.12), Rsamtools (>= 1.8.5), 
+	 Biostrings (>= 2.24.1), chipseq (>= 1.7.1), 
+	 rtracklayer (>= 1.17.19), GenomicFeatures (>= 1.9.31)
+Maintainer: Gregoire Pau <pau.gregoire@gene.com>
+License: Artistic-2.0
+Title: High-throughput sequencing data analysis pipeline.
+Type: Package
+LazyLoad: yes
+Author: Gregoire Pau, Cory Barr, Jens Reeder, Michael Lawrence, 
+	Jeremiah Degenhardt, Tom Wu, Melanie Huntley, Matt Brauer
+Description: A software package to analyse high-throughput sequencing
+    experiments
+Version: 0.99.5
+Date: 2012-03-01
+Depends: R (>= 2.15.0), ShortRead (>= 1.14.4), parallel, hwriter,
+	 Cairo, tools, gmapR (>= 0.99.23), logging
+Suggests: TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures,
+	  LungCancerLines, org.Hs.eg.db
+Collate: 'alignReads.R' 
+	 'bamUtils.R' 
+	 'checkConfig.R' 
+	 'config.R' 
+	 'detectAdapterContam.R' 
+	 'filterQuality.R' 
+	 'io.R' 
+	 'preprocessReads.R' 
+	 'initPipeline.R' 
+	 'testHelpers.R' 
+	 'tools.R'
+	 'trimReads.R' 
+	 'performanceHelpers.R' 
+	 'zzz.R' 
+	 'countGenomicFeatures.R' 
+	 'coverage.R' 
+	 'createSummaryCounts.R' 
+	 'mergeLanes.R' 
+	 'plotDepthByStrand.R'
+         'readRNASeqEnds.R' 
+	 'reportPipelineQA.R' 
+	 'runPipeline.R' 
+	 'targetLengths.R' 
+	 'summaries.R' 
+	 'buildGenomicFeaturesFromTxDb.R' 
+	 'TP53GenomicFeatures.R'

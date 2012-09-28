@@ -1,0 +1,19 @@
+\name{getConfig.logical}
+\alias{getConfig.logical}
+\title{Check if a config parameter has a logical value}
+\usage{
+  getConfig.logical(p, ...)
+}
+\arguments{
+  \item{p}{Name of parameter}
+
+  \item{...}{extra params passed to getConfig}
+}
+\value{
+  Logical value of parameter
+}
+\description{
+  Throws exception if value is not logical
+}
+\keyword{internal}
+

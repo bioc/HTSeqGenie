@@ -1,0 +1,26 @@
+\name{rpkm}
+\alias{rpkm}
+\title{Calculate RPKM}
+\usage{
+  rpkm(counts, widths, nbreads)
+}
+\arguments{
+  \item{counts}{A vector of counts}
+
+  \item{widths}{vector of the width of each bin the counts
+  were perfomred on}
+
+  \item{nbreads}{vector containing number of reads mapped
+  to each bin}
+}
+\value{
+  vecotr of RPKMs
+}
+\description{
+  Calculate RPKM
+}
+\author{
+  Gregoire Pau
+}
+\keyword{internal}
+

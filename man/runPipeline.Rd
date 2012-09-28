@@ -1,0 +1,63 @@
+\name{runPipeline}
+\alias{runPipeline}
+\title{Run the NGS analysis pipeline}
+\usage{
+  runPipeline(...)
+}
+\arguments{
+  \item{...}{A list of parameters. See the vignette for
+  details.}
+}
+\value{
+  The path to the NGS output directory.
+}
+\description{
+  Run the NGS analysis pipeline
+}
+\details{
+  This function starts the pipeline. It first preprocesses
+  the input FASTQ reads, align them, count the read
+  overlaps with genomic features and compute the coverage.
+  See the vignette for details.
+}
+\examples{
+\dontrun{
+## build genome and genomic features
+tp53Genome <- TP53Genome()
+tp53GenomicFeatures <- TP53GenomicFeatures()
+
+ ## get the FASTQ files
+fastq1 <- system.file("extdata/H1993_TP53_subset2500_1.fastq.gz", package="HTSeqGenie")
+fastq2 <- system.file("extdata/H1993_TP53_subset2500_2.fastq.gz", package="HTSeqGenie")
+
+## run the pipeline
+save_dir <- runPipeline(
+    ## input
+    input_file=fastq1,
+    input_file2=fastq2,
+    paired_ends=TRUE,
+    quality_encoding="illumina1.8",
+
+    ## output
+    save_dir="test",
+    prepend_str="test",
+    overwrite_save_dir="erase",
+
+    ## aligner
+    path.gsnap_genomes=path(directory(tp53Genome)),
+    alignReads.genome=genome(tp53Genome),
+    alignReads.additional_parameters="--indel-penalty=1 --novelsplicing=1 --distant-splice-penalty=1",
+
+    ## gene model
+    path.genomic_features=dirname(tp53GenomicFeatures),
+    countGenomicFeatures.gfeatures=basename(tp53GenomicFeatures)
+    )
+}
+}
+\author{
+  Jens Reeder, Gregoire Pau
+}
+\seealso{
+  TP53Genome, TP53GenomicFeatures
+}
+

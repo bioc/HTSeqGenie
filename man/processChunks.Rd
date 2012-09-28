@@ -1,0 +1,32 @@
+\name{processChunks}
+\alias{processChunks}
+\title{Process chunk in the pipeline framework}
+\usage{
+  processChunks(inext, fun, nb.parallel.jobs)
+}
+\arguments{
+  \item{inext}{A function (without argument) returning an
+  object to process; NULL if none left; this function is
+  run in the main thread}
+
+  \item{fun}{Function to process the object returned by
+  inext; this function is run in children threadfunction to
+  apply to a chunk}
+
+  \item{nb.parallel.jobs}{number of parallel jobs}
+}
+\value{
+  Nothing
+}
+\description{
+  Process chunk in the pipeline framework
+}
+\details{
+  High-level pipeline-specific version of sclapply, with
+  chunk loggers and safeExecute
+}
+\author{
+  Gregoire Pau
+}
+\keyword{internal}
+

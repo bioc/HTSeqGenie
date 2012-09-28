@@ -1,0 +1,40 @@
+\name{FastQStreamer.init}
+\alias{FastQStreamer.init}
+\title{Open a streaming connection to a FastQ file}
+\usage{
+  FastQStreamer.init(input_file, input_file2 = NULL,
+    chunk_size, subsample_nbreads = NULL,
+    max_nbchunks = NULL)
+}
+\arguments{
+  \item{input_file}{Path to a FastQ file}
+
+  \item{input_file2}{Optional path to a FastQ file. Default
+  is NULL.}
+
+  \item{chunk_size}{Number of reads per chunk}
+
+  \item{subsample_nbreads}{Optional number of reads to
+  subsample (deterministic) from the input files. Default
+  is NULL.}
+
+  \item{max_nbchunks}{Optional maximal number of chunks to
+  read}
+}
+\value{
+  Nothing.
+}
+\description{
+  Open a streaming connection to a FastQ file
+}
+\details{
+  Only one FastQStreamer object can be open at any time.
+}
+\author{
+  Gregoire Pau
+}
+\seealso{
+  FastQStreamer.getReads
+}
+\keyword{internal}
+

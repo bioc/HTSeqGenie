@@ -1,0 +1,42 @@
+\name{mergeLanes}
+\alias{mergeLanes}
+\title{Merge input lanes}
+\usage{
+  mergeLanes(indirs, outdir, prepend_str, num_cores,
+    config_update, preMergeChecks.do = TRUE,
+    ignoreConfigParameters)
+}
+\arguments{
+  \item{indirs}{A character vector of directory paths
+  containing NGS pipeline output}
+
+  \item{outdir}{A character string pointing to a
+  non-existing output directory}
+
+  \item{prepend_str}{A character string, containing a
+  prefix going to be appended on all output result files}
+
+  \item{num_cores}{Number of cores available for parallel
+  processing (for the merge bam step)}
+
+  \item{config_update}{List of name value pairs that will
+  update the config parameters}
+
+  \item{preMergeChecks.do}{A logical, indicating whether to
+  perform pre merge checks}
+
+  \item{ignoreConfigParameters}{A character vector
+  containing the configuration parameters that are not
+  required to be identical}
+}
+\value{
+  Nothing
+}
+\description{
+  Merge input lanes built by the NGS pipeline
+}
+\author{
+  greg
+}
+\keyword{internal}
+

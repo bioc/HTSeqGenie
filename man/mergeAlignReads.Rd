@@ -1,0 +1,30 @@
+\name{mergeAlignReads}
+\alias{mergeAlignReads}
+\title{Merge after alignReads}
+\usage{
+  mergeAlignReads(indirs, outdir, prepend_str, num_cores)
+}
+\arguments{
+  \item{indirs}{A character vector, indicating which
+  directories have to be merged}
+
+  \item{outdir}{A character string indicating the output
+  directory (which must exist)}
+
+  \item{prepend_str}{A character string, containing a
+  prefix going to be appended on all output result files}
+
+  \item{num_cores}{Number of cores available for parallel
+  processing (for the merge bam step)}
+}
+\value{
+  Nothing
+}
+\description{
+  Merge BAMs and create summary alignment file
+}
+\author{
+  Gregoire Pau
+}
+\keyword{internal}
+

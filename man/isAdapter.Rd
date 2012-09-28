@@ -1,0 +1,25 @@
+\name{isAdapter}
+\alias{isAdapter}
+\title{Detect adapter contamination}
+\usage{
+  isAdapter(reads, score_cutoff, adapter_seqs)
+}
+\arguments{
+  \item{reads}{Set of reads as ShortRead object}
+
+  \item{score_cutoff}{Alignment score threshold that needs
+  to be exceeded to be flagged as adapter.  Usually this
+  value is determined empirically by getAdpaterThreshold()}
+
+  \item{adapter_seqs}{One or more adapter sequences}
+}
+\value{
+  boolean vector indicating adapter contamination
+}
+\description{
+  Does a Needleman-Wunsch like small-in-large alignment of
+  the adapter vs each read. Flag read if score exceeds
+  threshold
+}
+\keyword{internal}
+

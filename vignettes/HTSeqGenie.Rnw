@@ -1,0 +1,388 @@
+
+% \VignetteIndexEntry{gmapR}
+% \VignetteKeywords{gmap,gsnap}
+% \VignettePackage{gmapR}
+\documentclass[10pt]{article}
+
+\usepackage{times}
+\usepackage{hyperref}
+\usepackage{Sweave}
+
+\textwidth=6.5in
+\textheight=8.5in
+% \parskip=.3cm
+\oddsidemargin=-.1in
+\evensidemargin=-.1in
+\headheight=-.3in
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rcode}[1]{{\texttt{#1}}}
+
+\newcommand{\software}[1]{\textsf{#1}}
+\newcommand{\R}{\software{R}}
+
+\title{HTSeqGenie: a software package to analyse high-throughput sequencing experiments}
+\author{Gregoire Pau, Cory Barr, Jens Reeder, Michael Lawrence\\
+  Jeremiah Degenhardt, Tom Wu, Melanie Huntley, Matt Brauer}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The \Rpackage{HTSeqGenie} package is a robust and efficient software
+to analyze high-throughput sequencing experiments in a reproducible
+manner. It supports the RNA-Seq and Exome-Seq protocols and provides:
+quality control reporting (using the \Rpackage{ShortRead} package), detection of adapter contamination, read
+alignment versus a reference genome (using the \Rpackage{gmapR} package), counting reads in genomic
+regions (using the \Rpackage{GenomicRanges} package), and read-depth coverage computation. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Example analysis of two RNA-Seq experiments of lung cell lines}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Analysis on a genomic region centered on TP53}
+
+In this section, we are analysing two RNA-Seq experiments of human lung cell
+lines (H1993 and H2073) on a 2 Mb genomic region centered on the TP53 gene. 
+This region, not the full human genome, has been chosen to provide a vignette 
+that can be run in a reasonable amount of time.
+
+We first load the package \Rpackage{HTSeqGenie}. We then load the
+package \Rpackage{LungCancerLines} to get the FASTQ files of the
+lung cancer cell lines we are going to analyze. These files only cover
+the TP53 genomic region and have been subsampled to 2500 reads, due to 
+vignette time constraints.
+
+<<fastq, results=hide>>=
+library("HTSeqGenie")
+library("LungCancerLines")
+@
+
+To analyze the reads, the package needs a \Robject{GmapGenome} object, which
+contains the information needed to align the reads to a reference
+genome. The package also needs a genomic features object, which is a
+named list of \Robject{GRanges} objects containing the genomic features (gene, exon, transcript...) 
+of the corresponding genome. For convenience, this vignette provides the function
+\Rfunction{TP53Genome}, generating a 2 Mb subset of the UCSC hg19 human genome, centered on the gene
+TP53, and the \Rfunction{TP53GenomicFeatures}, producing a RData file
+containing the associated genomic features. The next section explains
+how to build custom \Robject{GmapGenome} and genomic features objects.
+
+<<tp53Genome, results=hide>>=
+tp53Genome <- TP53Genome()
+tp53GenomicFeatures <- TP53GenomicFeatures()
+@
+
+The samples are analysed with a common set of configuration
+parameters, specific to RNA-Seq paired-end experiments. Details about
+these parameters are provided in the Configuration section. 
+
+<<cpars, results=hide>>=
+rtp53 <- list(
+              ## input
+              paired_ends=TRUE,
+              quality_encoding="illumina1.8",
+              
+              ## aligner
+              path.gsnap_genomes=path(directory(tp53Genome)),
+              alignReads.genome=genome(tp53Genome),
+              alignReads.additional_parameters="--indel-penalty=1 --novelsplicing=1",
+              
+              ## gene model
+              path.genomic_features=dirname(tp53GenomicFeatures),
+              countGenomicFeatures.gfeatures=basename(tp53GenomicFeatures),
+              
+              ## output
+              overwrite_save_dir="erase"
+              )
+@
+
+The function \Rfunction{runPipeline} runs the full analysis pipeline,
+using a list of configuration parameters. The following commands analyse
+the H1993 and H2073 samples. The function returns the path to a directory
+that contains the full analysis: bams, QC reports and a results
+directory which include coverage and count data.
+
+<<runPipeline, results=hide>>=
+H1993dir <- do.call(runPipeline, 
+                    c(## RNASeq TP53genome parameters
+                      rtp53, 
+                      
+                      ## input
+                      input_file=LungCancerFastqFiles()[["H1993.first"]],
+                      input_file2=LungCancerFastqFiles()[["H1993.last"]],
+                      
+                      ## output
+                      save_dir="H1993",
+                      prepend_str="H1993"
+                      ))
+
+H2073dir <- do.call(runPipeline, 
+                    c(## RNASeq TP53genome parameters
+                      rtp53, 
+                      
+                      ## input
+                      input_file=LungCancerFastqFiles()[["H2073.first"]],
+                      input_file2=LungCancerFastqFiles()[["H2073.last"]],
+                      
+                      ## output
+                      save_dir="H2073",
+                      prepend_str="H2073"
+                      ))
+@
+
+Several quality control reports (short reads, alignment, counting) have been generated in the
+\Rcode{report/} directories of the paths pointed by \Robject{H1993dir} and \Robject{H2073dir}.
+The following example uses the function \Rfunction{getTabDataFromFile}
+to get the read counts per gene in both cell lines. Further analysis
+such as differential expression using replicates can be performed using
+the package \Rpackage{DESeq}. 
+
+<<genecounts>>=
+library("org.Hs.eg.db")
+gc1 <- getTabDataFromFile(H1993dir, "counts_gene")
+gc2 <- getTabDataFromFile(H2073dir, "counts_gene")
+hgnc <- as.character(org.Hs.egSYMBOL[as.character(gc1$name)])
+data.frame(H1993.count=gc1$count, H2073.count=gc2$count, row.names=hgnc)
+@ 
+
+\subsection{Analysis on the full human genome}
+This section will be completed later.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Analysis steps}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{General}
+The pipeline consists in a set of high-level modules that are configured with a configuration file. 
+See the Configuration section for a list of all parameters.
+
+The modules are:
+\begin{itemize}
+\item preprocessing (preprocessReads)
+\item read alignment (alignReads)
+\item read counting (countGenomicFeatures)
+\item computation of coverage (calculateCoverage)
+\end{itemize}
+
+The following diagram shows a high-level overview of the performed analysis steps:
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{RNASeq-pipeline-3.pdf}
+\end{center}
+\end{figure}
+
+The pipeline produces the directory logs/, which contains log files about the analysis:
+\begin{itemize}
+\item logs/audit.txt: the environment used to run the analysis (pipeline version number, host, R session, PATH, gsnap version, samtools version)
+\item logs/config.txt: the expanded configuration file used to run the analysis
+\item logs/progress.log: the progress log
+\end{itemize}
+
+\subsection{Preprocessing}
+The preprocessing module applies a sequence of optional steps before read alignment. These optional operations are:
+\begin{itemize}
+\item read subsampling (randomly sample a subset of reads from input data)
+\item trimming reads end to a fixed size
+\item filtering reads based on nucleotide qualities
+\item detection of (but not filter) adapter-contaminated reads
+\item creation of ShortRead reports (on a random subset of reads)
+\end{itemize}
+
+\subsubsection*{Output} 
+\begin{itemize}
+\item bams/processed.aligner\_input.fastq: processed FASTQ file(s) given to the aligner
+\item results/adapter\_contaminated.RData: RData files containing the names of the detected adapter-contaminated reads
+\item results/summary\_preprocess.tab: a tab-separated file containing a summary of the preprocessing step
+\item reports/shortReadReport: HTML ShortRead quality reports
+\end{itemize}
+
+\subsection{Alignment}
+The alignment module uses the gsnap aligner to align reads, and creates the file analyzed.bam, 
+containing reads that are analyzed by the downstream modules. This
+file currently contains all uniquely mapping reads (i.e. this is the concatenation of the *uniq.bam files). 
+
+\subsubsection*{Output} 
+\begin{itemize}
+\item  bams/*.bam: output aligned bam files
+\item bams/*.bai: corresponding bam indexes
+\item results/summary\_alignment.tab: a tab-separated file containing summary alignment information
+\item report/reportAlignment.html: an HTML summary report about alignment
+\end{itemize}
+
+\subsection{Count genomic features}
+This module counts how many reads overlaps with the genomic intervals defined in RData file pointed by the "countGenomicFeatures.gfeatures" parameter. On each interval, RPKM is computed using: (1e9*count) / (nbreads * width), where count is the number of reads overlapping with the interval, nbreads is the total number of reads being analysed and width is the width of the interval.
+
+\begin{figure}[!h]
+\begin{center}
+\includegraphics{gene_models.jpeg}
+\end{center}
+\end{figure}
+
+The genomic features are defined as:
+\begin{itemize}
+\item A gene region is an interval (i.e. connected) and includes introns, 5' and 3' UTRs.
+\item A gene exonic region is an interval union of all exons of a particular gene. It includes 5' and 3' UTRs, but not introns.
+\item A gene coding region is a gene exonic region without the 5' and 3' UTRs.
+\item A transcript is an interval union of the exons of a particular transcript. It includes 5' and 3' UTRs, but not introns.
+\item  Non-overlapping exonic regions (DEXSeq) are exons that have been split to remove overlapping regions.
+\end{itemize}
+
+\subsubsection*{Output} 
+\begin{itemize}
+\item results/counts\_{feature\_type}.tab: a tab-separated file containing counts, widths and RPKMs
+\item results/summary\_counts.tab: a tab-separated file containing summary count information
+\item report/reportFeatureCounts.html: a HTML summary report about count genomic features
+\end{itemize}
+
+\subsection{Coverage}
+This module computes coverage (read-depth) data.
+
+\subsubsection*{Output} 
+\begin{itemize}
+\item results/coverage.RData: a RData file containing coverage data
+\item results/coverage.bw: bigwig file for IGB
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Configuration}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{General}
+Configuration files are written in a DCF format, a sequence of lines
+containing "<parameter>:<value>". The format supports comments
+starting with a sharp ('\#') sign and is whitespace tolerant. The HTSeqGenie pipeline uses a templated configuration framework where configuration files can inherit parameters from other configuration files, through the parameter "template\_config". Parameters defined after "template\_config" override parameters from the inherited templates.
+
+Default parameters depend on the configuration templates.
+
+\subsection{Configuration parameters}
+Configuration files ultimately derive from the default-config.txt
+configuration file, which enumerates all available parameters. The
+following sections enumerate all available configuration parameters.
+
+\subsubsection*{Template} 
+\begin{itemize}
+\item template\_config: An optional file name containing a template configuration file. To locate it, the software first looks in the directory defined by the environment variable HTSEQGENIE\_CONFIG and, if not found, in the installed package HTSeqGenie. No default value.
+\end{itemize}
+
+\subsubsection*{Input} 
+\begin{itemize}
+\item input\_file: The path of a FASTQ or gzipped FASTQ file containing the input reads. No default value.
+\item input\_file2: An optional path of a FASTQ or gzipped FASTQ file containing the input paired reads in paired-end sequencing. If present, the parameter paired\_ends must be set to TRUE. No default value.
+\item paired\_ends: A logical indicating whether the reads are coming from paired-end sequencing. Default is TRUE.
+\item quality\_encoding: An optional string indicating which quality encoding is used. Possible values are "sanger", "solexa", "illumina1.3", "illumina1.5" and "illumina1.8". If absent, a non-robust strategy is tried to guess it. No default value.
+\item subsample\_nbreads: An optional integer. If present, the preprocess module randomly subsamples the indicated number of reads from the input files before analysis. This feature is disabled by default.
+\item chunk\_size: An integer indicating how many reads are present in a chunk. This parameter should not be changed. Default is 1e6.
+\item max\_nbchunks: An optional integer. If present, it sets the maximum number of chunks to be processed. This parameter is mostly present for debug purposes. This feature is disabled by default.
+\end{itemize}
+
+\subsubsection*{Output}
+\begin{itemize}
+\item save\_dir: A directory path indicating where the output results should be stored. No default value.
+\item overwrite\_save\_dir: A string indicating how to overwrite/save data in the save\_dir directory. Possible values are "never", "erase" and "overwrite". If "never", the pipeline will stop if the indicated save\_dir is present. If "erase", the save\_dir directory is removed before starting the analysis. Default is "never".
+\item prepend\_str: A string that will be preprended to output filenames. No default value.
+\item remove\_processedfastq: A logical indicating whether the preprocessed FASTQ files before alignment should be removed. Default is TRUE.
+\item remove\_chunkdir: A logical indicating whether the chunks/ subdirectory should be removed. Default is TRUE.
+\item tmp\_dir: A temporary directory where intermediate files will be written to. If set, this should point to a non-replicated, non-snapshoted directory such as /gne/research/data/bioinfo/ngs\_analysis/CGP\_3.0/cgptmp. If not set, temporary files will be written into the save\_dir.
+\end{itemize}
+
+\subsubsection*{System}
+\begin{itemize}
+\item num\_cores: An integer indicating how many cores should be used on this machine. This value can be overriden by the ngs\_pipeline calling script. Default value is 1.
+\end{itemize}
+  
+\subsubsection*{Path}
+\begin{itemize}
+\item path.genomic\_features: A path to the directory that contains the genomic features RData files used for counting. No default.
+\item path.gsnap\_genomes: A path to the directory that contains Gsnap's genomic indices. No default.
+\end{itemize}
+
+\subsubsection*{Debug }
+\begin{itemize}
+\item debug.level: A string indicating which maximal level of debug should be used in the log file. Possible values are "ERROR", "WARN", "INFO" and "DEBUG". Default is "DEBUG".
+\item debug.tracemem: A logical indicating whether periodic memory information should be included in the log file. Default is TRUE.
+\end{itemize}
+
+\subsubsection*{Trim reads}
+\begin{itemize}
+\item trimReads.do: A logical indicating whether the reads should be end-trimmed. Default is FALSE.
+\item trimReads.length: An integer indicating to what size (in nucleotides) the reads should be trimmed to. No default value.
+\end{itemize}
+
+\subsubsection*{Filter quality }
+\begin{itemize}
+\item filterQuality.do: A logical indicating whether the reads should be filtered out based on read nucleotide qualities. A read is kept if the fraction "filterQuality.minFrac" of nucleotides have a quality higher than "filterQuality.minQuality". Default is TRUE.
+\item filterQuality.minQuality: An integer. See filterQuality.do. Default is 23.
+\item filterQuality.minFrac: A numeric ranging from 0.0 to 1.0. See filterQuality.do. Default is 0.7.
+\end{itemize}
+
+\subsubsection*{Detect adapter contamination}
+\begin{itemize}
+\item detectAdapterContam.do: A logical indicating whether reads that look contaminated by adapter sequences should be reported (but NOT filtered). Default is TRUE.
+\item detectAdapterContam.force\_paired\_end\_adapter: A logical indicating whether paired end adapter chemistry was used for single-end sequencing. Default is FALSE.
+\end{itemize}
+
+\subsubsection*{Detect ribosomal RNA}
+\begin{itemize}
+\item detectRRNA.do: A logical indicating whether ribosomal RNAs should be filtered out. Default is TRUE.
+\item detectRRNA.rrna\_genome: A string indicating which gsnap genome index to use (-d flag) to detect ribosomal RNAs. No default value.
+\end{itemize}
+  
+\subsubsection*{ShortRead report}
+\begin{itemize}
+\item shortReadReport.do: A logical indicating whether a ShortRead report should be generated from the preprocessed reads. Default is TRUE.
+\item shortReadReport.subsample\_nbreads: An optional integer indicating how many reads should be subsampled from the preprocessed reads for generating the report. No value indicates to take all of them (can be memory and time consuming). Default is 20e6.
+\end{itemize}
+
+\subsubsection*{Aligner}
+\begin{itemize}
+\item alignReads.genome: A string indicating which gsnap genome index to use (-d flag). No default value.
+\item alignReads.max\_mismatches: An optional integer indicating how many maximal mismatches gsnap should use (-m flag). If absent, gsnap uses an automatic value. No default value.
+\item alignReads.sam\_id: A string (--read-group-id flag). No default value.
+\item alignReads.snp\_index: An optional string containing gsnap SNP database index (-v flag). No default value.
+\item alignReads.splice\_index: An optional string containing gsnap splice index (-s flag). No default value.
+\item alignReads.static\_parameters: An optional string containing extra gsnap parameters. No default value.
+\item alignReads.nbthreads\_perchunk: An optional integer indicating how many threads should be used to process one chunk (-t flag). If unspecified, the value is set to min(num\_cores, 4). This parameter is mostly given for debug purposes. No default value.
+\end{itemize}
+
+\subsubsection*{Count genomic features}
+\begin{itemize}
+\item countGenomicFeatures.do: A logical indicating whether counts per genomic feature should be computed. Default is TRUE.
+\item countGenomicFeatures.gfeatures: A filename containing the RData file used by the counting features module. The full path is "path.genomic\_features"/ "countGenomicFeatures.gfeatures". No default value.
+\end{itemize}
+
+\subsubsection*{Variants}
+\begin{itemize}
+\item analyzeVariants.do: A logical indicating whether variant calling should be performed. Default is TRUE.
+\item analyzeVariants.use\_read\_length: FALSE
+\item analyzeVariants.with\_qual: A logical indicating whether variant calling should take mapping quality into account. Default is TRUE.
+\item analyzeVariants.bqual: Default is 23.
+\item analyzeVariants.bin\_fraction: Default is 0.1.
+\end{itemize}
+
+\subsubsection*{Coverage}
+\begin{itemize}
+\item coverage.extendReads: A logical whether reads should be extended in the coverage vector. Default is FALSE
+\item coverage.fragmentLength: Amount by which single ended reads should be extended. Usually defined by the fragment length. No default value.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Session Information}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+<<sessionInfo, results=tex, print=TRUE>>=
+toLatex(sessionInfo())
+@
+
+\end{document}

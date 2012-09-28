@@ -1,0 +1,25 @@
+\name{consolidateByRead}
+\alias{consolidateByRead}
+\title{Consolidate Paired-End Alignments by Read Names}
+\usage{
+  consolidateByRead(grl)
+}
+\arguments{
+  \item{grl}{A GRangesList}
+}
+\value{
+  A consolidated GRangesList
+}
+\description{
+  Consolidate GRangesList of Paired-End Data by Read Name
+}
+\details{
+  Given a GRangesList with the paired-end IDs stored as the
+  names, this function will regroup the GRangesList
+  ignoring read-end number
+}
+\author{
+  Cory Barr
+}
+\keyword{internal}
+

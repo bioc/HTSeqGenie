@@ -1,0 +1,17 @@
+\name{getRandomAlignCutoff}
+\alias{getRandomAlignCutoff}
+\title{Estimate an adopter alignment cutoff scor}
+\usage{
+  getRandomAlignCutoff(read_len, n)
+}
+\arguments{
+  \item{read_len}{The read length}
+
+  \item{n}{Number of samples}
+}
+\description{
+  Empirically estimate a threshold that discriminates
+  random reads from reads with adapter contamination
+}
+\keyword{internal}
+

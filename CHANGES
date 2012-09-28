@@ -1,0 +1,438 @@
+version 0.99.5:
+- HTSeqGenie does not depend any longer on gsnap (using gmapR instead), samtools (using Rsamtools instead), bam_tally, get-genome
+- removed (and replaced them by their equivalent in Rsamtools): mergeBams, indexBAMFiles
+- removed: getReadLengthFromBam, filterBam, prependGsnapOutput, convertGsnapOutput
+- added mergeBamSortIndex, doing mergeBam + sort + index + support of one file
+- ready to submission to BioC
+
+version 0.99.4:
+- updated the vignette
+
+version 0.99.2:
+- removed files: gmapR.R, analyzeVariants.R, detectRRNA.R
+- added the ##DISABLED flag to temporary disable the features: detectRRNA and analyzeVariants
+- removed the function scProcessReads, which has never been used
+- fixed many R CMD check warnings
+
+version 0.99.1:
+- bumped version to 0.99.1, to be prepared to BioC submission
+- added runPipelineConfig: to run the pipeline from a config file)
+- modified runPipeline: to run the pipeline from a list of parameters
+- added TP53GenomicFeatures: to generate TP53 gene models
+- added buildConfig: to write a configuration file on disk from a list of parameters
+- added buildGenomicFeaturesFromTxDb: to generate genomic features from a TxDb file
+- default configuration parameter debug.info is now "INFO"
+- added test.runPipeline that works with TP53Genome
+
+version 3.7.1:
+- does not depend on SNVsOmuC anymore
+- analyzeVariants() is DISABLED in runPipeline.R
+
+version 3.7.0:
+- bump by Jens
+
+version 3.6.0:
+- support of IGIS 2.2
+- support of R 2.15.0 and Bioconductor 2.10
+- support for ChIP-Seq analysis (template configurations and coverage read extension)
+- support for merging lanes (ngs_merge)
+- support for variant concordance comparison (ngs_vconcord)
+- results are different from 3.4.1 (due to the new splice sites of IGIS 2.2 used during alignment and due to the new variant caller)
+  correlation of RNA-Seq RPKM is usally higher than 0.99 between 3.4.1 and 3.6.0. Variant concordance is also typically higher than 0.999
+- now computes intronic RNA counts
+- minor bug fixes
+
+version 3.5.17:
+- mergeLanes (and therefore, ngs_merge) now checks that sample versions are identical before merging
+- mergeLanes and has an improved interface to include parameters that have to be ignored during checkInputConfigs()
+
+version 3.5.16:
+- fixed the warning message "replacing previous import ‘density’ when loading ‘stats’" (coming from the chipseq package, version 1.6.1 fixes this message)
+- fixed the gzfile(description) bug caused in calculateJunctionReads, due to the fact that "countGenomicFeatures.gfeatures" was needed when computing calculateJunctionReads()
+- fixed the GenomeSeq-USA300-config.txt (removed the "path.genomic_features:", which is not need anymore, and added "countGenomicFeatures.do: FALSE")
+
+version 3.5.15:
+- added configuration parameters: analyzeVariants.bin_fraction
+- new TxDb.*.BioMart.igis 2.2.0 with correct seqlenghts
+
+version 3.5.14:
+- checks OK
+
+version 3.5.13:
+- added ChIP-Seq config files
+- added configuration parameters: countGenomicFeatures.do, analyzeVariants.do, coverage.extendReads, coverage.fragmentLength
+- now uses SNVsOmuC 1.0.1
+- ngs_merge can now merge only one file (not optimized)
+- fixed ngs_vconcord (doesn't display the subgraph igraph 0.6 version issue any longer)
+- added tmp_dir to config. If set will be used to store temporary chunk dirs
+
+version 3.5.12:
+- use min and max_processed_read_length for merge_checks instead of bam file
+- use lsf_ngs_merge script that worked well in CGP3
+
+version 3.5.11:
+- added filterBam, to filter bam files based on a logical vector
+- now writes <merged> ... </merged> in merged config files
+- now trim target length at 600 in calculateTargetLengths, fixing a bug reported by Gregory Zynda
+
+version 3.5.10:
+- now building the "intron" track
+- added the "intron" track in gfeatures-human-IGIS_2.1.0b.RData and gfeatures-mouse-IGIS_2.10b.RData; all other tracks are strictly identical to the ones in 
+  gfeatures-human-IGIS_2.1.0.RData and gfeatures-mouse-IGIS_2.1.0.RData, respectively
+
+version 3.5.8:
+- copied HTSeq and RNASeqGenie in HTSeqGenie
+- checks are OK!
+
+version 3.5.6:]
+- copied HTSeq into HTSeqGenie
+
+version 3.5.5
+- now works with R 2.15.0/Bioconductor 2.10 (and still works with R 2.14/ngs_pipeline environment)
+- added ngs_concord script, to compute variant concordance between samples
+- coverage.RData is now a RangedData object
+
+version 3.5.3
+- added lsf_ngs_merge and ngs_merge scripts
+- ngs_pipeline does not crash anymore when fed with bogus arguments
+
+version 3.5.2
+- mergeLanes now uses safeExecute to save memory between merging steps
+
+version 3.5.1
+- initPipelineFromSaveDir now updates save_dir
+- mergeLanes.R does not check for identical quality_encoding any longer
+- mergePreprocessSummary does not check for identical read length any longer
+- mergeLanes now accepts config_update
+
+version 3.5.0
+- bump dev
+
+version 3.4.1
+- set default config parameter analyzeVariants.use_read_length to FALSE, to prevent the
+  buggy 3*2 Fisher's test used in SNVsOmuC/variantFilter.R to crash the pipeline
+- overload logdebug, loginfo and logwarn with a try() statement, to prevent errors when 
+  concurrent threads are logging at the same time
+
+version 3.4
+- change gsnap param -E from 4 to 1. This should allow gsnap to find more translocations.
+
+version 3.3.11
+- get rid of analysis type. At this point the only thing we do differently for Exome vs RNASeq
+  is the call to gsnap. Since that is actually created from the snp, splice and gsnap_param option
+  in the config, we donl;t need this explicite type any more.
+
+version 3.3.10
+- now creating summary_analyzed_bamstats.tab
+- reportQA now includes analysed bam stats
+
+version 3.3.9
+- added computeBamStats, createSummaryAlignment, mergeSummaryAlignment
+- now summary_alignment are merged (and not recomputed on the merged bams)
+- new bam statistics in computeBamStats
+
+version 3.3.8
+- fixed buildSplicesIIT, to build correct IIT splicing file, with checks
+- generated splices-human-IGIS_2.1.0b and splices-mouse-IGIS_2.1.0b
+- now using splices-human-IGIS_2.1.0b and splices-mouse-IGIS_2.1.0b in RNA-Seq template configs
+- deleted bogus splices-human-IGIS_2.1.0 and splices-mouse-IGIS_2.1.0
+
+version 3.3.6
+- added input_min_read_length, input_max_read_length, processed_min_read_length, processed_max_read_length in summary_preprocess
+- removed reportwarning
+
+version 3.3.5
+- added reportwarning (to log warnings in {save_dir})
+- the pipeline now reports a warning if reads are of variable lengths
+
+version 3.3.4
+- added mergeLanes, to merge lanes
+- added the unit test: test.mergeLanes
+- now check during preprocessReads that read are of constant length
+- added concatListElements, used when building DEXSeq in buildGenomicFeatures
+- added getReadLengthFromBam
+- added test.runPipeline.identical320, to test if the results are identical compared to NGS 3.2.0
+- the pipeline now fails if reads are of variable length
+
+version 3.3.3
+- checkConfig now checks for absence of whitespace in: input_file, input_file2, save_dir, prepend_str, alignReads.sam_id
+- the pipeline now fails if one chunk fails (stop.onfail=TRUE in processChunks)
+- fixed the empty chunk bug, added the unit test: test.alignReads.sparsechunks
+- added statCountFeatures(), to compute diverse quantile statistics on read/feature counts
+
+version 3.2
+- release version
+
+version 3.1.5
+- num_cores is now 1 by default
+- alignReads.nbthreads_perchunk is now empty by default
+- if unspecified, alignReads.nbthreads_perchunk is set to min(4, num_cores)
+
+version 3.1.4
+- safeUnlink now stops if it can't delete a file
+
+version 3.1.3
+- disabling ShortRead OPEN_MP, which crashes R when used in combination with mcparallel()
+- safeExecute now executes an expression in a child thread, to avoid allocating memory in the main thread (this is the cause of memory leaks,
+  since R has a internal hashtable to store strings that keeps growing and is never cleared up)
+- quality encoding upper limit of "illumina1.5" is now 105 instead of 104, to accomodate Phred-qualities of 41 (instead of 40)
+
+version 3.1.2
+- added GenomeSeq-USA300-config.txt
+
+version 3.1.1
+- added parseProgressLog() to parse progress.log files
+- added gc() in processChunks() to save memory before firing new threads
+- default.config: num_cores set to 4 and alignReads.nbthreads_perchunk to 4, for performance reasons
+- now using safeUnlink(), to not follow symlink dirs when deleting files/dirs
+- checkConfig.template() now first looks in the local directory for a template config file
+- trimReads can now trim reads of variable lengths and now keeps the input quality encoding
+
+version 2.99.39
+- now using quality_encoding: sanger, solexa, illumina1.3, illumina1.5, illumina1.8
+
+version 2.99.38
+- now uses the config parameter quality_encoding, which can take a value out of: sanger, solexa, illumina13, illumina15, illumina18
+- added detectQualityInFASTQFile
+- added deterministic subsampling test
+- the argument filname is now optional in writeConfig and writeAudit
+
+version 2.99.36
+- umask is now set in both initPipelineFromConfig and initPipelineFromSaveDir
+- now produce an "analyzed.bam" file instead of "main.bam"
+
+vesrion 2.99.35
+- added config parameters: alignReads.nbthreads_perchunk, alignReads.static_parameters, analysis_type
+- added ExomeSeq-human-config.txt and  ExomeSeq-mouse-config.txt 
+- processChunks now accepts nb.parallel.jobs
+- DEXSeq OK
+- new buildAlignerParams that accepts nbthreads_perchunk and alignReads.static_parameters
+
+version 2.99.34
+- creation of SNP indexes for human and mouse, now used in the RNASeq templates
+
+version 2.99.33
+- path.gsnap and path.samtools are now gone
+- alignReads.do, countGenomicFeatures.do, processUniqueMappers.do, calculateJunctions.do are now gone
+- added checkConfig.tools to check that gsnap, samtools, get-genome and bam_tally
+
+version 2.99.32
+- now outputs summary_alignment.tab 
+- now uses main.bam in the RNASeqPipeline
+- added bamCountUniqueReads()
+
+version 2.99.31
+- renamed processRawFastq by preprocessReads
+- defined initPipelineFromConfig and initPipelineFromSaveDir
+- output of preprocessReads is now summary_preprocess.tab
+- creation of {prepend_str}.main.bam
+- implemented safeExecute (which now does the memory tracing) instead of logErrorOnFail
+
+version 2.99.29
+- IGIS 2.1 for human and mouse
+
+version 2.99.26:
+- implemented the subsampler (controlled by subsample_nbreads)
+- added config parameters: remove_processedfastq and remove_chunkdir
+- removed mergeChunks
+- the summaryTable doesn't contain the preprocess_summary information anymore
+
+version 2.99.25:
+- major release!
+- using IGIS and our internal gsnap version for pipeline 3.0
+- output tabulated results for counts
+- added finally argument to logErrorOnFail (to kill memtracer in case of exceptions)
+- using a 2 s delay between fired jobs in processChunks (to prevent firing all jobs at the same time, avoiding I/O collisions)
+- checks OK (except the mouse genome)
+
+version 2.99.24:
+- removed rpkm_old
+- fused detectNcRNA with countGenomicFeatures
+- removed config parameters related to detectNcRNA
+- removed depluralization code
+- changed config parameters countGenomicFeatures.granges by countGenomicFeatures.gfeatures
+- count output is now tab files with name, count, width and rpkm
+- addec config parameters alignReads.extra_parameters
+- saveWithID now supports tab-separated file format
+
+version 2.99.23:
+- now using new 3.0 gsnap aligner
+- now using hg19_IGIS21
+- the aligner found highqualAdapterContamIn3PrimeEnd:1:1:1:7#0/1 was rRNA-contaminated (which is true, with CIGAR 30C3C3C1): updated test.processRawFastq_single_end() 
+- tests OK except mouse-related tests (genome mm9_IGIS21 has to be built)
+
+version 2.99.21:
+- added config parameter calculateJunctions.do
+- now stops if all jobs fail
+- renamed log/ by logs/
+- remove chunks/ at the end
+
+version 2.99.20:
+- plot insert lenghts OK
+- added config parameter: debug.remove_chunkdir
+- renamed output directory profile/ to log/
+- renamed output directory RData/ to results/
+- removed fastq_for_aligner12 fields
+
+version 2.99.19:
+- now uses ShortRead 1.13.12 that fixes a FastqSampler bug (that causes random crashes!)
+- buildShortReadReports works (now subsampling by default 20e6 reads)
+
+version 2.99.18:
+- uses gmapR 0.12.5 to log gsnap system calls
+
+version 2.99.17:
+- new file permissions are now -rw-r--r-- and dir permissions are drwxr-xr-x
+- detectAdapterContam: cutoff is now 13.87229 (independent of read length, see estimateCutoffs)
+- detectAdapterContam: now save read names 
+- detectAdapterContam: added mergeDetectAdapterContam
+- no max_mismatches in the pipeline anymore: using gsnap's defaults or alignReads.max_mismatches if specified
+
+version 2.99.16:
+- removed txdb_info
+- added config parameter max_mismatches
+- config is now written in RData/
+- preprocessed reads are now merged
+
+version 2.99.15:
+- supports the HTSEQ_CONFIG environment variable to look for template config files
+- passes samtools path to gmapR
+- checks the presence of non-empty config parameters
+- now produces the output directory, with chunks/chunk_%06d, with audit.txt and progress.log in profile/
+
+version 2.99.9:
+- added config parameters: detectNcRNA.do and detectNcRNA.granges
+
+version 2.99.8:
+- bumped version number to stay in sync with RNASeqGenie version 2.99.7
+- preprocess_summary$adapter_contam and preprocess_summary$rRNA_contam_reads are now
+  set to 0 if their modules are disabled, to prevent unexpected behaviors in the final report
+- added getChunkDirs, mergePreprocessSummary
+- the merge/ directory is created mergeLanes and not in initPipeline any more
+
+version 2.99.6:
+- uses gmapR 0.12.3 to fix a deadly bug in consolidateSAMFiles() causing random crashes
+- now consolidateSAMFiles is silent
+
+version 2.99.5:
+- chunked loggs
+- continue on fail
+- added logErrorOnFail(), encaspulating tryKeepTraceback and getTraceback
+- sclapply now passes chunkid as an additional argument
+- sclapply accepts now a tracer function
+- added processChunks(), that does sclapply + logErrorOnFail + continue on fail + chunked logs
+
+version 2.99.4:
+- added max_nbchunks for debug purposes
+- added runTophalf, runPreprocessing, runAlignment
+- ready to test on new CGP 2011 data!
+
+version 2.99.3:
+- using path-config.txt to store system-dependent paths
+- renamed resync() by resource(dirname); which can reload any package R directory
+- implemented checkConfig.countGenomicFeatures()
+- cleaned up writeAudit()
+- removed package dependencies: snow and gtools
+- implemented tests for tryKeepTraceback, writeAudit and minichunks for processRawFastq
+- implemented mergeProcessRawFastq
+- new alignReads() that does the parallel/chunking job
+- new merge/ directory
+
+version 2.99.2:
+- templated configuration using the parameter "template_config"
+- moved parameters from globals() and HTSeqGenieBase_globals-default.dcf to our configuration file:
+-- removed globals.R  
+-- new config parameters: path.gsnap, path.samtools, path.gsnap_bin_dir, path.genomic_features, path.gsnap_genomes
+-- new config parameters: countGenomicFeatures.do, countGenomicFeatures.grange, countGenomicFeatures.txdb_info
+-- removed config parameter: alignReads.gsnap (now path.gsnap)
+-- removed HTSeqGenieBase_globals-default.dcf
+- sclapply now uses the argument max.parallel.jobs in the third position
+- removed setGenomeFiles() and added config parameter: detectRRNA.rrna_genome
+
+version 2.99.1:
+- version number roll to be ready to release the 3.0.0 version
+- now used by RNASeqGenie
+- FastQStreamer.init() and FastQStreamer.getReads() do not need the configuration environment any more
+- renamed trimReadsList by trimReads, mismatches_per_readwidth by getMismatchesPerReadwidth
+- getConfig() and getConfig.*() now stops if the parameter is not declared and returns NULL if empty
+- NAMESPACE does not export all function any longer
+
+version 0.0.17:
+- full stream version
+- make_dir was renamed in makeDir()
+- overwrite_save_dir now takes a parameter out of "never", "overwrite" or "erase"
+- parseDCF doesn't remove empty parameters any longer
+- added getConfig.nonempty() to check if a paramter is non-empty
+- alignReads is now in parallel using sclapply
+
+version 0.0.16:
+- transition to the stream version
+- alignReads now uses a single core and uses "-B 2" mode, sharing genome memory between processes, to save memory
+- this version is not expected to R CMD check OK
+
+version 0.0.15:
+- save_dir/chunk_%06d/ output
+- save_dir/progress.log
+
+version 0.0.14:
+- processRawFastqChunks works well (TODO: collect data)
+- added unit tests for: FastQStreamer.init(), FastQStreamer.getReads(), sclapply()
+- added initPipeline() (to initialise the pipeline)
+- preprocessReads()  is now independent
+
+version 0.0.13:
+- moved setGenomeFiles in detectRRNA.R
+- added config parameters: filterQuality.do, alignReads.do 
+- added config parameters: chunk_size, subsample_nbreads
+- fixed another stupid bug in sclapply()
+
+version 0.0.12:
+- renamed myTry() by tryKeepTraceback()
+- added the checkConfig.noextraparameters() config check
+- fixed a stupid bug: sclapply() does not throw chunks when waiting any more
+- added temporary processRawFastqChunks.R
+
+version 0.0.11:
+- implementation of scProcessReads() for a simple, efficient parallel processing of read chunks
+
+version 0.0.10:
+- restyled code (using " instead of ', using <- instead of =m, added comments)
+- "align.*" config parameters renamed to "alignReads.*"
+- config parameter "genome" renamed to "alignReads.genome"
+- added writeFastQFiles(), to write generic FastQ files
+- traceMem() is now failsafe
+- detectRRNA() now accepts lreads as a first argument
+- added setupTestFramework(), to set up test frameworks
+
+version 0.0.9:
+- the version is now able to process LIB2478_SAM634423_L1.R122!
+- added traceMem() to track memory peak usage
+- added the num_cores config parameter. If unspecified the parameter is guessed from the environment variable NCPUS (set by PBS) or by the multicore package
+- detectAdapterContam.R/detectAdapterContam() is now parallelized using mcProcessReads()
+
+version 0.0.8:
+- added getMemoryUsage() to track memory peak usage
+- added mcProcessReads() a safe version of mclapply, to process reads in a parallel fashion
+- added the parameter config: debug.tracemem
+- added isConfig(), to test the presence of a parameter
+- getConfig() without parameter now returns the config list
+- added initLog(), starting logging information with R session info and config parameters
+- now, filterQuality() uses mcProcessReads() to filter reads in parallel: this should help to process LIB2478_SAM634423
+
+version 0.0.7:
+- created updateConfig()
+- now loadConfig() doesn't call checkConfig() any longer
+- the "local" mode is now activated only and only in interactive sessions
+- setUpDirs() has been renamed and now accepts the argument overwrite
+
+version 0.0.4:
+- implemented the RUnit test suite
+
+version 0.0.3:
+- renamed HTSeq
+
+version 0.0.2:
+- stricter test.filterQuality() tests
+
+version 0.0.1:
+- initial release

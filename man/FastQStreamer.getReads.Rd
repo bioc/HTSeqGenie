@@ -1,0 +1,21 @@
+\name{FastQStreamer.getReads}
+\alias{FastQStreamer.getReads}
+\title{Get FastQ reads from the FastQ streamer}
+\usage{
+  FastQStreamer.getReads()
+}
+\value{
+  A list of ShortRead object containing reads. NULL if
+  there are no more reads to read.
+}
+\description{
+  Get FastQ reads from the FastQ streamer
+}
+\author{
+  Gregoire Pau
+}
+\seealso{
+  FastQStreamer.init
+}
+\keyword{internal}
+
