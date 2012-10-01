@@ -12,7 +12,7 @@ Author: Gregoire Pau, Cory Barr, Jens Reeder, Michael Lawrence,
 	Jeremiah Degenhardt, Tom Wu, Melanie Huntley, Matt Brauer
 Description: A software package to analyse high-throughput sequencing
     experiments
-Version: 1.0.0
+Version: 1.1.0
 Date: 2012-03-01
 Depends: R (>= 2.15.0), ShortRead (>= 1.14.4), parallel, hwriter,
 	 Cairo, tools, gmapR (>= 0.99.23), logging
