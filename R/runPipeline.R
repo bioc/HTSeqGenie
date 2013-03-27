@@ -58,28 +58,31 @@ runPipeline <- function(...) {
 ##'
 ##' @title  Run the NGS analysis pipeline
 ##' @param config_filename Path to a pipeline configuration file
-##' @param config_update A list of named value pairs that will update the config parameters
-##' @return The path to the NGS output directory.
+##' @param config_update A list of name value pairs that will update the config parameters
+##' @return Nothing
 ##' @author Jens Reeder, Gregoire Pau
-##' @seealso runPipeline
 ##' @export
-##' @keywords internal
 runPipelineConfig <- function(config_filename, config_update) {
-  ## init pipeline
   initPipelineFromConfig(config_filename, config_update)
-  
+
   preprocessReads()
   alignReads()
-  if (getConfig.logical("countGenomicFeatures.do")) countGenomicFeatures()
-  calculateCoverage()
-  ##DISABLED
-  ## if (getConfig.logical("analyzeVariants.do")) analyzeVariants()
+
+  if (getConfig.logical("markDuplicates.do")) {
+    markDups()
+  }
+  if (getConfig.logical("countGenomicFeatures.do")) {
+    countGenomicFeatures()
+  }
+  if (getConfig.logical("coverage.do")) calculateCoverage()
+
+  if (getConfig.logical("analyzeVariants.do")) analyzeVariants()
+
   removeChunkDir()
 
   loginfo("Pipeline run successful.")
   invisible(getConfig("save_dir"))
 }
-
 
 ##' Remove chunk directories
 ##'

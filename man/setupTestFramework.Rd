@@ -4,7 +4,7 @@
 \usage{
   setupTestFramework(config.filename,
     config.update = list(), testname = "test",
-    package = "HTSeqGenie")
+    package = "HTSeqGenie", use.TP53Genome = TRUE)
 }
 \arguments{
   \item{config.filename}{configuration file}
@@ -14,6 +14,9 @@
   \item{testname}{name of test case}
 
   \item{package}{name of package}
+
+  \item{use.TP53Genome}{Boolean indicating the use of the
+  TP53 genome as template config}
 }
 \value{
   the created temp directory
@@ -21,5 +24,4 @@
 \description{
   setup test framework
 }
-\keyword{internal}
 

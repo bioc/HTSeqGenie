@@ -1,0 +1,25 @@
+\name{getRRNAIds}
+\alias{getRRNAIds}
+\title{Detect reads that look like rRNA}
+\usage{
+  getRRNAIds(file1, file2 = NULL, tmp_dir, rRNADb)
+}
+\arguments{
+  \item{file1}{FastQ file of forward reads}
+
+  \item{file2}{FastQ of reverse reads in paired-end
+  sequencing, NULL otherwise}
+
+  \item{tmp_dir}{temporary directory used for storing the
+  gsnap results}
+
+  \item{rRNADb}{Name of the rRNA sequence database. Must
+  exist in the gsnap genome directory}
+}
+\value{
+  IDs of reads flagged as rRNA
+}
+\description{
+  Detect reads that look like rRNA
+}
+

@@ -146,6 +146,21 @@ sclapply <- function(inext, fun, max.parallel.jobs, ..., stop.onfail=TRUE, trace
   pnodes <- vector(mode="list", max.parallel.jobs) ## nodes (process)
   jnodes <- rep(NA, max.parallel.jobs) ## nodes (job id)
 
+  ## cleanup procedure, based on mclapply
+  cleanup <- function() {
+    z <- pnodes[!sapply(pnodes, is.null)]
+    if (length(z)>0) mccollect(z, wait=FALSE, timeout=4)
+    z <- pnodes[!sapply(pnodes, is.null)]
+    if (length(z)>0) mccollect(z, wait=FALSE, timeout=4)
+    z <- pnodes[!sapply(pnodes, is.null)]
+    if (length(z)>0) try(parallel:::mckill(z, tools::SIGTERM), silent=TRUE)
+    z <- pnodes[!sapply(pnodes, is.null)]
+    if (length(z)>0) mccollect(z, wait=FALSE, timeout=4)
+    z <- pnodes[!sapply(pnodes, is.null)]
+    if (length(z)>0) mccollect(z, wait=FALSE, timeout=4)
+  }
+  on.exit(cleanup())
+
   ## start scheduler
   collect.timeout <- 2 ## 2 seconds wait between each iteration
   inextdata <- NULL
@@ -188,7 +203,6 @@ sclapply <- function(inext, fun, max.parallel.jobs, ..., stop.onfail=TRUE, trace
               tracefun("error", sjobs=sjobs, jnodes=jnodes, chunkid=jnodes[i], error=status[[1]])
             }
             if (stop.onfail) {
-              try(parallel:::mckill(parallel:::children(), SIGTERM), silent=TRUE) ## kill all children threads
               stop(paste("tools.R/sclapply: error in chunkid=", jnodes[i], ": ", status[[1]], sep=""))
             }
           }
@@ -374,7 +388,8 @@ setChunkDir <- function() {
     chunk.dir <- file.path(getConfig("save_dir"), "chunks")
   }
   else {
-    chunk.dir <- createTmpDir(prefix=file.path(tmp.dir, "chunks_"))
+    chunk.dir <- file.path(tmp.dir, paste(c("chunks_", sample(letters,8)), collapse=""))
+    makeDir(chunk.dir)
   }
   updateConfig(list(chunk_dir=chunk.dir)) 
   return(chunk.dir)

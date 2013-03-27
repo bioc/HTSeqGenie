@@ -5,8 +5,8 @@
 ##' @param config_update List of name value pairs that will update the config parameters
 ##' @return Nothing
 ##' @author Jens Reeder
-##' @export
 ##' @keywords internal
+##' @export
 initPipelineFromConfig <- function(config_filename, config_update) {
   loadConfig(config_filename)
   if (!missing(config_update)) updateConfig(config_update)
@@ -25,8 +25,8 @@ initPipelineFromConfig <- function(config_filename, config_update) {
 ##' @param config_update List of name value pairs that will update the config parameters
 ##' @return Nothing
 ##' @author Gregoire Pau
-##' @export
 ##' @keywords internal
+##' @export
 initPipelineFromSaveDir <- function(save_dir, config_update) {
   config_filename <- file.path(save_dir, "logs", "config.txt")
   loadConfig(config_filename)
@@ -44,8 +44,8 @@ initPipelineFromSaveDir <- function(save_dir, config_update) {
 ##' @param config_update List of name value pairs that will update the config parameters
 ##' @return Nothing
 ##' @author Jens Reeder
-##' @export
 ##' @keywords internal
+##' @export
 runPreprocessReads <- function(config_filename, config_update) {
   initPipelineFromConfig(config_filename, config_update)
   preprocessReads()
@@ -59,8 +59,8 @@ runPreprocessReads <- function(config_filename, config_update) {
 ##' @param config_update List of name value pairs that will update the config parameters
 ##' @return Nothing 
 ##' @author Jens Reeder
-##' @export
 ##' @keywords internal
+##' @export
 runAlignment <- function(config_filename, config_update) {
   initPipelineFromConfig(config_filename, config_update)
   preprocessReads()
@@ -72,8 +72,8 @@ runAlignment <- function(config_filename, config_update) {
 ##' @title Set up NGS output dir 
 ##' @return Nothing
 ##' @author Gregoire Pau
-##' @export
 ##' @keywords internal
+##' @export
 initDirs <- function(){
   ## setup master output directory
   save_dir <- getConfig("save_dir")
@@ -93,8 +93,8 @@ initDirs <- function(){
 ##' @title Init loggers
 ##' @return Nothing
 ##' @author Gregoire Pau
-##' @export
 ##' @keywords internal
+##' @export
 initLogger <- function(){ 
   ## set up logger
   debug_level <- getConfig("debug.level")
@@ -110,8 +110,8 @@ initLogger <- function(){
 ##' @param save_dir Save dir of a pipeline run
 ##' @param debug_level One of INFO, WARN, ERROR, FATAL
 ##' @return Log file name
-##' @export
 ##' @keywords internal
+##' @export
 initLog <- function(save_dir, debug_level="INFO") {
   ## set log handlers
   logReset()
@@ -131,8 +131,8 @@ initLog <- function(save_dir, debug_level="INFO") {
 ##' @param filename  Optional name of file. If missing, prints session information on the standard output.
 ##' @return Nothing
 ##' @author Gregoire Pau
-##' @export
 ##' @keywords internal
+##' @export
 writeAudit <- function(filename) {
   ## open file
   if (!missing(filename)) faudit <- file(filename, open="wt")
@@ -153,7 +153,26 @@ writeAudit <- function(filename) {
   ssi <- paste(capture.output(sessionInfo()), collapse="\n")
   cat(ssi, "\n", file=faudit, sep="")
   cat("\n", file=faudit)
- 
+
+  ## gsnap
+  cat(hbar, "gsnap --version:\n", file=faudit, sep="")
+  if (system("gsnap", ignore.stderr=TRUE)!=127) {
+    cat(paste(system("gsnap --version  2>&1", intern=TRUE), collapse="\n"), "\n", file=faudit)
+  } else {
+    cat("gsnap is not present in the PATH\n", file=faudit)
+  }
+  cat("\n", file=faudit)
+
+  ## samtools
+  cat(hbar, "samtools:\n", file=faudit, sep="")
+  if (system("samtools", ignore.stderr=TRUE)!=127) {
+    out <- suppressWarnings(system("samtools 2>&1", intern=TRUE))
+    cat(paste(out, collapse="\n"), "\n", file=faudit)
+  } else {
+    cat("samtools is not present in the PATH\n", file=faudit)
+  }
+  cat("\n", file=faudit)
+  
   ## PATH
   cat(hbar, "PATH:\n", file=faudit, sep="")
   path <- Sys.getenv("PATH")

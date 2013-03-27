@@ -10,26 +10,24 @@ test.alignReads <- function() {
   ## correct number of chunks
   chunk_dirs <- getChunkDirs()
   checkEqualsNumeric(length(chunk_dirs), 3,
-                     "alignReads() does produce the expected number of chunks")
+                     "alignReads() produces the expected number of chunks")
 
   ## peek into at least one dir to see if it actually computed something
   bam_files = dir(file.path(chunk_dirs[1], "bams"), pattern="*.bam$")
   checkEqualsNumeric(length(bam_files), 15,
-                     "alignReads() does produce 15 bam files")
+                     "alignReads() produces 15 bam files")
 
   unlink(getConfig("save_dir"), recursive=TRUE)
 }
 
-## Test lower level chunk func and switch to single end mode
 test.alignReadsOneSingleEnd <- function() {
   ## setup test framework
   setupTestFramework(config.filename="test-data/test_config_single_end.txt",
-                     config.update=list(num_cores=1,
-                       prepend_str="test.alignReads",
+                     config.update=list(num_cores=1, prepend_str="test.alignReads",
                        alignReads.max_mismatches="0"),
                      testname="test.alignReadsOneSingleEnd")
 
-  HTSeqGenie:::alignReadsChunk(getConfig("input_file"))
+  HTSeqGenie:::alignReadsChunk(getPackageFile("test-data/unit_tests_1.fastq"))
   
   bam_dir <- file.path(getConfig("save_dir"), "bams")
   
@@ -39,11 +37,11 @@ test.alignReadsOneSingleEnd <- function() {
   base <- paste(bam_dir,"test.alignReads", sep='/')
   expected_files <- paste(base, mapping_types, "bam", sep=".")
   checkTrue(all(file.exists(expected_files)),
-            "alignReads() does not create all expected files for single ends")
+            "alignReads() creates all expected files for single ends")
 
   expected_files <- paste(base, mapping_types, "bam.bai", sep=".")
   checkTrue(all(file.exists(expected_files)),
-            "alignReads() does not create all creates all expected index files for single ends")
+            "alignReads() creates all expected index files for single ends")
 
   unlink(getConfig("save_dir"), recursive=TRUE)
 }

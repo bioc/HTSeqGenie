@@ -4,48 +4,31 @@
 ##' @param config.update update list of config values
 ##' @param testname name of test case
 ##' @param package name of package
+##' @param use.TP53Genome Boolean indicating the use of the TP53 genome as template config  
 ##' @return the created temp directory
 ##' @export
-##' @keywords internal
 setupTestFramework <- function(config.filename, config.update=list(), testname="test",
-                               package="HTSeqGenie") {
+                               package="HTSeqGenie", use.TP53Genome=TRUE) {
 
-  tp53Genome <- TP53Genome()
-  tp53GenomicFeatures <- TP53GenomicFeatures()
-
-  template_config <- file.path(tempdir(), paste(testname,"config.txt", sep="-"))
-  buildConfig(template_config,
-              ## input
-              paired_ends=TRUE,
-              quality_encoding="illumina1.8",
-            
-              ## aligner
-              path.gsnap_genomes=path(directory(tp53Genome)),
-              alignReads.genome=genome(tp53Genome),
-              alignReads.additional_parameters="--indel-penalty=1 --novelsplicing=1 --distant-splice-penalty=1",
-              
-              ## gene model
-              path.genomic_features=dirname(tp53GenomicFeatures),
-              countGenomicFeatures.gfeatures=basename(tp53GenomicFeatures)
-              )            
-  
-  ## build config.filename paths
-  config.filename <- getPackageFile(config.filename, package)
-
-  config.update <- c(template_config = template_config,
-                     config.update)
   ## load original configuration file and update
+  config.filename <- getPackageFile(config.filename, package)
   loadConfig(config.filename)
+
+  ## Patch in tp53 template
+  if(use.TP53Genome){
+    tp53_template <- buildTP53GenomeTemplate()
+    config.update <- c(template_config = tp53_template,
+                       config.update)
+  }
   updateConfig(config.update)
 
-  ## This test's tmp dir
-  save_dir <- tempfile(pattern=paste(testname, ".", sep=""), tmpdir=tempdir())
-
   ## prepare update config and update paths
+  ## this lets the tests use package data regardless of it being installed or run out of a svn co
+  save_dir <- tempfile(pattern=paste(testname, ".", sep=""), tmpdir=tempdir())
   config.update$save_dir <- save_dir
   filename1 <- getPackageFile(gsub("inst/", "", getConfig("input_file")), package)
   config.update$input_file <- filename1
-  if (isConfig("input_file2") && getConfig.logical("paired_ends")) {
+  if (isConfig("input_file2")) {
     filename2 <- getPackageFile(gsub("inst/", "", getConfig("input_file2")), package)
     config.update$input_file2 <- filename2
   }
@@ -54,6 +37,33 @@ setupTestFramework <- function(config.filename, config.update=list(), testname="
   initPipelineFromConfig(config.filename, config.update)
   
   return(save_dir)
+}
+
+##' Create a tp53 config template
+##'
+##' @title buildTP53GenomeTemplate
+##' @return Path to tp53 template file
+##' @author Jens Reeder 
+buildTP53GenomeTemplate <- function(){
+
+  tp53Genome <- TP53Genome()
+  tp53GenomicFeatures <- TP53GenomicFeatures()
+  
+  template_config <- file.path(tempdir(), "tp53-config.txt")
+  
+  ## creates tp53-config.txt in tempdir
+  buildConfig(template_config,
+              template_config='default-config.txt',
+              
+              ## aligner
+              path.gsnap_genomes=path(directory(tp53Genome)),
+              alignReads.genome=genome(tp53Genome),
+              
+              ## gene model
+              path.genomic_features=dirname(tp53GenomicFeatures),
+              countGenomicFeatures.gfeatures=basename(tp53GenomicFeatures)
+              )
+  return(template_config)
 }
 
 ## generate a couple if random ShortReadQ, intended for testing
@@ -71,17 +81,30 @@ makeRandomSreads <- function(num, len) {
   return(randomStrings)
 }
 
+##' Hashing function for vector
+##'
+##' @title Hashing function for vector
+##' @param x A vector
+##' @return A numeric
+##' @author Gregoire Pau
+##' @export
+hashVector <- function(x) sum(x*(1:length(x)))
 
-## Convenience function to write a set of seqs to random fastq                    
-writeFastqFromRaw <- function(seqs, quals, ids, save_dir=tempdir()){
-  if(!file.exists(save_dir))
-    stop("save_dir ", save_dir," does not exists!")
-  
-  fastq <- ShortReadQ(sread   = DNAStringSet(seqs),
-                      quality = FastqQuality(quals),
-                      id      = BStringSet(ids))
-    
-  file <- paste(tempfile(tmpdir=save_dir), "fastq", sep=".")
-  writeFastq(fastq, file, mode="w")
-  return(file)
-}
+##' Hashing function for coverage
+##'
+##' @title Hashing function for coverage
+##' @param cov A SimpleRleList object
+##' @return A numeric
+##' @author Gregoire Pau
+##' @importMethodsFrom BiocGenerics sapply
+##' @export
+hashCoverage <- function(cov) hashVector(sapply(cov, function(c) sum(runLength(c)*runValue(c))))
+
+##' Hashing function for variants
+##'
+##' @title Hashing function for variants
+##' @param var A GRanges object
+##' @return A numeric
+##' @author Gregoire Pau
+##' @export
+hashVariants <- function(var) hashVector(as.numeric(start(ranges(var))))

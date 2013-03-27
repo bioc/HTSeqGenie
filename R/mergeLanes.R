@@ -10,8 +10,8 @@
 ##' @param ignoreConfigParameters A character vector containing the configuration parameters that are not required to be identical
 ##' @return Nothing
 ##' @author greg
-##' @export
 ##' @keywords internal
+##' @export
 mergeLanes <- function(indirs, outdir, prepend_str, num_cores, config_update, preMergeChecks.do=TRUE, ignoreConfigParameters) {
   ## set up logger
   addHandler(writeToConsole, level="DEBUG")
@@ -29,7 +29,7 @@ mergeLanes <- function(indirs, outdir, prepend_str, num_cores, config_update, pr
                                 "alignReads.sam_id", "alignReads.nbthreads_perchunk",
                                 
                                 ## additions in 3.6.0
-                                "tmp_dir", "chunk_dir", "countGenomicFeatures.do", "analyzeVariants.do"
+                                "tmp_dir", "chunk_dir", "countGenomicFeatures.do"
                                 )
   }
   
@@ -59,24 +59,29 @@ mergeLanes <- function(indirs, outdir, prepend_str, num_cores, config_update, pr
 }
 
 doMergeLanes <- function(indirs) {
+  ## get parameters
   outdir <- getConfig("save_dir")
   prepend_str <- getConfig("prepend_str")
   num_cores <- getConfig.integer("num_cores")
-  
   loginfo("mergeLanes.R/doMergeLanes: starting...")
   
   mergePreprocessReads(indirs, outdir, prepend_str)
   mergeAlignReads(indirs, outdir, prepend_str, num_cores)
   writePreprocessAlignReport()
-  mergeCountGenomicFeatures(indirs, outdir, prepend_str)
-  ##DISABLED
-  ## safeExecute({analyzeVariants()}, memtracer=FALSE)
-  safeExecute({calculateCoverage()}, memtracer=FALSE)
-
+  if (getConfig.logical("countGenomicFeatures.do")) {
+    safeExecute({mergeCountGenomicFeatures(indirs, outdir, prepend_str)}, memtracer=FALSE)
+  }
+  if (getConfig.logical("coverage.do")) {
+    safeExecute({mergeCoverage(indirs, outdir, prepend_str)}, memtracer=FALSE)
+  }
+  if(getConfig.logical("analyzeVariants.do")){
+    safeExecute({analyzeVariants()}, memtracer=FALSE)
+  }
+  
   loginfo("mergeLanes.R/doMergeLanes: merge lanes successful.")
 }
 
-preMergeChecks <- function(indirs, iivar_min=0.8) {
+preMergeChecks <- function(indirs) {
   loginfo("mergeLanes.R/preMergeChecks: checking indirs...")
 
   summaries <- parseSummaries(indirs, "summary_preprocess")
@@ -92,29 +97,35 @@ preMergeChecks <- function(indirs, iivar_min=0.8) {
     stop("mergeLanes.R/preMergeChecks: min read lengths of input dirs are not identical [",
          paste(paste(indirs, ": ", min_read_lengths, sep=""), collapse=", "), "]")
   }
-
-  ##DISABLED
-  ## ID verify
-  ## if (length(indirs)>1) {
-  ##  variants <- sapply(indirs, function(indir) getObjectFilename(file.path(indir, "results"), "filtered_variants_granges"))
-  ##  iivar <- rep(NA, length(indirs)-1)
-  ##  var1 <- get(load(variants[1]))
-  ##  nvar1 <- names(variants[1])
-  ##  for (i in 1:length(iivar)) {
-  ##    var2 <- get(load(variants[i+1]))
-  ##    nvar2 <- names(variants[i+1])
-  ##    iiv <- variantConcordance(var1, var2)
-  ##    loginfo(paste("mergeLanes.R/preMergeChecks: variantConcordance between [", nvar1, "] and [", nvar2, "] is a=", iiv[1], "b=", iiv[2]))
-  ##    iivar[i] <- iiv[1]
-  ##    var1 <- var2
-  ##    nvar1 <- nvar2
-  ##  }
-  ##  if (any(is.na(iivar)) || min(iivar)<iivar_min) {
-  ##    stop("mergeLanes.R/preMergeChecks: ID verify failed [", paste(iivar, collapse=", "), "], iivar_min=", iivar_min)
-  ##  }
-  ##}
+  
+  if(getConfig.logical("analyzeVariants.do")){
+    .IDverify(indirs)
+  } else {
+    logwarn("Variant concordance between samples has not been checked, as variants were not called for inputs!");
+  }
 
   loginfo("mergeLanes.R/preMergeChecks: done")
+}
+
+.IDverify <- function(indirs, iivar_min=0.8){
+  if (length(indirs)>1) {
+    variants <- sapply(indirs, function(indir) getObjectFilename(file.path(indir, "results"), "filtered_variants_granges"))
+    iivar <- rep(NA, length(indirs)-1)
+    var1 <- get(load(variants[1]))
+    nvar1 <- names(variants[1])
+    for (i in 1:length(iivar)) {
+      var2 <- get(load(variants[i+1]))
+      nvar2 <- names(variants[i+1])
+      iiv <- VariantTools:::checkVariantConcordance(var1, var2)
+      loginfo(paste("mergeLanes.R/IDVerify: variantConcordance between [", nvar1, "] and [", nvar2, "] is a=", iiv[1], "b=", iiv[2]))
+      iivar[i] <- iiv$fraction
+      var1 <- var2
+      nvar1 <- nvar2
+    }
+    if (any(is.na(iivar)) || min(iivar)<iivar_min) {
+      stop("mergeLanes.R/IDverify: ID verify failed [", paste(iivar, collapse=", "), "], iivar_min=", iivar_min)
+    }
+  }
 }
 
 postMergeChecks <- function(indirs, outdir) {

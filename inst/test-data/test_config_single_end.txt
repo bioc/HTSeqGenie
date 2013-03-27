@@ -13,3 +13,6 @@ prepend_str: test_se
 
 ## aligner
 alignReads.sam_id: test_se
+
+## no RRNA detection with TP53 genome
+detectRRNA.do: FALSE

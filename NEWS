@@ -1,37 +1,109 @@
-version 0.99.5:
-- HTSeqGenie does not depend any longer on gsnap (using gmapR instead), samtools (using Rsamtools instead), bam_tally, get-genome
-- removed (and replaced them by their equivalent in Rsamtools): mergeBams, indexBAMFiles
-- removed: getReadLengthFromBam, filterBam, prependGsnapOutput, convertGsnapOutput
-- added mergeBamSortIndex, doing mergeBam + sort + index + support of one file
-- ready to submission to BioC
+version 3.9.20:
+- preparation to BioC submission
+- now using detectRRNA.do: FALSE in default-config.txt 
 
-version 0.99.4:
-- updated the vignette
+version 3.9.19:
+- removed mc.preschedule=FALSE from mergeBAMsAcrossDirs
+- added the configuration parameter 'analyzeVariants.method' (GATK check has yet to be done)
 
-version 0.99.2:
-- removed files: gmapR.R, analyzeVariants.R, detectRRNA.R
-- added the ##DISABLED flag to temporary disable the features: detectRRNA and analyzeVariants
-- removed the function scProcessReads, which has never been used
-- fixed many R CMD check warnings
+version 3.9.18
+- now depends on VariantTools 1.1.13 that fixes the mclapply(mc.preschedule=FALSE) bug
 
-version 0.99.1:
-- bumped version to 0.99.1, to be prepared to BioC submission
-- added runPipelineConfig: to run the pipeline from a config file)
-- modified runPipeline: to run the pipeline from a list of parameters
-- added TP53GenomicFeatures: to generate TP53 gene models
-- added buildConfig: to write a configuration file on disk from a list of parameters
-- added buildGenomicFeaturesFromTxDb: to generate genomic features from a TxDb file
-- default configuration parameter debug.info is now "INFO"
-- added test.runPipeline that works with TP53Genome
+version 3.9.17:
+- added the config parameter 'alignReads.analyzedBam' to control how analyzed.bam are built
+- removed the former config parameter 'alignReads.analyzed_bamregexp' that could not work on single ends
 
-version 3.7.1:
-- does not depend on SNVsOmuC anymore
-- analyzeVariants() is DISABLED in runPipeline.R
+version 3.9.16:
+- sessionInfo() is not called anymore in writePreprocessAlignReport() during generation of report, 
+  to prevent crash when PACKAGES have been updated while the pipeline is running
+- sclapply() now uses a 'finally' cleanup procedure to kill all threads it has created
+- added some unit tests to check that no leftover threads are present after sclapply() in different scenarios
 
-version 3.7.0:
-- bump by Jens
+version 3.9.15:
+- use low lever variant calling interface from VariantTools. 
+    This allows for access to the raw_variants as well as the filtered ones/
+- variant calling now included in mergeLanes()
 
-version 3.6.0:
+version 3.9.14:
+- added the config parameter "alignReads.use_gmapR_gsnap" to control if gsnap should be called from gmapR or from the PATH
+- default config parameter "alignReads.use_gmapR_gsnap" is now TRUE
+- removed the duplicated default config parameters: path.picard_tools, markDuplicates.do
+- added a check in checkConfig() to stop if some config paramters are duplicated
+
+version 3.9.13:
+- add variant calling using VariantTools (not yet parallelized yet)
+
+version 3.9.12:
+- include markDuplicates into runPipeline(), controlled by markDuplicates.do config
+
+version 3.9.11:
+- refactor setupTestFramework() to allow for injection of TP53 genome template
+
+version 3.9.10:
+- add function to mark duplicates via picard tools
+ 
+version 3.9.9:
+- fixed detectRRNA code, including bug in wrapGsnap
+- add test for detectRRNA working on tp53 genome
+
+version 3.9.8:
+- the system command 'samtools' is no used anymore in the code
+- removed unused functions: indexBAMFiles, filterBam, getReadLengthFromBam, getBamIndexStats
+- (filterBam will be back in the xenograft module)
+
+version 3.9.7:
+- works with Biobase 2.18.0 (Bioconductor release 2.11)
+- fixed the "x is not present in the PATH" bogus message
+- old gmapR stuffs are now gone: parallelized_gsnap, consolidateSAM, consolidateGsnapOutput, consolidateBAm
+- now use wrapGsnap, to facilitate the transition to the gsnap offered by gmapR
+- now depends on gmapR (to load TP53Genome())
+
+version 3.9.6:
+- make remaining tests run with TP53 genome
+- move detectRRNA tests to HTSeqGenie.gne as they depend on IGIS
+
+version 3.9.5:
+- remove runPipeline tests depending on IGIS.
+  Instead use simple integration test based on TP53 genome.
+  This requried additon of :
+    R/runPipeline.R
+    R/TP53GenomicFeatures.R
+  copied from bioc branch and dependance on gmapR for the TP53Genome
+
+version 3.9.4:
+- converging with the BioC version: adding @internal keyword
+- configuration parameter 
+
+version 3.9.3:
+- minor comments (converging with the BioC version...)
+- checks OK on module apps/ngs_pipeline/dev
+
+version 3.9.2:
+- removed everything related to calculateJunctionReads, junctionReads (due to the usage of an obsolete newCompressedList in BioC)
+- checks OK on apps/ngs_pipeline/dev
+
+version 3.9.1:
+- removed everything related to SNVsOmuc, analyzeVariants, variantConcordance (due to gmapR conflict)
+- renamed CHANGES into NEWS
+
+version 3.9.0:
+- strict copy from 3.8.0
+
+version 3.8.0:
+- added the configuration parameter "filterQuality.minLength", to remove reads shorter than filterQuality.minLength during preprocessReads(). Default is NULL.
+- added the configuration parameter "alignReads.analyzed_bamregexp", to specify the regexp to select bam files to build analyzed.bam. Default is "_uniq.*\.bam$".
+- added the configuration parameter "coverage.do" to enable/disable coverage computation. Default is TRUE.
+- added the configuration parameter "coverage.maxFragmentLength" to remove long read pairs, as suggested by Thomas when analysing ChIP-Seq. Default is NULL.
+- the ChIP-Seq config files now have "alignReads.analyzed_bamregexp: concordant_uniq.*\.bam$" and "coverage.maxFragmentLength: 1e4" by default
+- coverage computation now uses SimpleRleList and should be faster
+
+version 3.6.1:
+- speedup: calculateCoverage() now uses a map/reduce technique to speed up coverage computation
+- speedup: bamCountUniqueReads() does not scan bam file per chromosome any more
+- mergeLanes() now supports missing variants or missing countGenomicFeatures
+- BioC 2.11 fix: using queryLength() instead of nrow() after findOverlaps()
+
+version 3.6:
 - support of IGIS 2.2
 - support of R 2.15.0 and Bioconductor 2.10
 - support for ChIP-Seq analysis (template configurations and coverage read extension)

@@ -5,7 +5,7 @@
   checkConfig()
 }
 \value{
-  Nothing. Individial checks will throw error instead.
+  Nothing. Individual checks will throw error instead.
 }
 \description{
   Performs all configuration checks

@@ -2,13 +2,12 @@
 ##'
 ##' Performs all configuration checks
 ##' 
-##' @return Nothing. Individial checks will throw error instead.
+##' @return Nothing. Individual checks will throw error instead.
 ##' @keywords internal
 ##' @export
 checkConfig <- function() {
   ## check config parts
   checkConfig.template()
-  checkConfig.disable()
   checkConfig.input()
   checkConfig.output()
   checkConfig.system()
@@ -20,8 +19,9 @@ checkConfig <- function() {
   checkConfig.shortReadReport()
   checkConfig.alignReads()
   checkConfig.countGenomicFeatures()
-  checkConfig.analyzeVariants()
   checkConfig.coverage()
+  checkConfig.markDuplicates()
+  checkConfig.analyzeVariants()
   checkConfig.noextraparameters()
   
   ## tag current version
@@ -33,8 +33,7 @@ checkConfig <- function() {
 
 ## read template configuration file (and recursively if needed)
 checkConfig.template <- function() {
-  template_config <- try(getConfig("template_config"), silent=TRUE)
-  if (class(template_config)=="try-error") template_config <- "default-config.txt"
+  template_config <- getConfig("template_config")
 
   if (!is.null(template_config)) {
     ## first try: test if the file exists in the current path
@@ -169,6 +168,12 @@ checkConfig.filterQuality <- function() {
     p <- "filterQuality.minFrac"
     a <- getConfig.numeric(p, stop.ifempty=TRUE)
     if (a<0 || a>1) stop("config parameter '", p, "' must be a number between 0 and 1")
+
+    ## filterQuality.minLength
+    filterQuality.minLength <- getConfig.numeric("filterQuality.minLength")
+    if (!is.null(filterQuality.minLength) && filterQuality.minLength<0) {
+      stop("checkConfig.R/checkConfig.filterQuality: 'filterQuality.minLength' must be a positive number")
+    }
   }
 }
 
@@ -230,11 +235,20 @@ checkConfig.alignReads <- function() {
   ## optional
   getConfig("alignReads.snp_index")
   getConfig("alignReads.splice_index")
-  getConfig("alignReads.additional_parameters")
+  getConfig("alignReads.static_parameters")
 
-  ## check that buildGsnapParams() works with the given parameters
-  a <- try(buildGsnapParams(), silent=TRUE)
-  if (class(a)=="try-error") stop("cannot build valid gsnap parameters: ", a)
+  ## alignReads.analyzedBam
+  alignReads.analyzedBam <- getConfig("alignReads.analyzedBam", stop.ifempty=TRUE)
+  if (!(alignReads.analyzedBam %in% c("uniq", "concordant_uniq"))) {
+    stop("config parameter 'alignReads.analyzedBam' must be either 'uniq' or 'concordant_uniq'")
+  }
+
+  ## alignReads.use_gmapR_gsnap
+  alignReads.use_gmapR_gsnap <- getConfig.logical("alignReads.use_gmapR_gsnap", stop.ifempty=TRUE)
+  if (!alignReads.use_gmapR_gsnap) {
+    isgsnap <- system("gsnap", ignore.stdout=TRUE, ignore.stderr=TRUE)!=127
+    if (!isgsnap) stop("'alignReads.use_gmapR_gsnap' is FALSE but 'gsnap' is not found in PATH")
+  }
   
   invisible()
 }
@@ -250,6 +264,13 @@ checkConfig.noextraparameters <- function() {
   if (length(z)>0) {
     stop("unsupported config parameter(s): ", paste(z, collapse=", "))
   }
+
+  ## check that no parameter is duplicated
+  current_parameters <- names(getConfig())
+  if (any(duplicated(current_parameters))) {
+    stop("the following config parameters are duplicated: ", paste(current_parameters[duplicated(current_parameters)], collapse=", "))
+  }
+    
   invisible()
 }
 
@@ -266,38 +287,58 @@ checkConfig.countGenomicFeatures <- function () {
   }
 }
 
-checkConfig.analyzeVariants <- function() {
-  ## analyzeVariants.do
-  analyzeVariants.do <- getConfig.logical("analyzeVariants.do", stop.ifempty=TRUE)
-  if (analyzeVariants.do) {
-    ## analyzeVariants.use_read_length
-    getConfig.logical("analyzeVariants.use_read_length", stop.ifempty=TRUE)
-
-    ## analyzeVariants.bin_fraction
-    bin_fraction <- getConfig.numeric("analyzeVariants.bin_fraction", stop.ifempty=TRUE)
-    if (bin_fraction<0 || bin_fraction>1) stop("checkConfig.R/checkConfig.analyzeVariants: 'analyzeVariants.bin_fraction' must be a number between 0 and 1")
+checkConfig.coverage <- function() {
+  ## coverage.do
+  coverage.do <- getConfig.logical("coverage.do", stop.ifempty=TRUE)
+  if (coverage.do) {
+    ## coverage.extendReads
+    coverage.extendReads <- getConfig.logical("coverage.extendReads", stop.ifempty=TRUE)
     
-    ## analyzeVariants.with_qual
-    analyzeVariants.with_qual <- getConfig.logical("analyzeVariants.with_qual", stop.ifempty=TRUE)
-    if (analyzeVariants.with_qual) {
-      ## analyzeVariants.bqual
-      analyzeVariants.bqual <- getConfig.numeric("analyzeVariants.bqual", stop.ifempty=TRUE)
+    ## coverage.fragmentLength
+    coverage.fragmentLength <- getConfig.numeric("coverage.fragmentLength")
+    if (!is.null(coverage.fragmentLength) && !coverage.extendReads) {
+      stop("checkConfig.R/checkConfig.coverage: 'coverage.extendReads' is FALSE but 'coverage.fragmentLength' is not empty")
+    }
+    
+    ## coverage.maxFragmentLength
+    coverage.maxFragmentLength <- getConfig.numeric("coverage.maxFragmentLength")
+    if (!is.null(coverage.maxFragmentLength) && coverage.maxFragmentLength<0) {
+      stop("checkConfig.R/checkConfig.coverage: 'coverage.maxFragmentLength' must be a positive number")
     }
   }
 }
 
-checkConfig.coverage <- function() {
-  ## coverage.extendReads
-  coverage.extendReads <- getConfig.logical("coverage.extendReads", stop.ifempty=TRUE)
-
-  ## coverage.fragmentLength
-  coverage.fragmentLength <- getConfig.numeric("coverage.fragmentLength")
-  if (!is.null(coverage.fragmentLength) && !coverage.extendReads) {
-    stop("checkConfig.R/checkConfig.coverage: 'coverage.extendReads' is FALSE but 'coverage.fragmentLength' is not empty")
+checkConfig.markDuplicates <- function() {
+  markDuplicates.do <- getConfig.logical("markDuplicates.do", stop.ifempty=TRUE)
+  if (markDuplicates.do) {    
+    picard.path <- getConfig("path.picard_tools", stop.ifempty=TRUE)
+    ## check if the tool is callable
+    if (!checkPicardJar("MarkDuplicates", path=picard.path))
+      stop("MarkDuplicates.jar not found or not executable")
   }
 }
 
-checkConfig.disable <- function() {
-  updateConfig(list(detectRRNA.do="FALSE"))
-  updateConfig(list(analyzeVariants.do="FALSE"))
+checkConfig.analyzeVariants <- function() {
+  ## analyzeVariants.do
+  analyzeVariants.do <- getConfig.logical("analyzeVariants.do", stop.ifempty=TRUE)
+  if (analyzeVariants.do) {  
+    ## analyzeVariants.bqual
+    analyzeVariants.bqual <- getConfig.numeric("analyzeVariants.bqual", stop.ifempty=TRUE)
+    if(analyzeVariants.bqual < 0 || analyzeVariants.bqual > 41)
+      stop("analyzeVariants.bqual must be an integer between 0 and 41")
+
+    ## analyzeVariants.method
+    analyzeVariants.method <- getConfig("analyzeVariants.method", stop.ifempty=TRUE)
+    analyzeVariants.method <- gsub("[ \t]", "", analyzeVariants.method)
+    analyzeVariants.method <- strsplit(analyzeVariants.method, ",")[[1]]
+    if (length(analyzeVariants.method)==0) stop("'analyzeVariants.method' must contain a character string")
+    else {
+      knownMethods <- c("VariantTools", "GATK")
+      z <- analyzeVariants.method%in%knownMethods
+      if (any(!z)) stop("'analyzeVariants.method' must contain the name of a method (or a list of comma-separated names) among: ", paste(knownMethods, collapse=", "))
+      if ("GATK"%in%analyzeVariants.method) {
+        cat("TODO: check if GATK is present...\n")
+      }
+    }
+  }
 }

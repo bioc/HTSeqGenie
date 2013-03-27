@@ -555,7 +555,7 @@ calculate the proportion of genes that obtain AT LEAST said coverage.',p,br=TRUE
   hwrite('',p,br=TRUE)
   hwriteImage(paste('images','DistrOfRPKMsToGenesExonic50.png',sep="/"),p,br=TRUE,link=paste("images","DistrOfRPKMsToGenesExonic50.pdf",sep="/"))
   
-  closePage(p)
+  closePage(p, splash=FALSE)
 }
 
 sanityCheck <- function(summary.alignTable, readFiltering, paired_ends){

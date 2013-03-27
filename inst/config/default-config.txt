@@ -28,7 +28,7 @@ path.genomic_features:
 path.gsnap_genomes:
 
 ## debug
-debug.level: INFO ## possible choices: ERROR, WARN, INFO, DEBUG
+debug.level: DEBUG ## possible choices: ERROR, WARN, INFO, DEBUG
 debug.tracemem: TRUE
 
 ## trim reads
@@ -39,6 +39,7 @@ trimReads.length:
 filterQuality.do: TRUE
 filterQuality.minQuality: 23
 filterQuality.minFrac: 0.7
+filterQuality.minLength:
 
 ## detect adapter contamination
 detectAdapterContam.do: TRUE
@@ -58,20 +59,26 @@ alignReads.max_mismatches: ## will be determined if empty
 alignReads.sam_id:
 alignReads.snp_index: ## optional
 alignReads.splice_index: ## optional
-alignReads.additional_parameters: 
+alignReads.static_parameters: 
 alignReads.nbthreads_perchunk: ## optional, if unspecified this value is equal to min(4, num_cores)
+alignReads.analyzedBam: uniq ## possible choices: uniq, concordant_uniq
+alignReads.use_gmapR_gsnap: TRUE
+
+## mark duplicates
+markDuplicates.do: FALSE
+path.picard_tools:
 
 ## count genomic features
 countGenomicFeatures.do: TRUE
 countGenomicFeatures.gfeatures:
 
-## variants
-analyzeVariants.do: TRUE
-analyzeVariants.use_read_length: FALSE
-analyzeVariants.with_qual: TRUE
-analyzeVariants.bqual: 23
-analyzeVariants.bin_fraction: 0.1
-
 ## coverage
+coverage.do: TRUE
 coverage.extendReads: FALSE
 coverage.fragmentLength:
+coverage.maxFragmentLength:
+
+## analyze Variants
+analyzeVariants.do: TRUE
+analyzeVariants.bqual: 23
+analyzeVariants.method: VariantTools, GATK ## comma-separated list, possible choices: VariantTools, GATK

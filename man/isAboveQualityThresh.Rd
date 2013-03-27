@@ -2,7 +2,8 @@
 \alias{isAboveQualityThresh}
 \title{Check for high quality reads}
 \usage{
-  isAboveQualityThresh(reads, minquality, minfrac)
+  isAboveQualityThresh(reads, minquality, minfrac,
+    minlength = NULL)
 }
 \arguments{
   \item{reads}{A set of reads as ShortReadQ object}
@@ -11,6 +12,9 @@
 
   \item{minfrac}{Fraction of positions that need to be over
   minquality to be considered a good read.}
+
+  \item{minlength}{The minimum read length. Default is no
+  filter on read length.}
 }
 \value{
   A boolean vector indicating whether read is considered

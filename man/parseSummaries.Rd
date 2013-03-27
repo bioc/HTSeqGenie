@@ -17,8 +17,8 @@
   Parse a summary from a list of save_dirs
 }
 \details{
-  This functiona allows to parse a given summary from a
-  list of pipeline results save dirs
+  This function allows to parse a given summary from a list
+  of pipeline results save dirs
 }
 \author{
   Jens Reeder

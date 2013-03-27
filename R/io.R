@@ -269,17 +269,17 @@ makeDir <- function(dir, overwrite="never"){
   return(dir)
 }
 
-##' Create a random directory with prefix
+##' Create a random directory with prefix in R temp dir
 ##'
 ##' Especially for testing code it is very helpful to have
 ##' a temp directory with a defined prefix, so one knows which test
 ##' produced which directory.
-##' @param prefix A string that will preced the directory name
+##' @param prefix A string that will preceed the directory name
 ##' @return Name of temporary directory
 ##' @keywords internal
 createTmpDir <- function(prefix=NULL) {
-  tmpname <- paste(c(prefix, sample(letters,8)), collapse="")
-  makeDir(file.path(tmpname), overwrite="erase")
+  tmpname <- file.path(tempdir(), paste(c(prefix, sample(letters,8)), collapse=""))
+  makeDir(tmpname, overwrite="erase")
   return(tmpname)
 }
 
@@ -298,7 +298,7 @@ setUpDirs <- function(save_dir, overwrite="never") {
   makeDir(save_dir, overwrite=overwrite)
   dirs <- c("bams", "logs", "results", "reports", "reports/images")
   dirs <- file.path(save_dir, dirs)
-  sapply(dirs, makeDir, overwrite=overwrite)
+  invisible(sapply(dirs, makeDir, overwrite=overwrite))
 }
 
 ##' Load a saved RData file from a pipeline run

@@ -131,6 +131,20 @@ getConfig.logical <- function(p, ...) {
   a
 }
 
+##' Return values of a config variable as vector
+##'
+##' @param p Name of parameter 
+##' @param ... extra params passed to getConfig
+##' @return value of config param as vector
+getConfig.vector <- function(p, ...) {
+  a <- getConfig(p, ...)
+  if (!is.null(a)) {
+    a <- gsub("[ \t]", "", a)
+    a <- strsplit(a, ",")[[1]]
+  }
+  a
+}  
+
 ##' Read and parse a configuration file
 ##' 
 ##' From a file like

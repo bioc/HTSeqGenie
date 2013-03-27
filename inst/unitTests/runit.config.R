@@ -129,7 +129,8 @@ test.updateConfig <- function() {
 
 test.getConfig <- function() {
   loadConfig()
-  updateConfig(list(blob="2", foo="", ming="FALSE"))
+  updateConfig(list(blob="2", foo="", ming="FALSE",
+                    multi='a, b, c '))
 
   ## simple checks
   checkEquals(getConfig("blob"), "2")
@@ -144,4 +145,5 @@ test.getConfig <- function() {
   checkEquals(class(try(getConfig.integer("ming"), silent=TRUE)), "try-error")
   checkEquals(getConfig("ming", stop.ifempty=TRUE), "FALSE")
   checkEquals(class(try(getConfig("foo", stop.ifempty=TRUE), silent=TRUE)), "try-error")
+  checkEquals(getConfig.vector('multi'), c('a','b','c'))
 }

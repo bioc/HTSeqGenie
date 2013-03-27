@@ -1,34 +1,28 @@
-test.storeCoverage <- function() {
+test.computeCoverage <- function() {
   ## set up test
-  config.filename <- "test-data/test_config.txt"  
-  save.dir <- setupTestFramework(config.filename=config.filename, testname="test.storeCoverage")
-
-  ## compute coverage
   bam <- getPackageFile("test-data/variant_calling/test_set.merged.uniques.bam")
-  file <- storeCoverage(bam)
-
-  observed <- get(load(file))
-  
-  checkEquals(length(observed), 84,
-              "storeCoverage() reports coverage for all 84 genomic fragments")
-
-  checkTrue(file.exists(file.path(save.dir, "results", "test_pe.coverage.RData")),
-            "storeCoverage() writes coverage file")
-
-  checkTrue(file.exists(file.path(save.dir, "results", "test_pe.coverage.bw")),
-            "storeCoverage() writes bigwig coverage file")
-}
-
-test.storeCoverage.extension <- function() {
-  ## set up test
-  config.filename <- "test-data/test_config.txt"  
-  save.dir <- setupTestFramework(config.filename=config.filename, testname="test.storeCoverage")
 
   ## compute coverage with different options
-  bam <- getPackageFile("test-data/variant_calling/test_set.merged.uniques.bam")
-  cov0p <- get(load(storeCoverage(bam, extendReads=FALSE, paired_ends=TRUE)))
-  covxp <- get(load(storeCoverage(bam, extendReads=TRUE, paired_ends=TRUE)))
-  cov0s <- get(load(storeCoverage(bam, extendReads=FALSE, paired_ends=FALSE)))
-  covxs <- get(load(storeCoverage(bam, extendReads=TRUE, paired_ends=FALSE)))
-  covxs150 <- get(load(storeCoverage(bam, extendReads=TRUE, paired_ends=FALSE, fragmentLength=150)))
+  cov1 <- computeCoverage(bam, paired_ends=TRUE, extendReads=FALSE, fragmentLength=NULL)
+  cov2 <- computeCoverage(bam, paired_ends=TRUE, extendReads=TRUE, fragmentLength=NULL)
+  cov3 <- computeCoverage(bam, paired_ends=FALSE, extendReads=FALSE, fragmentLength=NULL)
+  cov4 <- computeCoverage(bam, paired_ends=FALSE, extendReads=TRUE, fragmentLength=NULL)
+  cov5 <- computeCoverage(bam, paired_ends=FALSE, extendReads=TRUE, fragmentLength=150)
+  cov6 <- computeCoverage(bam, paired_ends=TRUE, extendReads=TRUE, maxFragmentLength=1e4)
+  
+  ## check length OK
+  checkEquals(length(cov1), 84,
+              "computeCoverage() reports coverage for all 84 genomic fragments")
+
+  ## check correct values
+  checkEquals(hashCoverage(cov1), 890968)
+  checkEquals(hashCoverage(cov2), 895658)
+  checkEquals(hashCoverage(cov3), 890968)
+  checkEquals(hashCoverage(cov4), 1290960)
+  checkEquals(hashCoverage(cov5), 1760400)
+  checkEquals(hashCoverage(cov6), 867753)
+
+  ## check correct fragmentLengths
+  checkEquals(attr(cov4, "fragmentLength"), 110)
+  checkEquals(attr(cov5, "fragmentLength"), 150)       
 }

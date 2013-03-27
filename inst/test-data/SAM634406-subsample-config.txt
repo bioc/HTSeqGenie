@@ -1,0 +1,19 @@
+## template
+template_config: RNASeq-human-config.txt
+
+## input
+input_file: inst/test-data/SAM634406-subsample_R1.gz 
+input_file2: inst/test-data/SAM634406-subsample_R2.gz
+paired_ends: TRUE
+quality_encoding: illumina1.8
+
+## output
+save_dir: SAM634406-subsample
+overwrite_save_dir: overwrite 
+prepend_str: SAM634406-subsample
+
+## system
+num_cores: 4
+
+## aligner
+alignReads.sam_id: SAM634406

@@ -14,4 +14,10 @@ test.isAboveQualityThresh <- function() {
   read <- ShortReadQ(DNAStringSet("ATGCCTAGTC"), quality=FastqQuality("<ABADACA<A")) ## 80% of >=32
   z <- HTSeqGenie::isAboveQualityThresh(read, minquality=30, minfrac=0.7)
   checkEquals(z, TRUE)
+
+  ## test minLength
+  reads <- ShortReadQ(DNAStringSet(c("ATGAATAGTC", "ATGAATAGTCACGACG")),
+                      quality=FastqQuality(c("AAAAAAAAAA", "AAAAAAAAAAAAAAAA")))
+  z <- HTSeqGenie::isAboveQualityThresh(reads, minquality=30, minfrac=0.7, minlength=12)
+  checkEquals(z, c(FALSE, TRUE))
 }

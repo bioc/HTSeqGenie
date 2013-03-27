@@ -1,22 +1,7 @@
-##' Creates a GRanges of chromosome length by parsing a BAM file header
-##'
-##' @title Extract GRanges of Chromosome Lengths from a BAM File
-##' @param bam_file bam file to extract GRanges of chromosomes from based on header info 
-##' @return GRanges
-##' @author Cory Barr
-##' @keywords internal
-##' @export
-getChrGRangesFromBAM <- function(bam_file) {
-  header <- scanBamHeader(bam_file)
-  seqlens <- header[[1]]$targets
-  GRanges(seqnames=names(seqlens),
-          ranges=IRanges(start=1, end=seqlens))
-}
-
 ##' Does a SAM flag indicate the first fragment
 ##'
-##' Compute wether a SAM/BAM flag indicates a
-##' first fragment. Method is not foolproff, as it ignores
+##' Compute whether a SAM/BAM flag indicates a
+##' first fragment. Method is not foolproof, as it ignores
 ##' a lot of SAM semantics. E.g the SAM spec says:
 ##' "If 0x1 is unset, no assumptions can be made about
 ##' 0x2, 0x8, 0x20, 0x40 and 0x80".
@@ -46,6 +31,29 @@ getEndNumber <- function(int) {
   ifelse(isFirstFrag, 1L, 2L)
 }
 
+mergeBams <- function(inbams, outbam, sort=TRUE, index=TRUE) {
+  if (length(inbams)>1) {
+    ## merge
+    mergeBam(inbams, outbam, overwrite=TRUE)
+    
+    ## sort outbam?
+    if (sort) {
+      sortedbam <-  paste(outbam, "_sorted", sep="")
+      sortedbam <- sortBam(outbam, sortedbam)
+      file.copy(sortedbam, outbam, overwrite=TRUE)
+      unlink(sortedbam)
+    }
+  } else {
+    file.copy(inbams[1], outbam)
+  }
+  
+  ## index outbam?
+  if (index) indexBam(outbam)
+
+  ## return outbam
+  invisible(outbam)
+}
+
 ##' Uniquely count number of reads in bam file
 ##'
 ##'
@@ -56,44 +64,10 @@ getEndNumber <- function(int) {
 ##' @keywords internal
 ##' @export
 bamCountUniqueReads <- function(bam) {
-  ## count by chromosomes to save memory
-  chr_granges <- getChrGRangesFromBAM(bam)  
-  res <- unlist(lapply(seq_len(length(chr_granges)), function(index) {
-    sb_param <- ScanBamParam(what=c("qname"), which=chr_granges[index])
-    res <- scanBam(bam, param=sb_param)[[1]]
-    unique(res$qname)
-  }))
-  nbreads <- length(unique(res))
-
-  ## nbreads = 0? this is maybe a nomapping file, where we cannot count per chromosome
-  if (nbreads==0) {
-    sb_param <- ScanBamParam(what=c("qname"))
-    res <- scanBam(bam, param=sb_param)[[1]]
-    nbreads <- length(unique(res$qname))
-  }
-
+  sb_param <- ScanBamParam(what=c("qname"))
+  res <- scanBam(bam, param=sb_param)[[1]]
+  nbreads <- length(unique(res$qname))
   nbreads
-}
-
-mergeBamSortIndex <- function(inbams, outbam) {
-  if (length(inbams)>1) {
-    ## merge
-    mergeBam(inbams, outbam, overwrite=TRUE)
-    
-    ## sort and index bam
-    sortedbam <-  paste(outbam, "_sorted", sep="")
-    sortedbam <- sortBam(outbam, sortedbam)
-    file.copy(sortedbam, outbam, overwrite=TRUE)
-    unlink(sortedbam)
-  } else {
-    file.copy(inbams[1], outbam)
-  }
-  
-  ## index bam
-  indexBam(outbam)
-
-  ## return outbam
-  invisible(outbam)
 }
 
 ##' Compute record statistics from a bam file
@@ -103,8 +77,8 @@ mergeBamSortIndex <- function(inbams, outbam) {
 ##' @param bam A character string containing an existing bam file
 ##' @return A numeric vector
 ##' @author Gregoire Pau
-##' @export
 ##' @keywords internal
+##' @export
 computeBamStats <- function(bam) {
   ## read bam
   res <- scanBam(bam, param=ScanBamParam(what=c("cigar", "strand", "mapq", "rname", "isize"), tag=c("NM")))[[1]]

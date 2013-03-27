@@ -1,6 +1,6 @@
 ##' Parse a summary from a list of save_dirs
 ##'
-##' This functiona allows to parse a given summary from
+##' This function allows to parse a given summary from
 ##' a list of pipeline results save dirs
 ##' @title parse summary files from save dirs
 ##' @param save.dirs list of result dirs

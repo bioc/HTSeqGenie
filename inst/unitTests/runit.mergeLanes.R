@@ -11,7 +11,8 @@ test.mergeLanes <- function() {
   maindir <- getConfig("save_dir")
   gcounts1 <- getTabDataFromFile(maindir, "counts_gene")$count
   coverage1 <- get(load(getObjectFilename(file.path(maindir, "results"), "coverage.RData$")))
-    
+  variants1 <- get(load(getObjectFilename(file.path(maindir, "results"), "filtered_variants_granges.RData$")))
+  
   ## run mergeLanes on chunks
   indirs <- getChunkDirs()
   mergedir <- file.path(maindir, "merged")
@@ -19,11 +20,14 @@ test.mergeLanes <- function() {
   ## preMergeChecks.do is disabled since variants are not computed on chunks, and ID verify cannot be performed
   mergeLanes(indirs, mergedir, prepend_str, num_cores=1, preMergeChecks.do=FALSE, config_update=list(shortReadReport.do=FALSE))
   
-  ## compare results
   gcounts2 <- getTabDataFromFile(mergedir, "counts_gene")$count
   coverage2 <- get(load(getObjectFilename(file.path(mergedir, "results"), "coverage.RData$")))
-  checkTrue(all(gcounts1==gcounts2), "gene counts are the same after merging")
-  checkTrue(all(score(coverage1)==score(coverage2)) & all(width(coverage1)==width(coverage2)), "coverage is the same after merging")
+  variants2 <- get(load(getObjectFilename(file.path(mergedir, "results"), "filtered_variants_granges.RData$")))
+
+  ## compare results
+  checkEquals(gcounts1, gcounts2, "gene counts are the same after merging")
+  checkTrue(hashCoverage(coverage1)==hashCoverage(coverage2), "coverage is the same after merging")
+  checkEquals(length(variants1), length(variants2), "varisnts are the same after merging")
   
   ## compare summaries
   summaries <- paste("summary", c('preprocess', 'alignment', 'counts'),
@@ -35,4 +39,3 @@ test.mergeLanes <- function() {
               paste(summary, "is identical", sep=" "))
   })
 }
-

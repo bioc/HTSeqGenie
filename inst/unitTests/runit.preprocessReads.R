@@ -14,7 +14,7 @@ test.preprocessReads <- function() {
                      "preprocessReads() does not return the correct number of adapter contam")
   checkEqualsNumeric(summary_preprocess$read_length, 75,
                      "preprocessReads() does not return the correct read length")
-  ## Since rRNA contam check is currently disbaled this will be now 0 instead of 1
+## Since rRNA contam check is currently disbaled this will be now 0 instead of 1
   checkEquals(summary_preprocess$rRNA_contam_reads, 0,
               "preprocessReads() does not return the correct number of rRNA contams")
 }
@@ -22,8 +22,7 @@ test.preprocessReads <- function() {
 test.preprocessReads_single_end <- function() {
   ## setup test framework
   setupTestFramework(config.filename="test-data/test_config_single_end.txt",
-                     config.update =list(
-                       detectAdapterContam.force_paired_end_adapter=TRUE),
+                     config.update=list(detectAdapterContam.force_paired_end_adapter=TRUE),
                      testname="test.preprocessReads_single_end")
 
   ## test preprocessReads
@@ -38,6 +37,7 @@ test.preprocessReads_single_end <- function() {
                      "preprocessReads() does not return the correct number of adapter contam")
   checkEqualsNumeric(summary_preprocess$read_length, 75,
                      "preprocessReads() does not return the correct read length")
+## Since rRNA contam check is currently disbaled this will be now 0 instead of 1
   checkEquals(summary_preprocess$rRNA_contam_reads, 0,
               "preprocessReads() does not return the correct number of rRNA contams")
 }

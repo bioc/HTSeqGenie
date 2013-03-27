@@ -1,0 +1,19 @@
+\name{hashVector}
+\alias{hashVector}
+\title{Hashing function for vector}
+\usage{
+  hashVector(x)
+}
+\arguments{
+  \item{x}{A vector}
+}
+\value{
+  A numeric
+}
+\description{
+  Hashing function for vector
+}
+\author{
+  Gregoire Pau
+}
+

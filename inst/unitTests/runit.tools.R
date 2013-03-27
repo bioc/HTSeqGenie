@@ -1,29 +1,37 @@
 test.sclapply <- function() {
+  ## how many threads are already running?
+  nbjobs <- length(parallel:::children())
+    
   ## test 1: single job
   listIterator.init(1)
   z <- unlist(sclapply(listIterator.next, function(x, ...) x^2, max.parallel.jobs=3))
   checkEquals(z, 1)
-
+  checkEquals(length(parallel:::children()), nbjobs) ## checks that no jobs are left
+  
   ## test 2: standard
   listIterator.init(1:100)
   z <- unlist(sclapply(listIterator.next, function(x, ...) x^2, max.parallel.jobs=3))
   checkEquals(z, (1:100)^2)
+  checkEquals(length(parallel:::children()), nbjobs) ## checks that no jobs are left
 
   ## test 3: one node
   listIterator.init(1:100)
   z <- unlist(sclapply(listIterator.next, function(x, ...) x^2, max.parallel.jobs=1))
   checkEquals(z, (1:100)^2)
+  checkEquals(length(parallel:::children()), nbjobs) ## checks that no jobs are left
 
   ## test 4: different running times
   listIterator.init(1:23)
   z <- unlist(sclapply(listIterator.next, function(x, ...) {Sys.sleep(runif(1)*0.5) ; x^2}, max.parallel.jobs=5))
   checkEquals(z, (1:23)^2)
+  checkEquals(length(parallel:::children()), nbjobs) ## checks that no jobs are left
 
   ## test 5: exception
   listIterator.init(1:23)
   f <- function(x, ...) { if (x==4) stop("illegal operation") ; x^2}
   z <- try(sclapply(listIterator.next, f, max.parallel.jobs=3), silent=TRUE)
   checkEquals(class(z), "try-error")
+  checkEquals(length(parallel:::children()), nbjobs) ## checks that no jobs are left
 
   ## test 6: stop.onfail=FALSE
   listIterator.init(1:23)
@@ -31,6 +39,7 @@ test.sclapply <- function() {
   z <- sclapply(listIterator.next, f, max.parallel.jobs=3, stop.onfail=FALSE)
   checkEquals(class(z[[4]]), "try-error")
   checkEquals(unlist(z[-4]), ((1:23)^2)[-4])
+  checkEquals(length(parallel:::children()), nbjobs) ## checks that no jobs are left
 
   ## test 7: tracer timer
   tracefun <- function(type, ...) {}
@@ -38,6 +47,7 @@ test.sclapply <- function() {
   z <- unlist(sclapply(listIterator.next, function(x, ...) {Sys.sleep(runif(1)*2) ; x^2}, max.parallel.jobs=3,
                        tracefun=tracefun, tracefun.period=1))
   checkEquals(z, (1:5)^2)
+  checkEquals(length(parallel:::children()), nbjobs) ## checks that no jobs are left
   
   ## test 8: tracer exception
   listIterator.init(1:23)
@@ -46,6 +56,7 @@ test.sclapply <- function() {
                                  tracefun=tracefun, tracefun.period=1)
   checkEquals(class(z[[4]]), "try-error")
   checkEquals(unlist(z[-4]), ((1:23)^2)[-4])
+  checkEquals(length(parallel:::children()), nbjobs) ## checks that no jobs are left
 }
 
 test.tryKeepTraceback <- function() {

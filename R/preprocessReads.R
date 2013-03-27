@@ -11,8 +11,8 @@
 ##' These steps are mostly controlled by the global config.
 ##' @return A named vector containg the path to the preproceesed
 ##'         FastQ files and a few other statistics
-##' @export
 ##' @keywords internal
+##' @export
 preprocessReads <- function() {
   safeExecute({
     loginfo("preprocessReads.R/preprocessReads: starting...")
@@ -74,15 +74,13 @@ preprocessReadsChunk <- function(lreads, save_dir=NULL) {
     adapter_contaminated <- detectAdapterContam(lreads, save_dir=save_dir)
     summary_preprocess$adapter_contam <- sum(adapter_contaminated)
   } else summary_preprocess$adapter_contam <- 0
-
-  ##DISABLED
+  
   ## detect rRNA contamination
-  ## if (getConfig.logical("detectRRNA.do")) {
-  ##   is_rRNA_contam <- detectRRNA(lreads, save_dir=save_dir)
-  ##  lreads <- lapply(lreads, function(read) read[!is_rRNA_contam])    
-  ##  summary_preprocess$rRNA_contam_reads <- sum(is_rRNA_contam)
-  ##} else
-  summary_preprocess$rRNA_contam_reads <- 0
+  if (getConfig.logical("detectRRNA.do")) {
+    is_rRNA_contam <- detectRRNA(lreads, save_dir=save_dir)
+    lreads <- lapply(lreads, function(read) read[!is_rRNA_contam])    
+    summary_preprocess$rRNA_contam_reads <- sum(is_rRNA_contam)
+  } else summary_preprocess$rRNA_contam_reads <- 0
 
   ## compute processed read min/max length
   z <- unlist(lapply(lreads, function(z) width(sread(z))))
@@ -111,8 +109,8 @@ preprocessReadsChunk <- function(lreads, save_dir=NULL) {
 ##' @param prepend_str A character string, containing a prefix going to be appended on all output result files
 ##' @return Nothing
 ##' @author Gregoire Pau
-##' @export
 ##' @keywords internal
+##' @export
 mergePreprocessReads <- function(indirs, outdir, prepend_str) {
   ## get config parameters
   paired_ends <- getConfig.logical("paired_ends")

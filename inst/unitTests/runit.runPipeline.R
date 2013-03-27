@@ -12,7 +12,7 @@ test.runPipeline <- function() {
                           input_file2=fastq2,
                           paired_ends=TRUE,
                           quality_encoding="illumina1.8",
-
+                          
                           ## output
                           save_dir="test",
                           prepend_str="test",
@@ -21,7 +21,8 @@ test.runPipeline <- function() {
                           ## aligner
                           path.gsnap_genomes=path(directory(tp53Genome)),
                           alignReads.genome=genome(tp53Genome),
-                          alignReads.additional_parameters="--indel-penalty=1 --novelsplicing=1 --distant-splice-penalty=1",
+                          alignReads.sam_id='123',
+                          detectRRNA.do=FALSE,
                           
                           ## gene model
                           path.genomic_features=dirname(tp53GenomicFeatures),

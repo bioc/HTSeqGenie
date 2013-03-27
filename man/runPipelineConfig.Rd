@@ -8,11 +8,11 @@
   \item{config_filename}{Path to a pipeline configuration
   file}
 
-  \item{config_update}{A list of named value pairs that
-  will update the config parameters}
+  \item{config_update}{A list of name value pairs that will
+  update the config parameters}
 }
 \value{
-  The path to the NGS output directory.
+  Nothing
 }
 \description{
   Run the NGS analysis pipeline from a configuration file
@@ -26,8 +26,4 @@
 \author{
   Jens Reeder, Gregoire Pau
 }
-\seealso{
-  runPipeline
-}
-\keyword{internal}
 

@@ -1,6 +1,9 @@
 ## load library
 library("HTSeqGenie")
 library("RUnit")
+library(gmapR) # to get the TP53genome
+
+## reload sources
 resource()
 
 ## run test suite

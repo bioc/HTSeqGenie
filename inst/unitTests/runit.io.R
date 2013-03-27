@@ -70,7 +70,7 @@ test.FastQStreamer.getReads.segz <- function() {
   ## single-end fastq.gz
   ## setup test framework
   config.update <- list(input_file="inst/test-data/reads.fastq.gz", chunk_size=10, quality_encoding="illumina1.8")
-  setupTestFramework(config.filename="test-data/test_config.txt", config.update=config.update,
+  setupTestFramework(config.filename="test-data/test_config_single_end.txt", config.update=config.update,
                      testname="test.FastQStreamer.getReads.segz")
 
   ## init FastQStreamer

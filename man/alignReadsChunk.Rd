@@ -13,7 +13,7 @@
   \item{save_dir}{Save directory}
 }
 \value{
-  Nothing
+  List of alignment files in BAM format
 }
 \description{
   Genomic alignment using gsnap.

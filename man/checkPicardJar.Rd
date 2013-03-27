@@ -1,0 +1,25 @@
+\name{checkPicardJar}
+\alias{checkPicardJar}
+\title{checkPicardJar}
+\usage{
+  checkPicardJar(toolname, path = getOption("picard.path"))
+}
+\arguments{
+  \item{toolname}{Name of the Picard Tool, e.g.
+  MarkDuplicates}
+
+  \item{path}{Path to folder containing picard jars}
+}
+\value{
+  TRUE if tool can be called, FALSE otherwise
+}
+\description{
+  Check for a jar file from picard tools
+}
+\details{
+  Call a tool from picard and see if it responds.
+}
+\author{
+  Jens Reeder - Regular
+}
+

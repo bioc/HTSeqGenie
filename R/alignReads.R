@@ -47,8 +47,8 @@ alignReads <- function() {
 ##' @param fp1 Path to FastQ file
 ##' @param fp2 Path to second FastQ file if paired end data, NULL if single ended
 ##' @param save_dir Save directory
+##' @return List of alignment files in BAM format
 ##' @keywords internal
-##' @return Nothing
 alignReadsChunk <- function(fp1, fp2=NULL, save_dir=NULL) {
   ## init
   if (missing(save_dir)) save_dir <- file.path(getConfig("save_dir"))
@@ -56,80 +56,33 @@ alignReadsChunk <- function(fp1, fp2=NULL, save_dir=NULL) {
   loginfo(paste("alignReads.R/alignReadsChunk: running gsnap..."))
           
   ## get config parameters
-  paired_ends <- getConfig.logical("paired_ends")
   prepend_str <- getConfig("prepend_str")
-  genome <- getConfig("alignReads.genome")
-
-  ## build parameters
-  gsnapParams <- buildGsnapParams()
-  
-  ## call gsnap
   bam_dir <- file.path(save_dir, "bams")
-  output <- file.path(bam_dir, prepend_str)
-  gsnapOutput <- gsnap(fp1, fp2, gsnapParams, output=output)
   
-  ## convert gsnap output
+  ## align reads
+  gsnapParams <- buildGsnapParams()
+  wrapGsnap(fp1, fp2, gsnapParams, bam_dir, prepend_str)
+
+  ## build analyzed bam
   buildAnalyzedBam(bam_dir, prepend_str)
   
   ## create summary
   createSummaryAlignment(save_dir, prepend_str)
-  
   loginfo("alignReads.R/alignReadsChunk: done")
 }
 
-parseAdditionalParameters <- function(ap) {
-  ## split ap
-  sap <- strsplit(ap, " ")[[1]]
-
-  ## remove trailing spaces
-  z <- sap==""
-  if (any(z)) sap <- sap[!z]
-  
-  ## checks the absence of short-form parameters (starting with single hyphens)
-  z <- grepl("^-[^-]", sap)
-  if (any(z)) stop("alignReads.R/parseAdditionalParameters: cannot process short-form parameter(s) from [",
-                   paste(sap[z], collapse=", "), "] in config parameter 'alignReads.additional_parameters'")
-
-  ## checks that all parameters are long-form (starting with double hyphens and with =)
-  z <- grepl("^--", sap) & grepl("=", sap)
-  if (any(!z)) stop("alignReads.R/parseAdditionalParameters: invalid long-form parameter(s) syntax [",
-                    paste(sap[!z], collapse=", "), "] in config parameter 'alignReads.additional_parameters'")
-
-  ## get parameter names
-  z <- regexpr("=", sap)
-  apars <- substr(sap, z+1, nchar(sap))
-  names(apars) <- substr(sap, 3, z-1)
-  
-  ## checks no parameter is duplicated
-  z <- duplicated(names(apars))
-  if (any(z)) stop("alignReads.R/parseAdditionalParameters: duplicate parameter(s) [",
-                   paste(sap[z], collapse=", "), "] in config parameter 'alignReads.additional_parameters'")
-  
-  as.list(apars)
-}
-
-##' Build gsnap paramters from current config
-##'
-##' @title Build Aligner Command-Line Args
-##' @return a GsnapParam object
-##' @author Gregoire Pau
-##' @keywords internal
-##' @export
 buildGsnapParams <- function() {
   ## get config parameters
+  quality_encoding <- getConfig("quality_encoding")
   path.gsnap_genomes <- getConfig("path.gsnap_genomes")
   genome <- getConfig("alignReads.genome")
-  max_mismatches <- getConfig.integer("alignReads.max_mismatches")
-  quality_encoding <- getConfig("quality_encoding")
   snp_index <- getConfig("alignReads.snp_index")
-  splice_index <- getConfig("alignReads.splice_index")
+  splice_index <- getConfig("alignReads.splice_index") 
+  max_mismatches <- getConfig.integer("alignReads.max_mismatches")
+  static_parameters <- getConfig("alignReads.static_parameters")
   nbthreads_perchunk <- getConfig.integer("alignReads.nbthreads_perchunk")
   sam_id <- getConfig("alignReads.sam_id")
-  additional_parameters <- getConfig("alignReads.additional_parameters")
   
-  ## build gmapGenome
-  gmapGenome <- GmapGenome(genome, directory=path.gsnap_genomes, create=FALSE)
-
   ## convert quality_encoding to gsnap quality protocol
   quality_protocol <- switch(quality_encoding,
                              sanger="sanger",
@@ -137,63 +90,45 @@ buildGsnapParams <- function() {
                              illumina1.3="illumina",
                              illumina1.5="illumina",
                              illumina1.8="sanger")
-  
-  ## parse additional parameters
-  apars <- parseAdditionalParameters(additional_parameters)
 
-  ## isolate the parameters that have to be passed to GsnapParam separately: suboptimal-levels, mode, npaths, novelsplicing, batch
-  dpar <- list("suboptimal-levels"="0", "mode"="standard", "npaths"="100", "novelsplicing"="0", "batch"="2")
-  
-  ## add default parameters, if missing
-  z <- names(dpar)%in%names(apars)
-  if (any(!z)) apars <- c(apars, dpar[!z])
+  ## build core params
+  params <- paste("-D", path.gsnap_genomes,
+                  "-t", nbthreads_perchunk,
+                  "-d", genome,
+                  paste("--quality-protocol", quality_protocol, sep="="),
+                  static_parameters,
+                  "-A sam")
 
-  ## build extrapars
-  z <- names(apars)%in%names(dpar)
-  extrapars <- c(apars[!z], "quality-protocol"=quality_protocol)
-  if (!is.null(sam_id)) extrapars <- c(extrapars, "read-group-id"=sam_id)
-
-  ## replace - by _ in parameter names
-  names(extrapars) <- gsub("-", "_", names(extrapars))
-                           
-  ## check that extrapars does not contain GsnapParam arguments
-  gpargs <- c("genome", "unique_only", "max_mismatches", "suboptimal_levels",
-              "mode", "snps", "npaths", "quiet_if_excessive", "nofails",
-              "split_output", "novelsplicing", "splicing",
-              "nthreads", "part", "batch")
-  z <- names(extrapars)%in%gpargs
-  if (any(z)) stop("alignReads.R/buildGsnapParams: additional parameters cannot contain: ", paste(names(extrapars)[z], collapse=", "))
+  ## extra params
+  if (!is.null(sam_id)) params <- paste(params, " --read-group-id=", sam_id, sep="")
+  if (!is.null(snp_index)) params <- paste(params, "-v", snp_index)
+  if (!is.null(splice_index)) params <- paste(params, "-s", splice_index)
+  if (!is.null(max_mismatches)) params <- paste(params, "-m", max_mismatches)
   
-  ## build GsnapParam
-  do.call(GsnapParam, c(list(genome=gmapGenome,
-                             unique_only=FALSE,
-                             max_mismatches=max_mismatches,
-                             suboptimal_levels=apars[["suboptimal-levels"]],
-                             mode=apars[["mode"]],
-                             snps=snp_index,
-                             npaths=apars[["npaths"]],
-                             quiet_if_excessive=FALSE,
-                             nofails=FALSE,
-                             split_output=TRUE,
-                             novelsplicing=ifelse(apars[["novelsplicing"]]=="1", TRUE, FALSE),
-                             splicing=splice_index,
-                             nthreads=nbthreads_perchunk,
-                             part=NULL,
-                             batch=apars[["batch"]]
-                             ), extrapars))
+  return(params)
 }
 
 ## create the analyzed bam
 buildAnalyzedBam <- function(bam_dir, prepend_str) {
+  ## get config parameters
+  paired_ends <- getConfig.logical("paired_ends")
+  alignReads.analyzedBam <- getConfig("alignReads.analyzedBam")
+
+  ## prepare analyzed_bamregexp
+  if (alignReads.analyzedBam=="uniq") analyzed_bamregexp <- "_uniq.*\\.bam$"
+  else {
+    if (paired_ends) analyzed_bamregexp <- "concordant_uniq.*\\.bam$"
+    else analyzed_bamregexp <- "_uniq.*\\.bam$"
+  }
+  
   ## get uniq bams
-  inbams <- grep("_uniq.*\\.bam$", dir(bam_dir, full.names=TRUE), value=TRUE)
+  bam_files <- dir(bam_dir, full.names=TRUE)
+  inbams <- grep(analyzed_bamregexp, bam_files, value=TRUE)
   
   ## merge inbams
   outbam <- paste(prepend_str, ".analyzed.bam", sep="")
   outbam <- file.path(bam_dir, outbam)
-
-  ## merge, sort and index bams
-  mergeBamSortIndex(inbams, outbam)
+  mergeBams(inbams, outbam)
 }
 
 ## given a bam file, return the bam type
@@ -205,7 +140,8 @@ getBamType <- function(bams) {
   gsub("\\.bam$", "", bamtypes)
 }
 
-## merges similarly named BAM residing in different directories
+## merges similarly named BAM residing in different directories and
+## creates the BAI index files.
 mergeBAMsAcrossDirs <- function(indirs, outdir, prepend_str, nb.parallel.jobs=1) {
   loginfo("alignReads.R/mergeBAMsAcrossDirs: starting...")
 
@@ -221,13 +157,13 @@ mergeBAMsAcrossDirs <- function(indirs, outdir, prepend_str, nb.parallel.jobs=1)
   ## merge files
   outbams <- paste(prepend_str, names(sinbams), "bam", sep=".")
   outbams <- file.path(bamoutdir, outbams)
-  z <- mclapply(seq_len(length(sinbams)), function(i) {
-    inbams <- sinbams[[i]]
-    outbam <- outbams[i]
-
-    ## merge, sort and index bam
-    mergeBamSortIndex(inbams, outbam)
-  }, mc.cores=nb.parallel.jobs)
+  z <- mclapply(seq_len(length(sinbams)),
+                function(i) {
+                  inbams <- sinbams[[i]]
+                  outbam <- outbams[i]
+                  mergeBams(inbams, outbam)
+                },
+                mc.cores=nb.parallel.jobs)
   
   loginfo("alignReads.R/mergeBAMsAcrossDirs: done")
 }
@@ -262,8 +198,8 @@ createSummaryAlignment <- function(save_dir, prepend_str) {
 ##' @param num_cores Number of cores available for parallel processing (for the merge bam step)
 ##' @return Nothing
 ##' @author Gregoire Pau
-##' @export
 ##' @keywords internal
+##' @export
 mergeAlignReads <- function(indirs, outdir, prepend_str, num_cores) {
   ## merge bams
   mergeBAMsAcrossDirs(indirs, outdir, prepend_str, nb.parallel.jobs=num_cores)
@@ -282,7 +218,6 @@ mergeAlignReads <- function(indirs, outdir, prepend_str, num_cores) {
 ##' @author Gregoire Pau
 ##' @keywords internal
 ##' @export
-##' @keywords internal
 mergeSummaryAlignment <- function(indirs, outdir, prepend_str) {
   ## merge summary alignment
   summary_alignment <- lapply(indirs, getNumericVectorDataFromFile, object_name="summary_alignment")

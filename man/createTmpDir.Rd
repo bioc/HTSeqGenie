@@ -1,11 +1,11 @@
 \name{createTmpDir}
 \alias{createTmpDir}
-\title{Create a random directory with prefix}
+\title{Create a random directory with prefix in R temp dir}
 \usage{
   createTmpDir(prefix = NULL)
 }
 \arguments{
-  \item{prefix}{A string that will preced the directory
+  \item{prefix}{A string that will preceed the directory
   name}
 }
 \value{
