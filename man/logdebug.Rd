@@ -2,7 +2,7 @@
 \alias{logdebug}
 \title{Log debug using the logging package}
 \usage{
-  logdebug(...)
+  logdebug(msg)
 }
 \arguments{
   \item{...}{Arguments passed to logging::logdebug}

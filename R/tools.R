@@ -412,30 +412,3 @@ getBams <- function(save_dir) {
   names(bfiles) <- btypes
   bfiles
 }
-
-##' Log warning (with a try statement)
-##'
-##' @title Log warning using the logging package
-##' @param ... Arguments passed to logging::logwarn
-##' @return Nothing
-##' @author Gregoire Pau
-##' @keywords internal
-logwarn <- function(...) try(logging::logwarn(...), silent=TRUE)
-
-##' Log debug (with a try statement)
-##'
-##' @title Log debug using the logging package
-##' @param ... Arguments passed to logging::logdebug
-##' @return Nothing
-##' @author Gregoire Pau
-##' @keywords internal
-logdebug <- function(...) try(logging::logdebug(...), silent=TRUE)
-
-##' Log info (with a try statement)
-##'
-##' @title Log info using the logging package
-##' @param ... Arguments passed to logging::loginfo
-##' @return Nothing
-##' @author Gregoire Pau
-##' @keywords internal
-loginfo <- function(...) try(logging::loginfo(...), silent=TRUE)

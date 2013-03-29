@@ -1,3 +1,9 @@
+version 3.9.22
+- removed the dependency towards the "logging" package
+
+version 3.9.21
+ - variant calling via GATK
+
 version 3.9.20:
 - preparation to BioC submission
 - now using detectRRNA.do: FALSE in default-config.txt 

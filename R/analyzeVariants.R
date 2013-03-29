@@ -9,22 +9,34 @@ NULL
 ##' @author Jens Reeder
 ##' @export
 analyzeVariants <- function(){
+  loginfo("analyzeVariants/analyzeVariants: starting ...")
+  save.dir <- getConfig('save_dir')
+  analyzeVariants.method <- getConfig("analyzeVariants.method", stop.ifempty=TRUE)
+  bam.file <- file.path(save.dir, 'bams',
+                        paste(getConfig('prepend_str'),
+                              'analyzed.bam', sep="."))
+
   safeExecute({
-    save.dir <- getConfig('save_dir')
-    bam.file <- file.path(save.dir, 'bams',
-                          paste(getConfig('prepend_str'),
-                                'analyzed.bam', sep="."))
-    reports.dir <- file.path(save.dir, "reports")
-    
-    variants <- wrap.callVariants(bam.file)
-    if (length(variants$filtered.variants) > 0) {
-      ## all these only make sense if we have actual variants
-      writeVCF(variants$filtered.variants)
-      processVariants(variants, reports.dir)
-    } else {
-      logwarn("No variants found. Check your inputs and log messages for errors")
+    if(analyzeVariants.method=='GATK'){
+      callVariantsGATK(bam.file)
+    }
+    if(analyzeVariants.method=='VariantTools'){ 
+      callVariantsVariantTools(bam.file)
     }
   }, memtracer=getConfig.logical("debug.tracemem"))
+  loginfo("analyzeVariants/analyzeVariants: done")
+}
+
+callVariantsVariantTools <- function(bam.file) {
+  variants <- wrap.callVariants(bam.file)
+  if (length(variants$filtered.variants) > 0) {
+    ## all these only make sense if we have actual variants
+    writeVCF(variants$filtered.variants)
+    reports.dir <- file.path(getConfig('save_dir'), "reports")
+    processVariants(variants, reports.dir)
+  } else {
+    logwarn("No variants found. Check your inputs and log messages for errors")
+  }
 }
 
 ##' Process variant callings
@@ -174,14 +186,18 @@ wrap.callVariants <- function(bam.file) {
 ##' @export
 writeVCF <- function(variants.granges){
   loginfo("analyzeVariants.R/writeVCF: writing vcf file...")
-  
+
   vcf.filename <- file.path(getConfig('save_dir'), "results",
                             paste(getConfig('prepend_str'),
                                   "_variants.vcf", sep=""))
 
+  ## build vcf object
+  sam_id <- getConfig("alignReads.sam_id")
+  if (is.null(sam_id)) sam_id <- ""
   vcf <- variantGR2Vcf(variants.granges,                               
-                       sample.id=getConfig('alignReads.sam_id'),
-                       project="") 
+                       sample.id=sam_id,
+                       project="")
+  
   ## this is VariantAnnotation::writeVcf
   writeVcf(vcf, vcf.filename, index=TRUE)
 
@@ -274,3 +290,4 @@ getTransitionRatio <- function(x, y) {
   loginfo("analyzeVariants.R/calcTransitionRatio: ...done")
   return(ratio)
 } 
+

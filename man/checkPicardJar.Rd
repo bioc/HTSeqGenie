@@ -20,6 +20,7 @@
   Call a tool from picard and see if it responds.
 }
 \author{
-  Jens Reeder - Regular
+  Jens Reeder
 }
+\keyword{internal}
 

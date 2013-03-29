@@ -46,7 +46,7 @@ detectAdapterContam.do: TRUE
 detectAdapterContam.force_paired_end_adapter: FALSE
 
 ## detect ribosomal RNA
-detectRRNA.do: TRUE
+detectRRNA.do: FALSE
 detectRRNA.rrna_genome:
 
 ## shortread reports
@@ -81,4 +81,9 @@ coverage.maxFragmentLength:
 ## analyze Variants
 analyzeVariants.do: TRUE
 analyzeVariants.bqual: 23
-analyzeVariants.method: VariantTools, GATK ## comma-separated list, possible choices: VariantTools, GATK
+analyzeVariants.method: VariantTools ## comma-separated list, possible choices: VariantTools, GATK
+
+## GATK
+path.gatk_genomes:
+path.gatk:
+gatk.params: --genotype_likelihoods_model BOTH

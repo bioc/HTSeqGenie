@@ -90,21 +90,13 @@ these parameters are provided in the Configuration section.
 
 <<cpars, results=hide>>=
 rtp53 <- list(
-              ## input
-              paired_ends=TRUE,
-              quality_encoding="illumina1.8",
-              
               ## aligner
               path.gsnap_genomes=path(directory(tp53Genome)),
               alignReads.genome=genome(tp53Genome),
-              alignReads.additional_parameters="--indel-penalty=1 --novelsplicing=1",
               
               ## gene model
               path.genomic_features=dirname(tp53GenomicFeatures),
-              countGenomicFeatures.gfeatures=basename(tp53GenomicFeatures),
-              
-              ## output
-              overwrite_save_dir="erase"
+              countGenomicFeatures.gfeatures=basename(tp53GenomicFeatures)
               )
 @
 
@@ -122,10 +114,13 @@ H1993dir <- do.call(runPipeline,
                       ## input
                       input_file=LungCancerFastqFiles()[["H1993.first"]],
                       input_file2=LungCancerFastqFiles()[["H1993.last"]],
+                      paired_ends=TRUE,
+                      quality_encoding="illumina1.8",
                       
                       ## output
                       save_dir="H1993",
-                      prepend_str="H1993"
+                      prepend_str="H1993",
+                      overwrite_save_dir="erase"
                       ))
 
 H2073dir <- do.call(runPipeline, 
@@ -135,10 +130,13 @@ H2073dir <- do.call(runPipeline,
                       ## input
                       input_file=LungCancerFastqFiles()[["H2073.first"]],
                       input_file2=LungCancerFastqFiles()[["H2073.last"]],
+                      paired_ends=TRUE,
+                      quality_encoding="illumina1.8",
                       
                       ## output
                       save_dir="H2073",
-                      prepend_str="H2073"
+                      prepend_str="H2073",
+                      overwrite_save_dir="erase"
                       ))
 @
 

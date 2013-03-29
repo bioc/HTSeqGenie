@@ -136,6 +136,8 @@ getConfig.logical <- function(p, ...) {
 ##' @param p Name of parameter 
 ##' @param ... extra params passed to getConfig
 ##' @return value of config param as vector
+##' @keywords internal
+##' @export
 getConfig.vector <- function(p, ...) {
   a <- getConfig(p, ...)
   if (!is.null(a)) {

@@ -1,8 +1,8 @@
-\name{loginfo}
-\alias{loginfo}
+\name{logerror}
+\alias{logerror}
 \title{Log info using the logging package}
 \usage{
-  loginfo(msg)
+  logerror(msg)
 }
 \arguments{
   \item{...}{Arguments passed to logging::loginfo}
@@ -11,7 +11,7 @@
   Nothing
 }
 \description{
-  Log info (with a try statement)
+  Log error (with a try statement)
 }
 \author{
   Gregoire Pau

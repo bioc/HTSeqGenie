@@ -319,26 +319,35 @@ checkConfig.markDuplicates <- function() {
 }
 
 checkConfig.analyzeVariants <- function() {
-  ## analyzeVariants.do
-  analyzeVariants.do <- getConfig.logical("analyzeVariants.do", stop.ifempty=TRUE)
-  if (analyzeVariants.do) {  
-    ## analyzeVariants.bqual
-    analyzeVariants.bqual <- getConfig.numeric("analyzeVariants.bqual", stop.ifempty=TRUE)
-    if(analyzeVariants.bqual < 0 || analyzeVariants.bqual > 41)
-      stop("analyzeVariants.bqual must be an integer between 0 and 41")
 
+  if (getConfig.logical("analyzeVariants.do", stop.ifempty=TRUE) ){  
     ## analyzeVariants.method
     analyzeVariants.method <- getConfig("analyzeVariants.method", stop.ifempty=TRUE)
-    analyzeVariants.method <- gsub("[ \t]", "", analyzeVariants.method)
-    analyzeVariants.method <- strsplit(analyzeVariants.method, ",")[[1]]
     if (length(analyzeVariants.method)==0) stop("'analyzeVariants.method' must contain a character string")
+
     else {
       knownMethods <- c("VariantTools", "GATK")
       z <- analyzeVariants.method%in%knownMethods
-      if (any(!z)) stop("'analyzeVariants.method' must contain the name of a method (or a list of comma-separated names) among: ", paste(knownMethods, collapse=", "))
-      if ("GATK"%in%analyzeVariants.method) {
-        cat("TODO: check if GATK is present...\n")
+      if (!z) stop("'analyzeVariants.method' must contain the name of a method among: ", paste(knownMethods, collapse=", "))
+      if ("GATK" %in% analyzeVariants.method) {
+        gatk.path <- getConfig("path.gatk", stop.ifempty=TRUE)
+        if ( checkGATKJar(gatk.path) != TRUE ){
+          stop("Can't call GATK! Check your path.gatk settings and make sure you have java in your PATH")
+        }
+        gatk.genomes <- getConfig("path.gatk_genomes", stop.ifempty=TRUE)
+        genome <- getConfig("alignReads.genome", stop.ifempty=TRUE)
+        genome.path <- file.path(gatk.genomes, paste0(genome, ".fa"))
+        if(!file.exists(genome.path)){
+          stop(paste("GATK genome not found at", genome.path))
+        }
+      }
+      if ("VariantTools" %in% analyzeVariants.method) {
+        ## analyzeVariants.bqual
+        analyzeVariants.bqual <- getConfig.numeric("analyzeVariants.bqual", stop.ifempty=TRUE)
+        if(analyzeVariants.bqual < 0 || analyzeVariants.bqual > 41)
+          stop("analyzeVariants.bqual must be an integer between 0 and 41")     
       }
     }
   }
 }
+

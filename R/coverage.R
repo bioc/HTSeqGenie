@@ -37,6 +37,7 @@ calculateCoverage <- function() {
     ## merge coverage
     save_dir <- getConfig("save_dir")
     mergeCoverage(chunkdirs, save_dir, prepend_str)
+    loginfo("coverage.R/calculateCoverage: done")
   }, memtracer=getConfig.logical("debug.tracemem"))
 }
 

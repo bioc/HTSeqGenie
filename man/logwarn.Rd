@@ -2,7 +2,7 @@
 \alias{logwarn}
 \title{Log warning using the logging package}
 \usage{
-  logwarn(...)
+  logwarn(msg)
 }
 \arguments{
   \item{...}{Arguments passed to logging::logwarn}

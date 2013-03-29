@@ -70,6 +70,7 @@ markDuplicates <- function(bamfile, outfile=NULL, path=NULL) {
 ##' @param path Path to folder containing picard jars
 ##' @return TRUE if tool can be called, FALSE otherwise
 ##' @author Jens Reeder
+##' @keywords internal
 ##' @export
 checkPicardJar <- function(toolname, path=getOption("picard.path")){
 
