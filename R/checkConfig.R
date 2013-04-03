@@ -249,7 +249,7 @@ checkConfig.alignReads <- function() {
     isgsnap <- system("gsnap", ignore.stdout=TRUE, ignore.stderr=TRUE)!=127
     if (!isgsnap) stop("'alignReads.use_gmapR_gsnap' is FALSE but 'gsnap' is not found in PATH")
   }
-  
+
   invisible()
 }
 
@@ -347,6 +347,9 @@ checkConfig.analyzeVariants <- function() {
         if(analyzeVariants.bqual < 0 || analyzeVariants.bqual > 41)
           stop("analyzeVariants.bqual must be an integer between 0 and 41")     
       }
+      
+      ## analyzeVariants.indels
+      getConfig.logical("analyzeVariants.indels", stop.ifempty=TRUE)
     }
   }
 }

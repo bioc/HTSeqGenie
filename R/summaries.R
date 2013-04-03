@@ -307,7 +307,7 @@ writeSummary <- function(dirs, outdir="Summary", cutoffs) {
   hwrite('', p, br=TRUE)
   
   hwrite("Summary of variant calling", p, heading=4)
-  hwrite("This heatmap shows the variant counts computed by SNVsOmuC.", p, br=TRUE)  
+  hwrite("This heatmap shows some statistics about the called variants.", p, br=TRUE)  
   .hwriteImage(variants.sum)
   hwrite('',p, br=TRUE)
 

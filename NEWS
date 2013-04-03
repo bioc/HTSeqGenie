@@ -1,3 +1,12 @@
+version 3.9.25:
+- VariantTools "analyzeVariants.indels" are OK
+
+version 3.9.24
+- aloow for new quality score range "GATK-rescaled" from 1-50 (33-83 in ASCII)
+
+version 3.9.23
+- added the config parameter "analyzeVariants.indels" 
+
 version 3.9.22
 - removed the dependency towards the "logging" package
 

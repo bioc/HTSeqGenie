@@ -32,22 +32,24 @@ test.gatk <- function() {
 test.callVariantsGATK <- function() {
   if (checkGATKJar()){
     config.filename <- "test-data/test_config.txt"
-    ##TODO: fix tp53 demo fasta file
-    ## get-genome -D .local/share/gmap/  -d TP53 <- demo -A > tp53 <- genome.fasta
-    
-##    tp53.fasta <- system.file("extdata/hg19.p53.fasta", package="gmapR")
+
+    #create fasta genome file of TP53 genome
+    tp53seq <- DNAStringSet(getSeq(TP53Genome()))
+    names(tp53seq) = "TP53"
+    export(tp53seq, file.path(tempdir(),"TP53_demo.fa"), format="fasta")
+
     save.dir <- setupTestFramework(config.filename=config.filename,
                                    config.update=list(num_cores=1,
                                      analyzeVariants.method="GATK",
                                      path.gatk=getOption('gatk.path'),
-                                     path.gatk_genomes=getPackageFile("test-data/variant_calling/")),  
+                                     path.gatk_genomes=tempdir()),
                                    testname="test.callVariantsGATK")
     
     bam.file <- getPackageFile("test-data/variant_calling/tp53_test.bam")
 
     callVariantsGATK(bam.file)
     checkTrue(file.exists(file.path(save.dir, "results", "test_pe_variants.vcf.gz")),
-              "callVariantsGATK writes vcf file")
+              "callVariantsGATK writes vcf.gz file")
     checkTrue(file.exists(file.path(save.dir, "results", "test_pe_variants.vcf.gz.tbi")),
               "callVariantsGATK writes vcf index file")
 }

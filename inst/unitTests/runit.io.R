@@ -108,3 +108,30 @@ test.safeUnlink <- function() {
 
   setwd(currentdir)
 }
+
+test.detectQualityInFASTQFile <- function(){
+  tmpdir <- HTSeqGenie:::createTmpDir(prefix="test_detectQualityInFASTQFile")
+  file1 <- file.path(tmpdir, "1.fastq")
+  
+  shortread1 <- ShortReadQ(          DNAStringSet("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+                           quality = FastqQuality("!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJ"),
+                           id      = BStringSet("read_with_illumina1.8/1"))
+  writeFastq(shortread1, file=file1, lane='')
+  checkEquals(detectQualityInFASTQFile(file1), c("illumina1.8", "GATK-rescaled"))
+  unlink(file1)
+
+  shortread1 <- ShortReadQ(          DNAStringSet("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+                           quality = FastqQuality(">BCBH@CAIF=B>&EFBFEBGEDHFII9HBDGHDHGFF@ICFBFBG>DGAH@KDIC1DAJ@KF?CAFBIGGBAB@C"),
+                           id      = BStringSet("read_with_rescaled_qual/1"))
+  writeFastq(shortread1, file=file1, lane='')
+  checkEquals(detectQualityInFASTQFile(file1), "GATK-rescaled")
+  unlink(file1)
+  
+  shortread1 <- ShortReadQ(          DNAStringSet("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+                           quality = FastqQuality("BCDEFGHIBCDEFGHIBCDEFGHIBCDEFGHIBCDEFGHIBCDEFGHI"),
+                           id      = BStringSet("read_with_all_quals/1"))
+  writeFastq(shortread1, file=file1, lane='')
+  checkEquals(detectQualityInFASTQFile(file1), c("sanger", "solexa", "illumina1.3", "illumina1.5", "illumina1.8", "GATK-rescaled"))
+  unlink(file1)
+}
+

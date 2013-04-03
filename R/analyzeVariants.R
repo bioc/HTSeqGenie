@@ -83,6 +83,7 @@ wrap.callVariants <- function(bam.file) {
   num.cores   <- getConfig.integer("num_cores")
   bqual       <- getConfig.numeric("analyzeVariants.bqual")
   save.dir    <- getConfig('save_dir')
+  indels      <- getConfig.logical("analyzeVariants.indels")
 
   max.len <- NA
   z <- try( summary <- parseSummaries(save.dir, "summary_preprocess"), silent=TRUE)
@@ -98,7 +99,8 @@ wrap.callVariants <- function(bam.file) {
   tally.param <- VariantTallyParam(GmapGenome(genome = genome,
                                               directory = path.expand(genome.dir)),
                                    readlen = max.len,
-                                   high_base_quality = bqual
+                                   high_base_quality = bqual,
+                                   indels = indels
                                    )
   ## we use the low level interface here, so we have access to the raw variants
   raw.variants <- tallyVariants(bam.file, tally.param, mc.cores=num.cores)
@@ -194,9 +196,10 @@ writeVCF <- function(variants.granges){
   ## build vcf object
   sam_id <- getConfig("alignReads.sam_id")
   if (is.null(sam_id)) sam_id <- ""
+  genome <- GmapGenome(getConfig("alignReads.genome"), getConfig("path.gsnap_genomes"))
   vcf <- variantGR2Vcf(variants.granges,                               
                        sample.id=sam_id,
-                       project="")
+                       project="", genome=genome)
   
   ## this is VariantAnnotation::writeVcf
   writeVcf(vcf, vcf.filename, index=TRUE)
@@ -247,7 +250,7 @@ calcConfusionMatrix <-function(variants){
 ##'
 ##' Plot Mutation Matrix
 ##' @title Plot Mutation Matrix
-##' @param variants Variants as Granges computed by SNVsOmuC
+##' @param variants Variants as Granges computed by VariantTools
 ##' @return Nothing, stores plots as files
 ##' @author Jens Reeder, Jeremiah Degenhardt
 ##' @export

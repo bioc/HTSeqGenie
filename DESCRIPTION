@@ -8,7 +8,7 @@ Imports:
     chipseq (>= 1.6.1),
     rtracklayer (>= 1.17.19),
     GenomicFeatures (>= 1.9.31),
-    VariantTools (>= 1.1.13),
+    VariantTools (>= 1.1.16),
     VariantAnnotation (>= 1.5.41)
 Maintainer: Gregoire Pau <pau.gregoire@gene.com>
 License: Artistic-2.0
@@ -17,7 +17,7 @@ Type: Package
 LazyLoad: yes
 Author: Gregoire Pau, Jens Reeder
 Description: Libraries to perform NGS analysis.
-Version: 3.9.22
+Version: 3.9.25
 Date: 2012-03-01
 Depends:
     R (>= 2.15.0),

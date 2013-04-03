@@ -364,9 +364,11 @@ detectQualityInFASTQFile <- function(filename, nreads=5000) {
       
     ## build a dictionary of known qualities
     ## "illumina1.5" upper bound is now 105 instead of 104, to accomodate Phred-qualities of 41 (instead of 40)
-    knownquals <- data.frame(qual=c("sanger", "solexa", "illumina1.3", "illumina1.5", "illumina1.8"),
-                             min=c(33,  59,  64,  66, 33),
-                             max=c(73, 104, 104, 105, 74), stringsAsFactors=FALSE)
+    ## some bam files from the TCGA project come with rescaled phred qualities from 1-50
+    ## to accomodate for them we invent a new quality range "GATK-rescaled"
+    knownquals <- data.frame(qual=c("sanger", "solexa", "illumina1.3", "illumina1.5", "illumina1.8", "GATK-rescaled"),
+                             min=c(33,  59,  64,  66, 33, 33), 
+                             max=c(73, 104, 104, 105, 74, 83), stringsAsFactors=FALSE)
     
     ## check compatible qualities
     rquals <- range(quals)
@@ -402,7 +404,7 @@ safeUnlink <- function(path) {
 ##' @param dir_path A character string containing a dir path
 ##' @param object_name A character string containing the regular expression matching a filename in dir_path
 ##' @return A character vector containing an existing filename, stops if 0 or more than 1
-##' @author greg
+##' @author Gregoire Pau
 ##' @export
 ##' @keywords internal
 getObjectFilename <- function(dir_path, object_name) {

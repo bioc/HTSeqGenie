@@ -82,6 +82,7 @@ coverage.maxFragmentLength:
 analyzeVariants.do: TRUE
 analyzeVariants.bqual: 23
 analyzeVariants.method: VariantTools ## comma-separated list, possible choices: VariantTools, GATK
+analyzeVariants.indels: FALSE
 
 ## GATK
 path.gatk_genomes:

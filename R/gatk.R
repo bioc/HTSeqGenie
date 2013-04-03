@@ -43,8 +43,8 @@ callVariantsGATK <- function(bam.file){
               
   vcf.file <- file.path(save.dir, "results",
                         paste(getConfig('prepend_str'),
-                              "_variants.vcf", sep=""))
-  ## TODO: add dbsnp
+                              "_variants.vcf.gz", sep=""))
+
   genome <- file.path(gatk.genomes, paste0(genome,".fa"))
   args <- paste("--num_threads", min(4,num.cores),
                 ## enabling more threads does not seem to have a positive effect on runtime
@@ -56,10 +56,9 @@ callVariantsGATK <- function(bam.file){
   gatk(gatk.jar.path=jar.path,
        method="UnifiedGenotyper", args=args)
   if(!file.exists(vcf.file)) stop("callVariantsGATK failed to create vcf file.")
-  zipped.vcf <- bgzip(vcf.file)
-  indexTabix(zipped.vcf, format="vcf")
+  indexTabix(vcf.file, format="vcf")
 
-  return(zipped.vcf)
+  return(vcf.file)
 }
 
 ##' Check for the GATK jar file
