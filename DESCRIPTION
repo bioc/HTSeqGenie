@@ -2,8 +2,8 @@ Package: HTSeqGenie
 Imports:
     BiocGenerics (>= 0.2.0),
     IRanges (>= 1.14.3),
-    GenomicRanges (>= 1.7.12),
-    Rsamtools (>= 1.8.5),
+    GenomicRanges (>= 1.13.3),
+    Rsamtools (>= 1.13.1),
     Biostrings (>= 2.24.1),
     chipseq (>= 1.6.1),
     rtracklayer (>= 1.17.19),
@@ -17,7 +17,7 @@ Type: Package
 LazyLoad: yes
 Author: Gregoire Pau, Jens Reeder
 Description: Libraries to perform NGS analysis.
-Version: 3.11.0
+Version: 3.11.1
 Date: 2012-03-01
 Depends:
     R (>= 2.15.0),

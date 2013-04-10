@@ -24,9 +24,9 @@
 \details{
   This function returns a GRangesList containing
   information about pair-end alignment data.  It is
-  essentially Rsamtools::readBamGappedAlignments, but it
+  essentially Rsamtools::readGAlignmentsFromBam, but it
   uses Rsamtools::scanBam to get information that cannot be
-  obtained from readBamGappedAlignments.
+  obtained from readGAlignmentsFromBam.
 }
 \author{
   Cory Barr
