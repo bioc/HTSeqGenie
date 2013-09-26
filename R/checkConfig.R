@@ -34,22 +34,11 @@ checkConfig <- function() {
 ## read template configuration file (and recursively if needed)
 checkConfig.template <- function() {
   template_config <- getConfig("template_config")
-
+  
   if (!is.null(template_config)) {
-    ## first try: test if the file exists in the current path
-    ff <- template_config
-    
-    ## second try: test if the file exists in HTSEQGENIE_CONFIG
-    if (!file.exists(ff)) {
-      HTSEQGENIE_CONFIG <- Sys.getenv("HTSEQGENIE_CONFIG")
-      if (!is.null(HTSEQGENIE_CONFIG))  ff <- file.path(HTSEQGENIE_CONFIG, template_config)
-    } 
-    
-    ## third try: test if the file exists in the config directory
-    if (!file.exists(ff)) ff <- getPackageFile(file.path("config", template_config), mustWork=FALSE)
-
+    ff <- findTemplate(template_config)
     ## load ff
-    if (file.exists(ff)) {
+    if (! is.null(ff)) {
       cat(paste("checkConfig.R/checkConfig.template: loading template config=", ff), "\n")
       updateConfig(list(template_config="")) ## remove template_config parameter from current config
       current_config <- getConfig() ## save current config
@@ -58,6 +47,21 @@ checkConfig.template <- function() {
       updateConfig(current_config)      
     } else stop("checkConfig.R/checkConfig.template: cannot open file indicated by config parameter template_config=", getConfig("template_config"))
   }
+}
+
+
+findTemplate <- function(template_config){
+  potential.config.dirs <- list("", "./", ## allows absolute and relative paths
+                                strsplit(Sys.getenv("HTSEQGENIE_CONFIG"), ':')[[1]],
+                                ## this will pull in inst/config while interactive
+                                ## even if we are in a wrapper package that also defines a inst/config
+                                getPackageFile("config"),
+                                ## fallback is always the installed version of HTSeqGenie
+                                system.file("config", package="HTSeqGenie"))
+
+  paths <- file.path(unlist(potential.config.dirs), template_config)
+  ff <- paths[file.exists(paths)][1]
+  return(ff)
 }
 
 checkConfig.input <- function() {
@@ -325,32 +329,56 @@ checkConfig.analyzeVariants <- function() {
     analyzeVariants.method <- getConfig("analyzeVariants.method", stop.ifempty=TRUE)
     if (length(analyzeVariants.method)==0) stop("'analyzeVariants.method' must contain a character string")
 
-    else {
-      knownMethods <- c("VariantTools", "GATK")
-      z <- analyzeVariants.method%in%knownMethods
-      if (!z) stop("'analyzeVariants.method' must contain the name of a method among: ", paste(knownMethods, collapse=", "))
-      if ("GATK" %in% analyzeVariants.method) {
-        gatk.path <- getConfig("path.gatk", stop.ifempty=TRUE)
-        if ( checkGATKJar(gatk.path) != TRUE ){
-          stop("Can't call GATK! Check your path.gatk settings and make sure you have java in your PATH")
-        }
-        gatk.genomes <- getConfig("path.gatk_genomes", stop.ifempty=TRUE)
-        genome <- getConfig("alignReads.genome", stop.ifempty=TRUE)
-        genome.path <- file.path(gatk.genomes, paste0(genome, ".fa"))
-        if(!file.exists(genome.path)){
-          stop(paste("GATK genome not found at", genome.path))
-        }
+    knownMethods <- c("VariantTools", "GATK")
+    z <- analyzeVariants.method%in%knownMethods
+    if (!z) stop("'analyzeVariants.method' must contain the name of a method among: ", paste(knownMethods, collapse=", "))
+    if ("GATK" %in% analyzeVariants.method) {
+      gatk.path <- getConfig("path.gatk", stop.ifempty=TRUE)
+      if ( checkGATKJar(gatk.path) != TRUE ){
+        stop("Can't call GATK! Check your path.gatk settings and make sure you have java in your PATH")
       }
-      if ("VariantTools" %in% analyzeVariants.method) {
-        ## analyzeVariants.bqual
-        analyzeVariants.bqual <- getConfig.numeric("analyzeVariants.bqual", stop.ifempty=TRUE)
-        if(analyzeVariants.bqual < 0 || analyzeVariants.bqual > 41)
-          stop("analyzeVariants.bqual must be an integer between 0 and 41")     
+      gatk.genomes <- getConfig("path.gatk_genomes", stop.ifempty=TRUE)
+      genome <- getConfig("alignReads.genome", stop.ifempty=TRUE)
+      genome.path <- file.path(gatk.genomes, paste0(genome, ".fa"))
+      if(!file.exists(genome.path)){
+        stop(paste("GATK genome not found at", genome.path))
       }
-      
-      ## analyzeVariants.indels
-      getConfig.logical("analyzeVariants.indels", stop.ifempty=TRUE)
     }
+    if ("VariantTools" %in% analyzeVariants.method) {
+      ## analyzeVariants.bqual
+      analyzeVariants.bqual <- getConfig.numeric("analyzeVariants.bqual", stop.ifempty=TRUE)
+      if(analyzeVariants.bqual < 0 || analyzeVariants.bqual > 41)
+        stop("analyzeVariants.bqual must be an integer between 0 and 41")     
+      
+      ## analyzeVariants.rep_mask
+      rmask.file <- getConfig("analyzeVariants.rep_mask")
+      if(!(is.null(rmask.file))){
+        if(!file.exists(rmask.file)){
+          stop(paste("Repeat mask file not found at", rmask.file))
+        }
+      }
+      ## analyzeVariants.dbsnp
+      dbsnp <- getConfig("analyzeVariants.dbsnp", stop.ifempty=FALSE)
+      if(!(is.null(dbsnp))){
+        if(!file.exists(dbsnp)){
+          stop(paste("dbsnp Rdata file not found at", dbsnp))
+        }
+      }
+      ## analyzeVariants.callingFilters
+      calling.filters <- getConfig.vector("analyzeVariants.callingFilters")
+      all.filters = VariantCallingFilters()
+      if (! all(calling.filters %in% names(all.filters))) {
+        stop("Some of the VariantCallingFilters are not provided by VariantTools!")
+      }
+      ## analyzeVariants.postFilters
+      post.filters <- getConfig.vector("analyzeVariants.postFilters")
+      all.filters = VariantPostFilters()
+      if (! all(post.filters %in% names(all.filters))) {
+        stop("Some of the VariantPostFilters are not provided by VariantTools!")
+      }
+    }
+    ## analyzeVariants.indels
+    getConfig.logical("analyzeVariants.indels", stop.ifempty=TRUE)
   }
+  invisible(TRUE)
 }
-

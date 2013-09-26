@@ -143,9 +143,11 @@ getConfig.vector <- function(p, ...) {
   if (!is.null(a)) {
     a <- gsub("[ \t]", "", a)
     a <- strsplit(a, ",")[[1]]
+  } else {
+    a <- vector(mode='character')
   }
-  a
-}  
+  return(a)
+} 
 
 ##' Read and parse a configuration file
 ##' 

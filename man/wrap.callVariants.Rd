@@ -8,7 +8,7 @@
   \item{bam.file}{Aligned reads as bam file}
 }
 \value{
-  Variants as granges
+  Variants as Vranges
 }
 \description{
   Call Variants in the pipeline framework

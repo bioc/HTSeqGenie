@@ -23,12 +23,13 @@ preprocessReads <- function() {
                        subsample_nbreads=getConfig.integer("subsample_nbreads"),
                        max_nbchunks=getConfig.integer("max_nbchunks"))
     
-    ## preprocess reads using preprocessReadsChunk
-    processChunks(FastQStreamer.getReads, preprocessReadsChunk)
+    ## preprocess reads using preprocessReadsChunk and not more than 12 cores
+    nb.parallel.jobs <- min(getConfig.integer("num_cores"), 12)
+    processChunks(FastQStreamer.getReads, preprocessReadsChunk, nb.parallel.jobs=nb.parallel.jobs)
     
     ## release streamer
     FastQStreamer.release()
-    
+     
     ## merge chunks
     chunkdirs <- getChunkDirs()
     save_dir <- getConfig("save_dir")
@@ -47,7 +48,7 @@ preprocessReadsChunk <- function(lreads, save_dir=NULL) {
   
   ## determine read length and num mismatches
   total_reads <- length(lreads[[1]])
-  if (total_reads>0) read_length <- width(sread(lreads[[1]])[1])
+  if (total_reads>0) read_length <- width(lreads[[1]])[1]
   else read_length <- NA
   summary_preprocess <- list(total_reads=total_reads, read_length=read_length)
   loginfo(paste("preprocessReads.R/preprocessReadsChunk: processing nbreads=", total_reads, "width=", read_length))
@@ -56,13 +57,13 @@ preprocessReadsChunk <- function(lreads, save_dir=NULL) {
   z <- unlist(lapply(lreads, function(z) width(sread(z))))
   if (length(z)>0) summary_preprocess <- c(summary_preprocess, input_min_read_length=min(z), input_max_read_length=max(z))
   else summary_preprocess <- c(summary_preprocess, input_min_read_length=NA, input_max_read_length=NA)
-  
-  ## trim reads
+
+  ## trim reads by hard length cutoff
   if (getConfig("trimReads.do")) {
     trim_len <- getConfig.integer("trimReads.length")
     lreads <- trimReads(lreads, trim_len)
   }
-  
+
   ## filter reads
   if (getConfig.logical("filterQuality.do")) {
     lreads <- filterQuality(lreads)

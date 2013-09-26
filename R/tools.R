@@ -69,7 +69,7 @@ processChunks <- function(inext, fun, nb.parallel.jobs) {
   
   ## get config parameters
   if (missing(nb.parallel.jobs)) nb.parallel.jobs <- getConfig.integer("num_cores")
-
+  
   chunk.dir <- getConfig('chunk_dir')
   ## tracer
   tracefun.starttime <- list()
@@ -108,17 +108,17 @@ processChunks <- function(inext, fun, nb.parallel.jobs) {
     setUpDirs(save_dir, overwrite="overwrite")
     writeConfig(file.path(save_dir, "logs", "config.txt"))
     initLog(save_dir, getConfig("debug.level"))
-    safeExecute(fun(..., save_dir=save_dir), memtracer=FALSE)
+    safeExecute(fun(..., save_dir=save_dir), memtracer=FALSE, newthread=FALSE)
   }
-
+  
   ## clean up memory before firing new threads, this should decrease a lot of memory usage
   gc(reset=TRUE)
   gc()
   
   ## process chunks
   res <- sclapply(inext=inext, fun=funlog, max.parallel.jobs=nb.parallel.jobs, stop.onfail=TRUE,
-           tracefun=tracefun, tracefun.period=60)
-
+                  tracefun=tracefun, tracefun.period=60)
+  
   ## all jobs failed? => stop
   if (all(sapply(res, class)=="try-error")) {
     stop("tools.R/processChunks: all jobs failed")
@@ -244,7 +244,7 @@ sclapply <- function(inext, fun, max.parallel.jobs, ..., stop.onfail=TRUE, trace
 traceMem <- function() {
   wmem <- getMemoryUsage()
   wmem <- (wmem["used"] - wmem["cached"])/1e9
-  msg <- sprintf("tools.R/traceMem: wired.mem=%f GiB \n", wmem)
+  msg <- sprintf("tools.R/traceMem: wired.mem=%f GiB", wmem)
   logdebug(msg)
 }
 
@@ -302,18 +302,23 @@ getTraceback <- function(mto) {
 ##' Requires the logger to be set
 ##' @param expr Expression to safely execute 
 ##' @param memtracer A boolean, to enable/disable a periodic memory tracer. Default is TRUE.
+##' @param newthread A boolean, indicating if a new thread should be used (to save memory from the main thread)
 ##' @return Nothing
 ##' @author Gregoire Pau
 ##' @export
 ##' @keywords internal
-safeExecute <- function(expr, memtracer=TRUE) {
+safeExecute <- function(expr, memtracer=TRUE, newthread=TRUE) {
   ## start memory tracer
   if (memtracer) pmemtracer <- mcparallel(repeat {Sys.sleep(60) ; traceMem()})
-
-  ## execute expr in a child thread (to save memory from the)
-  z <- mccollect(mcparallel(tryKeepTraceback(expr)))
-  if (length(z)>0) z <- z[[1]]
-  else z <- NULL
+  
+  ## execute expr in a new thread (to save memory from the main thread)?
+  if (newthread) {
+    z <- mccollect(mcparallel(tryKeepTraceback(expr)))
+    if (length(z)>0) z <- z[[1]]
+    else z <- NULL
+  } else {
+    z <- tryKeepTraceback(expr)
+  }
   
   ## kill memory tracer
   if (memtracer) parallel:::mckill(pmemtracer, SIGTERM)

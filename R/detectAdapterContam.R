@@ -121,7 +121,7 @@ isAdapter <- function(reads,
 }
 
 
-##' Estimate an adopter alignment cutoff scor
+##' Estimate an adapter alignment cutoff score
 ##'
 ##' Empirically estimate a threshold that discriminates
 ##' random reads from reads with adapter contamination
@@ -145,6 +145,7 @@ getRandomAlignCutoff <- function(read_len, n) {
   return(randomAlignScores)
 }
 
+## test function to get an overview of possible cutoffs
 estimateCutoffs <- function() {
   readlengths <- c(50, 75, 100, 125)
   n <- 200000 ## sample size

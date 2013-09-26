@@ -2,10 +2,10 @@
 \alias{writeVCF}
 \title{writeVCF}
 \usage{
-  writeVCF(variants.granges)
+  writeVCF(variants.vranges)
 }
 \arguments{
-  \item{variants.granges}{Genomic Variants as Granges
+  \item{variants.vranges}{Genomic Variants as VRanges
   object}
 }
 \value{

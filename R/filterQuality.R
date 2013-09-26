@@ -20,12 +20,20 @@ filterQuality <- function(lreads) {
   minquality <- getConfig.numeric("filterQuality.minQuality")
   minfrac <- getConfig.numeric("filterQuality.minFrac")
   minlength <- getConfig.numeric("filterQuality.minLength")
-    
+  if (is.null(minlength)) minlength <- 1
+
+  ## trim reads based on low quality tail
+  lreads <- trimTailsByQuality(lreads)
+  
+  ## remove reads that got trimmed too short or already came in short
+  z <- filterByLength(lreads, minlength, paired_ends)
+  lreads <- lapply(lreads, function(reads) reads[z])
+  
   comb <- HTSeqGenie::isAboveQualityThresh(lreads[[1]], minquality=minquality,
-                                           minfrac=minfrac, minlength=minlength)
+                                           minfrac=minfrac)
   if (paired_ends) {
     comb <- comb & HTSeqGenie::isAboveQualityThresh(lreads[[2]], minquality=minquality,
-                                                    minfrac=minfrac, minlength=minlength)
+                                                    minfrac=minfrac)
   }
   lreads <- lapply(lreads, function(reads) reads[comb])
   loginfo(paste("filterQuality.R/filterQuality: fraction of bad reads=", mean(!comb)))
@@ -43,13 +51,12 @@ filterQuality <- function(lreads) {
 ##' @param minquality Minimal quality score
 ##' @param minfrac Fraction of positions that need to be over
 ##'                minquality to be considered a good read.
-##' @param minlength The minimum read length. Default is no filter on read length.
 ##' @return A boolean vector indicating whether read is considered high quality.
 ##' @keywords internal
 ##' @export
 ##' @importMethodsFrom Biostrings unlist
 ##' @importMethodsFrom IRanges  unlist as.vector as.factor
-isAboveQualityThresh <- function(reads, minquality, minfrac, minlength=NULL) {
+isAboveQualityThresh <- function(reads, minquality, minfrac) {
   ## Going through the process of making a single concatted qual
   ## score so can use Bioc qual-score converter
   qualities <- quality(quality(reads))
@@ -66,9 +73,58 @@ isAboveQualityThresh <- function(reads, minquality, minfrac, minlength=NULL) {
   means <- viewMeans(thresh_views)
   z <- means > minfrac
 
-  ## filter on read length
-  if (!is.null(minlength)) z <- z & width(reads)>=minlength
-
   ## return filter
   z
+}
+
+##' Filter reads by length
+##'
+##' Checks whether reads have at least a length of minlength.
+##' Useful values are zero the rid of empty reads or 12 to match
+##' the gsnap k-mer size.
+##'
+##' @param lreads A set of reads as ShortReadQ object
+##' @param minlength Minimum length
+##' @param paired Indicates whether lreads has one of two elements
+##' @return A boolean vector indicating whether read passes filter
+##' @keywords internal
+##' @export
+filterByLength <- function(lreads, minlength=12, paired=FALSE) {
+  loginfo("filterQuality.R/filterQuality: filterByLength...")
+  
+  z <- width(lreads[[1]]) >= minlength
+  if (paired) {
+    z <- z & width(lreads[[2]]) >= minlength
+  }
+  loginfo(paste("filterQuality.R/filterByLength: fraction of filtered short reads=", mean(!z)))
+  loginfo("filterQuality.R/filterByLength: done")
+  
+  return(z)
+}
+
+##' Trim off low quality tail
+##' 
+##' The illuminsa manuals states:
+##' If a read ends with a segment of mostly low quality (Q15 or below),
+##' then all of the quality values in the segment are replaced with a value of 2(
+##' encoded as the letter B in Illumina's text-based encoding of quality scores)...
+##' This Q2 indicator does not predict a specific error rate, but rather indicates
+##' that a specific final portion of the read should not be used in further analyses.
+##'
+##' For illumina 1.8 the special char is encoded as '#', which we chhose as default here.
+##' For illumina 1.5 make sure to set the minqual to 'B'
+##' 
+##' @param lreads A list (usually a pair) of ShortReadQ object
+##' @param minqual An ascii encoded quality score
+##' @return A list of quality trimmed ShortReadQ objects
+##' @keywords internal
+##' @export
+trimTailsByQuality <- function (lreads, minqual="#"){  
+  loginfo(paste("preprocessReads.R/preprocessReadsChunk: Starting trimTailsByQuality ..."))
+  total_reads <- length(lreads[[1]])
+  if(total_reads > 0){
+    lreads <- lapply(lreads, function(x)  trimEnds(x, a=minqual, left=FALSE))
+    loginfo(paste("preprocessReads.R/preprocessReadsChunk: done"))
+  }
+  return(lreads)
 }

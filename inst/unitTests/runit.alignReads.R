@@ -14,8 +14,8 @@ test.alignReads <- function() {
 
   ## peek into at least one dir to see if it actually computed something
   bam_files = dir(file.path(chunk_dirs[1], "bams"), pattern="*.bam$")
-  checkEqualsNumeric(length(bam_files), 15,
-                     "alignReads() produces 15 bam files")
+  checkEqualsNumeric(length(bam_files), 19,
+                     "alignReads() produces 19 bam files")
 
   unlink(getConfig("save_dir"), recursive=TRUE)
 }

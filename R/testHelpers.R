@@ -21,7 +21,6 @@ setupTestFramework <- function(config.filename, config.update=list(), testname="
                        config.update)
   }
   updateConfig(config.update)
-
   ## prepare update config and update paths
   ## this lets the tests use package data regardless of it being installed or run out of a svn co
   save_dir <- tempfile(pattern=paste(testname, ".", sep=""), tmpdir=tempdir())

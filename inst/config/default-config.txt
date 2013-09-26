@@ -80,9 +80,13 @@ coverage.maxFragmentLength:
 
 ## analyze Variants
 analyzeVariants.do: TRUE
-analyzeVariants.bqual: 23
-analyzeVariants.method: VariantTools ## comma-separated list, possible choices: VariantTools, GATK
+analyzeVariants.method: VariantTools ## possible choices: VariantTools, GATK
+analyzeVariants.bqual: 23 ## minimum base qual 
 analyzeVariants.indels: FALSE
+analyzeVariants.rep_mask:    ## path to repeat mask track in bed format
+analyzeVariants.dbsnp:    ## path to dbsnp whitelist in vcf format
+analyzeVariants.callingFilters: nonRef,nonNRef,readCount,likelihoodRatio ##comma separated list of VT calling Filters
+analyzeVariants.postFilters: avgNborCount ##comma separated list of VT post Filters, if empty use VT defaults
 
 ## GATK
 path.gatk_genomes:

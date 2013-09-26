@@ -14,8 +14,9 @@
 ##' @export
 mergeLanes <- function(indirs, outdir, prepend_str, num_cores, config_update, preMergeChecks.do=TRUE, ignoreConfigParameters) {
   ## set up logger
+  logReset()
   addHandler(writeToConsole, level="DEBUG")
-
+  
   ## check ignoreConfigParameters
   if (missing(ignoreConfigParameters)) {
     ignoreConfigParameters <- c("input_file", "input_file2", "subsample_nbreads", "quality_encoding",
@@ -109,21 +110,15 @@ preMergeChecks <- function(indirs) {
 
 .IDverify <- function(indirs, iivar_min=0.8){
   if (length(indirs)>1) {
-    variants <- sapply(indirs, function(indir) getObjectFilename(file.path(indir, "results"), "filtered_variants_granges"))
-    iivar <- rep(NA, length(indirs)-1)
-    var1 <- get(load(variants[1]))
-    nvar1 <- names(variants[1])
-    for (i in 1:length(iivar)) {
-      var2 <- get(load(variants[i+1]))
-      nvar2 <- names(variants[i+1])
-      iiv <- VariantTools:::checkVariantConcordance(var1, var2)
-      loginfo(paste("mergeLanes.R/IDVerify: variantConcordance between [", nvar1, "] and [", nvar2, "] is a=", iiv[1], "b=", iiv[2]))
-      iivar[i] <- iiv$fraction
-      var1 <- var2
-      nvar1 <- nvar2
-    }
-    if (any(is.na(iivar)) || min(iivar)<iivar_min) {
-      stop("mergeLanes.R/IDverify: ID verify failed [", paste(iivar, collapse=", "), "], iivar_min=", iivar_min)
+    variant.files <- sapply(indirs, function(indir)
+                            getObjectFilename(file.path(indir, "results"), "variants.vcf.gz$"))
+    ## Genome slot not used for comparison, so it does not matter what we put there
+    conc.matrix <- VariantTools::calculateConcordanceMatrix(variant.files, genome="unknown")
+    conc.calls <- VariantTools::callVariantConcordance(conc.matrix, iivar_min)
+    if (any(conc.calls != 'concordant')) {
+      rownames(conc.matrix) <- colnames(conc.matrix) <- basename(indirs)
+      write.table(conc.matrix, sep="\t")
+      stop("mergeLanes.R/IDverify: ID verify failed")
     }
   }
 }

@@ -1,7 +1,3 @@
-##' @importFrom VariantTools VariantTallyParam callVariants variantGR2Vcf tallyVariants qaVariants
-##' @importFrom VariantAnnotation writeVcf
-NULL
-
 ##' Calculate and process Variants
 ##'
 ##' @title Calculate and process Variants
@@ -10,18 +6,26 @@ NULL
 ##' @export
 analyzeVariants <- function(){
   loginfo("analyzeVariants/analyzeVariants: starting ...")
-  save.dir <- getConfig('save_dir')
+  
+  ## get config parameters
+  save_dir <- getConfig('save_dir')
   analyzeVariants.method <- getConfig("analyzeVariants.method", stop.ifempty=TRUE)
-  bam.file <- file.path(save.dir, 'bams',
+  prepend_str <- getConfig("prepend_str")
+  bam.file <- file.path(save_dir, 'bams',
                         paste(getConfig('prepend_str'),
                               'analyzed.bam', sep="."))
 
   safeExecute({
     if(analyzeVariants.method=='GATK'){
-      callVariantsGATK(bam.file)
+      vcf.filename <- callVariantsGATK(bam.file)
     }
     if(analyzeVariants.method=='VariantTools'){ 
-      callVariantsVariantTools(bam.file)
+      vcf.filename <- callVariantsVariantTools(bam.file)
+    }
+    if (!is.null(vcf.filename)) {
+      vcfstat <- vcfStat(vcf.filename)
+      df <- data.frame(name=names(vcfstat), value=vcfstat, stringsAsFactors=FALSE)
+      saveWithID(df, "summary_variants", id=prepend_str, save_dir=file.path(save_dir, "results"), format="tab")
     }
   }, memtracer=getConfig.logical("debug.tracemem"))
   loginfo("analyzeVariants/analyzeVariants: done")
@@ -29,39 +33,8 @@ analyzeVariants <- function(){
 
 callVariantsVariantTools <- function(bam.file) {
   variants <- wrap.callVariants(bam.file)
-  if (length(variants$filtered.variants) > 0) {
-    ## all these only make sense if we have actual variants
-    writeVCF(variants$filtered.variants)
-    reports.dir <- file.path(getConfig('save_dir'), "reports")
-    processVariants(variants, reports.dir)
-  } else {
-    logwarn("No variants found. Check your inputs and log messages for errors")
-  }
-}
-
-##' Process variant callings
-##'
-##' For a given eset of variants, calculates
-##' variant depth, confusion matrix, transition ratio
-##' and the mutation matrix
-##' @param variants GrangesList of variants
-##' @param reports.dir Directory to store the resulting images and html
-##' @return Name of generated html file
-##' @export
-processVariants <- function(variants, reports.dir){
-
-  filtered <- variants$filtered.variants
-
-  depth.plot <- plotVariantDepth(filtered)
-  transition.ratio <- getTransitionRatio(x = values(filtered)$ref,
-                                         y = values(filtered)$alt)
-  mutation.matrix <- plotMutationMatrix(filtered)
-
-  .writeVariantSummary(variants, transition.ratio)
-  html.file <- .writeVariantReport(reports.dir, depth.plot, mutation.matrix,
-                                   transition.ratio)
-
-  return(html.file)
+  vcf.filename <- writeVCF(variants$filtered.variants)
+  return(vcf.filename)
 }
 
 ##' Call Variants in the pipeline framework
@@ -71,226 +44,179 @@ processVariants <- function(variants, reports.dir){
 ##' 
 ##' @title Variant calling
 ##' @param bam.file Aligned reads as bam file
-##' @return Variants as granges
+##' @return Variants as Vranges
 ##' @author Jens Reeder
 ##' @export
+##' @importFrom VariantTools TallyVariantsParam tallyVariants VariantPostFilters callVariants postFilterVariants VariantCallingFilters
 wrap.callVariants <- function(bam.file) {  
   loginfo("analyzeVariants.R/wrap.callVariants: Calling variants...")
 
-  prepend_str <- getConfig('prepend_str')
-  genome      <- getConfig("alignReads.genome")
-  genome.dir  <- getConfig("path.gsnap_genomes")
+  ## get config parameters
   num.cores   <- getConfig.integer("num_cores")
-  bqual       <- getConfig.numeric("analyzeVariants.bqual")
-  save.dir    <- getConfig('save_dir')
-  indels      <- getConfig.logical("analyzeVariants.indels")
 
-  max.len <- NA
-  z <- try( summary <- parseSummaries(save.dir, "summary_preprocess"), silent=TRUE)
-  if(class(z)=="try-error"){
-    ## We could implement a fallback to read from bam file here, but for now just stop
-    stop("Can't read preprocess summary, so can't figure out read length.")
-  }else{
-    min.len <- summary[,'processed_min_read_length']
-    max.len <- summary[,'processed_max_read_length']
-    if(min.len != max.len) logwarn("Inconsistent read lengths can have a negative effect on variant calling as it uses the maximum read length for one of its filters")
-  }
+  ## tally variants
+  loginfo("analyzeVariants.R/wrap.callVariants: Tallying variants...")  
+  tally.param  <- .buildTallyParam()
+  tally.variants <- tallyVariants(bam.file, tally.param,
+                                BPPARAM = MulticoreParam(workers=num.cores))
+
+  loginfo("analyzeVariants.R/wrap.callVariants: calling variants...")
+  variants <- callVariants(tally.variants, calling.filters=buildCallingFilters())
+  variants <- .postFilterVariants(variants)
   
-  tally.param <- VariantTallyParam(GmapGenome(genome = genome,
-                                              directory = path.expand(genome.dir)),
-                                   readlen = max.len,
-                                   high_base_quality = bqual,
-                                   indels = indels
-                                   )
-  ## we use the low level interface here, so we have access to the raw variants
-  raw.variants <- tallyVariants(bam.file, tally.param, mc.cores=num.cores)
-  qa.variants  <- qaVariants(raw.variants)
-  variants     <- callVariants(qa.variants)
-
   loginfo("analyzeVariants.R/wrap.callVariants: Saving GRanges of raw and filtered variants...")
-  ## TODO: sclapply this
-  saveWithID(raw.variants,
-             "raw_variants_granges",
-             prepend_str,
-             save_dir=file.path(getConfig('save_dir'), "results"),
-             compress=FALSE)
 
-  saveWithID(variants,
-             "filtered_variants_granges",
-             prepend_str,
-             save_dir=file.path(getConfig('save_dir'), "results"),
-             compress=FALSE)
-
+  .saveVTvars(tally.variants, variants)
+  
   loginfo("analyzeVariants.R/wrap.callVariants: ...done")
-  return(list(raw.variant = raw.variants,
+  return(list(raw.variants = tally.variants,
               filtered.variants = variants))
 }
 
-## Generate a HTML report
-.writeVariantReport <- function(reports.dir, depth.by.strand.plot, mutation.matrix,
-                                transition.ratio){
+.buildTallyParam <- function(){
+  genome      <- getConfig("alignReads.genome")
+  genome.dir  <- getConfig("path.gsnap_genomes")
+  indels      <- getConfig.logical("analyzeVariants.indels")
+  bqual       <- getConfig.numeric("analyzeVariants.bqual")
+  rmask.file  <- getConfig("analyzeVariants.rep_mask")
+  
+  ## we use the low level interface here, so we have access to the raw variants
+  args <- list(GmapGenome(genome = genome,
+                          directory = path.expand(genome.dir)),
+               high_base_quality = bqual,
+               indels = indels)            
+  if(!is.null(rmask.file)){
+    loginfo("analyzeVariants.R/wrap.callVariants: Using repeat masker track for tally filtering.")
+    mask <- rtracklayer::import(rmask.file, asRangedData=FALSE)
+    args <- c(args, mask=mask)
+  }  
+  tally.param <- do.call(TallyVariantsParam, args)
 
-  out.file <- file.path(reports.dir, "reportVariants.html")
-  p=openPage(out.file)
-  
-  hwrite('Read Depth by Strand', p, heading=2)
-  hwrite('Total read depth vs. fraction of reads on the positive strand', p)
-  hwrite('', p, br=TRUE)
-  hwriteImage(file.path("images", paste(basename(depth.by.strand.plot), "png", sep=".")),
-              p, br=TRUE,
-              link=file.path("images", paste(basename(depth.by.strand.plot), "pdf", sep=".")))
-  hwrite('', p, br=TRUE)
-  
-  hwrite('Mutation matrix', p, heading=2)
-  hwrite('Dsiplays the number of times a variant changed one nucleotide to another.', p, br=TRUE)
-  hwrite('', p, br=TRUE)
-  hwriteImage(file.path("images", "mutation_matrix.png"),
-              p, br=TRUE,
-              link=file.path("images", "mutation_matrix.pdf"))
-  hwrite('', p, br=TRUE)
-  hwrite(as(t(mutation.matrix), "matrix"), p)
-  hwrite('', p, br=TRUE)
-
-  hwrite('Nucleotide Transition vs Transversion Ratio', p, heading=2)
-  hwrite('The ratio obtained by dividing the number of nucleotide transitions by the total number of variants.')
-  hwrite('"Transitions" are defined as a pyramidine changing to another pyramidine (A <-> G) or a purine to another purine (C <-> T).', p, br=TRUE)
-  hwrite('', p, br=TRUE)
-  hwrite(sprintf("%.4f", transition.ratio), p)
-  hwrite('', p, br=TRUE)
-  
-  closePage(p, splash=FALSE)
-  return(out.file)
+  return(tally.param)
 }
 
-.writeVariantSummary <- function(variants, transition.ratio){
+##Given a list of calling filter names, construct actual Filter objects
+buildCallingFilters <- function(){
 
-  raw      <- variants$raw.variants
-  filtered <- variants$filtered.variants
+  calling.filter.names <- getConfig.vector("analyzeVariants.callingFilters")
+  calling.filters = VariantCallingFilters()
 
-  summary_variants <- list()
-  summary_variants$'raw_variants_count' <-  length(raw)
-  summary_variants$'filtered_variants_count' <-  length(filtered)
-  summary_variants$'transitions_transversions_ratio' <- transition.ratio
-  
-  df <- data.frame(name=names(summary_variants), value=unlist(summary_variants)) 
-  saveWithID(df, "summary_variants", id=getConfig('prepend_str'),
-             save_dir=file.path(getConfig('save_dir'), "results"), format="tab")
+  return( calling.filters[ calling.filter.names ] )
+}
 
-  return(summary_variants)
-}  
+.postFilterVariants <- function(variants){
+  loginfo("analyzeVariants.R/wrap.postFilerVariants: post filtering variants...")
+  dbsnp.file  <- getConfig("analyzeVariants.dbsnp")
+  filter.names <- getConfig.vector("analyzeVariants.postFilters")
 
+  all.filters = VariantPostFilters()
+  filters = all.filters[ filter.names ]
+
+  args <- list(variants, post.filters=filters)
+  if(!is.null(dbsnp.file)){
+    loginfo("analyzeVariants.R/wrap.postFilterVariants: Using dbsnp whitelist for variant filtering.")
+    dbsnp <- get(load(dbsnp.file))
+    args <- c(args, whitelist=dbsnp)
+  }
+  vars <- do.call(postFilterVariants, args)
+  return(vars)
+}
+
+.saveVTvars <- function(raw.vars, filtered.vars) {
+  prepend_str <- getConfig('prepend_str')
+  save_dir    <- getConfig('save_dir')
+
+  saveWithID(raw.vars,
+             "raw_variants",
+             prepend_str,
+             save_dir=file.path(getConfig('save_dir'), "results"),
+             compress=FALSE)
+
+  saveWithID(filtered.vars,
+             "filtered_variants",
+             prepend_str,
+             save_dir=file.path(getConfig('save_dir'), "results"),
+             compress=FALSE)
+}
+         
 ##' Write variants to VCF file
 ##' 
 ##' @title writeVCF
-##' @param variants.granges Genomic Variants as Granges object
+##' @param variants.vranges Genomic Variants as VRanges object
 ##' @return VCF file name
 ##' @author Jens Reeder
 ##' @export
-writeVCF <- function(variants.granges){
+##' @importFrom VariantAnnotation writeVcf sampleNames<-
+writeVCF <- function(variants.vranges){
   loginfo("analyzeVariants.R/writeVCF: writing vcf file...")
-
+ 
   vcf.filename <- file.path(getConfig('save_dir'), "results",
                             paste(getConfig('prepend_str'),
-                                  "_variants.vcf", sep=""))
+                                  ".variants.vcf", sep=""))
 
-  ## build vcf object
-  sam_id <- getConfig("alignReads.sam_id")
-  if (is.null(sam_id)) sam_id <- ""
-  genome <- GmapGenome(getConfig("alignReads.genome"), getConfig("path.gsnap_genomes"))
-  vcf <- variantGR2Vcf(variants.granges,                               
-                       sample.id=sam_id,
-                       project="", genome=genome)
-  
-  ## this is VariantAnnotation::writeVcf
-  writeVcf(vcf, vcf.filename, index=TRUE)
+  if (length(variants.vranges)>0) {
+    ## build vcf object
+    sam_id <- getConfig("alignReads.sam_id")
+    if (is.null(sam_id)) sam_id <- ""
+    sampleNames(variants.vranges) <- sam_id
+    vcf <- as(variants.vranges, "VCF")
+    vcf.filename <- writeVcf(vcf, vcf.filename, index=TRUE)
+  } else {
+    vcf.filename <- NULL
+  }
 
   loginfo("analyzeVariants.R/writeVCF: ...done")
   return(vcf.filename)
 }
 
-##' Plot the variant depth
+##' Compute stats on a VCF file
 ##'
-##' Plot the variant depth
-##' @title Plot the variant depth
-##' @param variants Variants as computed by SVNsOmuC
-##' @return Name of plot file
-##' @author Cory Barr, Jens Reeder
+##' @title Compute stats on a VCF file
+##' @param vcf.filename A character pointing to a VCF (or gzipped VCF) file
+##' @return A numeric vector
+##' @author Gregoire Pau
 ##' @export
-plotVariantDepth <- function(variants){
-  loginfo("analyzeVariants.R/plotVariantDepth: Plotting depth by strand...")
-  depth_by_strand_plot <- file.path(getConfig('save_dir'),
-                                    "reports", "images", "depth_by_strand")
-  if(!file.exists(dirname(depth_by_strand_plot)))
-    dir.create(dirname(depth_by_strand_plot), recursive=TRUE)
+##' @importFrom VariantAnnotation scanVcf
+vcfStat <- function(vcf.filename) {
+  ## read vcf filename
+  vcf <- scanVcf(vcf.filename)[[1]]
 
-  plotDepthByStrand(variants, file=depth_by_strand_plot)
-  loginfo("analyzeVariants.R/plotVariantDepth: ...done")
-  return(depth_by_strand_plot)
+  ## general
+  nb.variants <- length(vcf$REF)
+  zsnv <- width(vcf$REF)==1 & nchar(vcf$ALT)==1
+  nb.snvs <- sum(zsnv)
+  nb.indels <- nb.variants - nb.snvs
+  
+  ## snvs nuc
+  nuc <- c("A", "C", "G", "T")
+  ref <- factor(as.character(vcf$REF[zsnv]), nuc)
+  alt <- factor(vcf$ALT[zsnv], nuc)
+  tab <- as.numeric(table(ref, alt))
+  ntab <- data.frame(ref=nuc, alt=rep(nuc, each=length(nuc)), stringsAsFactors=FALSE)
+  names(tab) <- paste("nb.snvs.", ntab$ref, ">", ntab$alt, sep="")
+  tab <- tab[ntab$ref!=ntab$alt]
+  
+  ## snvs freq
+  df <- data.frame(nref=numeric(0), nalt=numeric(0))
+  try({
+    if (!is.null(vcf$GENO$AD)) {
+      df <- as.data.frame(do.call(rbind, vcf$GENO$AD[zsnv]))
+      colnames(df) <- c("nref", "nalt")
+    }
+  }, silent=TRUE)
+  df$freqalt <- df$nalt/(df$nalt+df$nref)
+  qq <- seq(0, 1, length=21)
+  q.snvs.nalt <- quantile(df$nalt, qq, na.rm=TRUE)
+  names(q.snvs.nalt) <- paste(sprintf("q%03d", round(qq*100)), ".snvs.nalt", sep="")
+  q.snvs.freqalt <- quantile(df$freqalt, qq, na.rm=TRUE)
+  names(q.snvs.freqalt) <- paste(sprintf("q%03d", round(qq*100)), ".snvs.freqalt", sep="")
+  
+  ## final
+  c(nb.variants=nb.variants, nb.snvs=nb.snvs, nb.indels=nb.indels,
+    tab,
+    q.snvs.nalt, q.snvs.freqalt)
 }
-
-##' Calculate Confusion Matrix
-##'
-##' Calculate Confusion Matrix from Granges object containing variants
-##' @title Calculate Confusion Matrix
-##' @param variants Variants as GRanges
-##' @return confusion matrix as table
-##' @author Cory Barr, Jens Reeder
-##' @export
-calcConfusionMatrix <-function(variants){
-  loginfo("analyzeVariants.R/calcConfusionMatrix: Calculating nucleotide confusion matrix for variants...")
-  confusion_matrix <- table(factor(as.character(values(variants)$ref),
-                                   levels=c('A','C','G','T')),
-                            factor(as.character(values(variants)$alt),
-                                   levels=c('A','C','G','T')))
-  loginfo("analyzeVariants.R/calcConfusionMatrix: ...done")
-  return(confusion_matrix)
-}
-
-##' Plot Mutation Matrix
-##'
-##' Plot Mutation Matrix
-##' @title Plot Mutation Matrix
-##' @param variants Variants as Granges computed by VariantTools
-##' @return Nothing, stores plots as files
-##' @author Jens Reeder, Jeremiah Degenhardt
-##' @export
-plotMutationMatrix <- function(variants){
-
-  filename <- file.path(getConfig('save_dir'), "reports", "images",
-                        "mutation_matrix")
-  z <- calcConfusionMatrix(variants)
-
-  .plot.mosaic <- function(){
-    mosaicplot(z, col = c("firebrick3", "dodgerblue3", "forestgreen", "goldenrod3"),
-               cex.axis = 2,
-               main = "Mutation Matrix",
-               xlab= "Reference allele",
-               ylab= "Variant allele")
-    dev.off()
-  }
-  pdf(height=8,width=15,file=paste(filename, "pdf", sep="."))
-  .plot.mosaic()
-
-  png.file <- paste(filename, "png", sep=".")
-  png(filename= png.file,width = 900, height = 480, units = "px")
-  .plot.mosaic()
-  return(z)
-}
-
-##' Get Nucleotide Transition Ratio
-##'
-##' Get Nucleotide Transition Ratio
-##' @title Get Nucleotide Transition Ratio
-##' @param x DNAStringSet
-##' @param y DNAStringSet
-##' @return numeric vector of length 1
-##' @author Cory Barr
-##' @export
-getTransitionRatio <- function(x, y) {
-  loginfo("analyzeVariants.R/calcTransitionRatio: Calculating nucleotide transition ratio...")
-  pasted <- paste(as.character(x), as.character(y), sep='')
-  ratio <- mean(pasted == 'AG' | pasted == 'GA' | pasted == 'CT' | pasted == 'TC')
-  loginfo("analyzeVariants.R/calcTransitionRatio: ...done")
-  return(ratio)
-} 
-
+  
+  
+  
+  

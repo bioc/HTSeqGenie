@@ -29,7 +29,7 @@ parseSummaries <- function(save.dirs, summary.name) {
   ## get all summary stats into a list of data frames
   summary.types <- c("summary_preprocess", "summary_alignment",
                      "summary_variants", "summary_counts",
-                     "summary_junctions", "summary_analyzed_bamstats",
+                     "summary_analyzed_bamstats",
                      "summary_target_lengths")
 
   dat.summary <- list()
@@ -102,8 +102,15 @@ parseSummaries <- function(save.dirs, summary.name) {
 
   summary <- parseSummaries(save_dirs, "summary_variants")  
   filename <- file.path(image_dir, "summary_variants")
-
-  return(.heatmap(summary, basename(save_dirs), filename))
+  keep <- c('nb.snvs', 'nb.indels',
+            'nb.snvs.C>A', 'nb.snvs.G>A',
+            'nb.snvs.T>A', 'nb.snvs.A>C',
+            'nb.snvs.G>C', 'nb.snvs.T>C',
+            'nb.snvs.A>G', 'nb.snvs.C>G',
+            'nb.snvs.T>G', 'nb.snvs.A>T',
+            'nb.snvs.C>T', 'nb.snvs.G>T')
+  
+  return(.heatmap(summary[,keep], basename(save_dirs), filename))
 }
 
 .plotCountGFSummary <- function(save_dirs, image_dir) {
@@ -116,7 +123,7 @@ parseSummaries <- function(save.dirs, summary.name) {
                          'gene_coding_nbreads',
                          'transcript_nbreads',
                          'exon_nbreads',
-                         'dexseq_nbreads',
+                         'exon_disjoint_nbreads',
                          'intergenic_nbreads',
                          'ncRNA_nbreads',
                          'ncRNA_nongenic_nbreads')
@@ -131,8 +138,8 @@ parseSummaries <- function(save.dirs, summary.name) {
 
   filename <- file.path(image_dir, "summary_counts_by_feat")
   ## TODO require total number per feature
-  counts_by_nbfeat <- c('counts_dexseq_nbfeatures',
-                        'counts_exon_nbfeatures',
+  counts_by_nbfeat <- c('counts_exon_nbfeatures',
+                        'counts_exon_disjoint_nbfeatures',
                         'counts_gene_nbfeatures',
                         'counts_gene_coding_nbfeatures',
                         'counts_gene_exonic_nbfeatures',
@@ -371,7 +378,8 @@ writeSummary <- function(dirs, outdir="Summary", cutoffs) {
   qc.data <- cbind(qc.data,.plot.perc.reads.bad(perc.reads, image_dir))
 
   qc.data$genesDetected <- .plotGenesDetected(dat.summary$summary_counts, image_dir)
-  qc.data[,"junctionReads"] <- .plotJunctionReads(dat.summary$summary_junctions,
+
+  qc.data[,"junctionReads"] <- .plotJunctionReads(
                               dat.summary$summary_analyzed_bamstats, image_dir,cutoffs)
 
   qc.data[,"inOutLenEqual"]  <- .plot.in.out.min.max.readlength(dat.summary$summary_preprocess, image_dir, cutoffs)
@@ -502,16 +510,15 @@ writeSummary <- function(dirs, outdir="Summary", cutoffs) {
   return(qc)
 }
 
-.plotJunctionReads <- function(summary_junctions, summary_bamstats, image_dir, cutoffs){
+.plotJunctionReads <- function(summary_bamstats, image_dir, cutoffs){
   filename <- file.path(image_dir,"junction_reads")
-  data <- summary_junctions[,"count_junction_reads"]
+  data <- summary_bamstats[,"cigar.withN.nbrecords"]
   totals <- summary_bamstats[,"mapped.nbrecords"]
   x <- 100 *data.frame(data/totals)
-  dotboxplot(x,filename=filename, ylab="Percent of mapped reads that are Junction Reads",ylim=c(0,100))
+  dotboxplot(x,filename=filename, ylab="Percent of mapped records that are Junction Reads",ylim=c(0,100))
   qc = x[,1,drop=FALSE]
   return(qc)
 }
-  
 
 ## output the list of failed lanes and their failure mode
 .reportFailedRuns <- function(dirs, qc.data, cutoffs) {

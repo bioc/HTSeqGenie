@@ -2,13 +2,16 @@
 \alias{safeExecute}
 \title{Execute function in try catch with trace function}
 \usage{
-  safeExecute(expr, memtracer = TRUE)
+  safeExecute(expr, memtracer = TRUE, newthread = TRUE)
 }
 \arguments{
   \item{expr}{Expression to safely execute}
 
   \item{memtracer}{A boolean, to enable/disable a periodic
   memory tracer. Default is TRUE.}
+
+  \item{newthread}{A boolean, indicating if a new thread
+  should be used (to save memory from the main thread)}
 }
 \value{
   Nothing

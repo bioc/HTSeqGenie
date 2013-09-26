@@ -656,9 +656,14 @@ plotDF <- function(df, ylab, xlab, filename) {
 }
 
 how_many <- function(counts, decreasing=TRUE) {
-  df <- data.frame(num=seq(1:length(counts)),
-                   count=counts[order(counts,decreasing=decreasing)])
-  df <- df[length(counts):1,]
-  df <- df[!duplicated(df$count),]
+  if(length(counts) == 0)  {
+    df <- data.frame(num = 1, count = 1)
+  }  else  {
+    df <- data.frame(num=seq(1:length(counts)),
+                     count=counts[order(counts,decreasing=decreasing)])
+    df <- df[length(counts):1,]
+    df <- df[!duplicated(df$count),]
+  }
   df
 }
+

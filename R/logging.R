@@ -8,6 +8,7 @@ loglevels <- setNames(c(10, 20, 30, 40), c("DEBUG", "INFO", "WARN", "ERROR"))
 ##' @return Nothing
 ##' @author Gregoire Pau
 ##' @keywords internal
+##' @export
 logdebug <- function(msg) try(loglevel(msg, level="DEBUG"), silent=TRUE)
 
 ##' Log info (with a try statement)
@@ -17,6 +18,7 @@ logdebug <- function(msg) try(loglevel(msg, level="DEBUG"), silent=TRUE)
 ##' @return Nothing
 ##' @author Gregoire Pau
 ##' @keywords internal
+##' @export
 loginfo <- function(msg) try(loglevel(msg, level="INFO"), silent=TRUE)
 
 ##' Log warning (with a try statement)
@@ -26,6 +28,7 @@ loginfo <- function(msg) try(loglevel(msg, level="INFO"), silent=TRUE)
 ##' @return Nothing
 ##' @author Gregoire Pau
 ##' @keywords internal
+##' @export
 logwarn <- function(msg) try(loglevel(msg, level="WARN"), silent=TRUE)
 
 ##' Log error (with a try statement)
@@ -35,6 +38,7 @@ logwarn <- function(msg) try(loglevel(msg, level="WARN"), silent=TRUE)
 ##' @return Nothing
 ##' @author Gregoire Pau
 ##' @keywords internal
+##' @export
 logerror <- function(msg) try(loglevel(msg, level="ERROR"), silent=TRUE)
 
 loglevel <- function(msg, level) {

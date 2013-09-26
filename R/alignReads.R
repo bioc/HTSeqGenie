@@ -89,7 +89,8 @@ buildGsnapParams <- function() {
                              solexa="illumina",
                              illumina1.3="illumina",
                              illumina1.5="illumina",
-                             illumina1.8="sanger")
+                             illumina1.8="sanger",
+                             'GATK-rescaled'="sanger")
 
   ## build core params
   params <- paste("-D", path.gsnap_genomes,
@@ -128,7 +129,7 @@ buildAnalyzedBam <- function(bam_dir, prepend_str) {
   ## merge inbams
   outbam <- paste(prepend_str, ".analyzed.bam", sep="")
   outbam <- file.path(bam_dir, outbam)
-  mergeBams(inbams, outbam)
+  mergeBams(inbams, outbam, sort=FALSE)
 }
 
 ## given a bam file, return the bam type
@@ -161,7 +162,7 @@ mergeBAMsAcrossDirs <- function(indirs, outdir, prepend_str, nb.parallel.jobs=1)
                 function(i) {
                   inbams <- sinbams[[i]]
                   outbam <- outbams[i]
-                  mergeBams(inbams, outbam)
+                  mergeBams(inbams, outbam, sort=FALSE)
                 },
                 mc.cores=nb.parallel.jobs)
   

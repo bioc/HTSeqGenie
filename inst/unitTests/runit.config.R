@@ -146,4 +146,5 @@ test.getConfig <- function() {
   checkEquals(getConfig("ming", stop.ifempty=TRUE), "FALSE")
   checkEquals(class(try(getConfig("foo", stop.ifempty=TRUE), silent=TRUE)), "try-error")
   checkEquals(getConfig.vector('multi'), c('a','b','c'))
+  checkEquals(getConfig.vector('foo'), vector(mode='character'))
 }

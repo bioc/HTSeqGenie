@@ -61,11 +61,11 @@ wrapGsnap <- function(fp1, fp2, gsnapParams, outputdir, prepend_str, remove.noma
 
   ## convert sams to bams, using multiple threads
   bams <- as.character(mclapply(outsams, mc.cores=nbthreads_perchunk,
-                                mc.preschedule=FALSE, function(sam) {
-    bam <- asBam(sam, sam)
-    unlink(sam)
-    return(bam)
-  }))
+                                function(sam) {
+                                  bam <- asBam(sam, sam)
+                                  unlink(sam)
+                                  return(bam)
+                                }))
   invisible(bams)
 }
 

@@ -48,9 +48,9 @@ test.callVariantsGATK <- function() {
     bam.file <- getPackageFile("test-data/variant_calling/tp53_test.bam")
 
     callVariantsGATK(bam.file)
-    checkTrue(file.exists(file.path(save.dir, "results", "test_pe_variants.vcf.gz")),
+    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.gz")),
               "callVariantsGATK writes vcf.gz file")
-    checkTrue(file.exists(file.path(save.dir, "results", "test_pe_variants.vcf.gz.tbi")),
+    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.gz.tbi")),
               "callVariantsGATK writes vcf index file")
 }
   else{

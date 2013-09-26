@@ -119,9 +119,36 @@ saveCoverage <- function(cov, save_dir, prepend_str) {
 
   ## save coverage as a BigWig file
   bwfile <- file.path(save_dir, "results", paste(prepend_str, "coverage", "bw", sep="."))
-  rd <- as(cov, "RangedData")
-  seqlengths(rd) <- seqlengths(cov)
-  rtracklayer::export(rd, con=bwfile, format="bw")
+  rtracklayer::export(cov, con=bwfile, format="bw")
+
+  ## compute coverage stats
+  num_cores <- getConfig.integer("num_cores")
+  cm <- unlist(mclapply(1:length(cov), mc.cores=num_cores, function(i) mean(cov[[i]])))
+  chr.length <- as.numeric(seqlengths(cov))
+  coverage.mean.genome <- sum(chr.length*cm)/sum(chr.length)
+  coverage.mean <- setNames(cm, paste0("coverage.mean.", names(cov)))
+  cf1 <- unlist(mclapply(1:length(cov), mc.cores=num_cores, function(i) mean(cov[[i]]>=1)))
+  cf2 <- unlist(mclapply(1:length(cov), mc.cores=num_cores, function(i) mean(cov[[i]]>=2)))
+  cf5 <- unlist(mclapply(1:length(cov), mc.cores=num_cores, function(i) mean(cov[[i]]>=5)))
+  coverage.fraction.atleast1read.genome <- sum(chr.length*cf1)/sum(chr.length)
+  coverage.fraction.atleast2read.genome <- sum(chr.length*cf2)/sum(chr.length)
+  coverage.fraction.atleast5read.genome <- sum(chr.length*cf5)/sum(chr.length)
+  coverage.fraction.atleast1read <- setNames(cf1, paste0("coverage.fraction.atleast1read.", names(cov)))
+  coverage.fraction.atleast2read <- setNames(cf2, paste0("coverage.fraction.atleast2read.", names(cov)))
+  coverage.fraction.atleast5read <- setNames(cf5, paste0("coverage.fraction.atleast5read.", names(cov)))
+  dat <- c(coverage.mean.genome=coverage.mean.genome,
+           coverage.fraction.atleast1read.genome=coverage.fraction.atleast1read.genome,
+           coverage.fraction.atleast2read.genome=coverage.fraction.atleast2read.genome,
+           coverage.fraction.atleast5read.genome=coverage.fraction.atleast5read.genome,
+           coverage.mean,
+           coverage.fraction.atleast1read,
+           coverage.fraction.atleast2read,
+           coverage.fraction.atleast5read
+           )
+  
+  ## save summary results
+  df <- data.frame(name=names(dat), value=dat)
+  saveWithID(df, "summary_coverage", id=prepend_str, save_dir=file.path(save_dir, "results"), format="tab")
   
   invisible(TRUE)
 }

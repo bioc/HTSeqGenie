@@ -18,7 +18,7 @@
   Get a filename given a directory and the object name
 }
 \author{
-  greg
+  Gregoire Pau
 }
 \keyword{internal}
 

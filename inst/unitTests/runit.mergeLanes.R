@@ -11,7 +11,7 @@ test.mergeLanes <- function() {
   maindir <- getConfig("save_dir")
   gcounts1 <- getTabDataFromFile(maindir, "counts_gene")$count
   coverage1 <- get(load(getObjectFilename(file.path(maindir, "results"), "coverage.RData$")))
-  variants1 <- get(load(getObjectFilename(file.path(maindir, "results"), "filtered_variants_granges.RData$")))
+  variants1 <- get(load(getObjectFilename(file.path(maindir, "results"), "filtered_variants.RData$")))
   
   ## run mergeLanes on chunks
   indirs <- getChunkDirs()
@@ -22,7 +22,7 @@ test.mergeLanes <- function() {
   
   gcounts2 <- getTabDataFromFile(mergedir, "counts_gene")$count
   coverage2 <- get(load(getObjectFilename(file.path(mergedir, "results"), "coverage.RData$")))
-  variants2 <- get(load(getObjectFilename(file.path(mergedir, "results"), "filtered_variants_granges.RData$")))
+  variants2 <- get(load(getObjectFilename(file.path(mergedir, "results"), "filtered_variants.RData$")))
 
   ## compare results
   checkEquals(gcounts1, gcounts2, "gene counts are the same after merging")

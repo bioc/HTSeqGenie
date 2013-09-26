@@ -1,7 +1,7 @@
 
-% \VignetteIndexEntry{gmapR}
-% \VignetteKeywords{gmap,gsnap}
-% \VignettePackage{gmapR}
+% \VignetteIndexEntry{HTSeqGenie}
+% \VignetteKeywords{HTSeqGenie,RNA-Seq,Exome-Seq,ChIP-Seq}
+% \VignettePackage{HTSeqGenie}
 \documentclass[10pt]{article}
 
 \usepackage{times}

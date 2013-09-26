@@ -1,6 +1,6 @@
 \name{getRandomAlignCutoff}
 \alias{getRandomAlignCutoff}
-\title{Estimate an adopter alignment cutoff scor}
+\title{Estimate an adapter alignment cutoff score}
 \usage{
   getRandomAlignCutoff(read_len, n)
 }

@@ -1,3 +1,65 @@
+version 3.11.8
+-choice of VT filters configurable via config
+
+version 3.11.7
+- mergeBams(..., sort=FALSE) in alignReads.R: since bams are already sorted in chunks, merging preserves the order
+  and no re-sorting should is necessary
+
+version 3.11.6
+- saveCoverage now outputs a summary.coverage summary file
+
+version 3.11.5
+- directly export coverage from Rle with rtracklayer::export (instead of to make a memory-costly convertsion to a RangedData object)
+
+version 3.11.4
+- update variant calling code to work with VariantTools 1.3.6
+- include Jens' minlength=1 modification to handle reads fully trimmed
+
+version 3.11.3
+- exports loginfo, logdebug, logwarn, logerror
+- uses TallyVariantsParam and as(,"VRanges") to fix a bug preventing compilation on BioC
+- the number of threads used during processChunks is divided by 2 due to an erroneous extra mcparallel(...) step in sclapply/safeExecute
+- use a maximum of 12 cores in preprocessReads
+
+version 3.11.2
+- trim lowest quality tail of reads according to Illumina manual.
+  This new quality step precedes the regular quality filtering that is still done.
+
+version 3.11.1
+- allow to use better filters for variant tools
+  by default, uses standard filters (bad),
+  but if repeat masked track and dbsnp are given in config it uses those.
+
+version 3.11.0:
+- starting the new development branch
+
+version 3.10.1:
+ - release version
+
+version 3.9.31:
+-use new VariantTools API to do id verifu in mergeLanes.
+ works for both GATK and VariantTools 
+
+version 3.9.30:
+- fix logger bug in mergeLanes
+
+version 3.9.29:
+- make report_pipeline_QA work with new version, since some
+  fields in the summaries are gone or renamed
+
+version 3.9.28:
+- revert recent changes to gatk.R. 
+  We now make our own gz and index file, as GATK
+  repeatedly failed on some samples.
+
+version 3.9.27:
+- allow multiple paths in HTSEQGENIE_CONFIG, separated by :
+
+version 3.9.26:
+- removed preschedule=FALSE in wrapGsnap
+- added vcfStat to produce summary_variants.tab file
+- changed vcf name from "_variants.vcf.gz" to ".variants.vcf.gz", to stay consistent within the results/ directory
+
 version 3.9.25:
 - VariantTools "analyzeVariants.indels" are OK
 

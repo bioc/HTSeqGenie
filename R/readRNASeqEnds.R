@@ -1,10 +1,10 @@
 ##' Read paired end BAM files with requested columns from the BAM
 ##'
 ##' This function returns a GRangesList containing information about
-##' pair-end alignment data.  It is essentially
-##' Rsamtools::readGAlignmentsFromBam, but it uses Rsamtools::scanBam
+##' pair-end alignment data. It is essentially
+##' Rsamtools::readGAlignments, but it uses Rsamtools::scanBam
 ##' to get information that cannot be obtained from
-##' readGAlignmentsFromBam.
+##' readBamGappedAlignments.
 ##' 
 ##' @title Read Paired End Bam Files
 ##' @param bam_file Path to a bam file
@@ -17,7 +17,7 @@
 readRNASeqEnds <- function(bam_file, scan_bam_what=NULL, remove.strandness=TRUE) {
   scan_bam_what0 <- union(scan_bam_what, "flag")
   sbp <- ScanBamParam(what=scan_bam_what0)
-  ## readGAlignments() filters out unmapped reads (can happen in
+  ## readGappedAlignments() filters out unmapped reads (can happen in
   ## halfmapping_uniq files).
   gapped <- readGAlignments(bam_file, use.names=TRUE, param=sbp)
   ## Adding the number to the read name indicating which pair of the

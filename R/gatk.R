@@ -16,10 +16,10 @@ gatk <- function(gatk.jar.path=getOption("gatk.path"), method, args){
   args <- cbind(paste("-jar", gatk.jar.path,
                       "-T", method),
                 args)
-  loginfo(paste("analyzeVariants/gatk: Calling gatk: java", paste(args, collapse='')))
+  loginfo(paste("analyzeVariants/gatk: Calling gatk: java", paste(args, collapse=' ')))
   retcode <- system2('java', args, stdout=FALSE)
   if(retcode != 0){
-    stop(paste("GATK command [", paste("java", args, sep=" "), "] failed."))
+    stop( paste("GATK command [ java", paste(args, collapse=" "), "] failed."))
   }
   retcode
 } 
@@ -43,7 +43,7 @@ callVariantsGATK <- function(bam.file){
               
   vcf.file <- file.path(save.dir, "results",
                         paste(getConfig('prepend_str'),
-                              "_variants.vcf.gz", sep=""))
+                              "variants","vcf", sep="."))
 
   genome <- file.path(gatk.genomes, paste0(genome,".fa"))
   args <- paste("--num_threads", min(4,num.cores),
@@ -56,9 +56,15 @@ callVariantsGATK <- function(bam.file){
   gatk(gatk.jar.path=jar.path,
        method="UnifiedGenotyper", args=args)
   if(!file.exists(vcf.file)) stop("callVariantsGATK failed to create vcf file.")
-  indexTabix(vcf.file, format="vcf")
 
-  return(vcf.file)
+  zipped.vcf <- bgzip(vcf.file)
+  indexTabix(zipped.vcf, format="vcf")
+
+  ## clean up unzipped vcf and index
+  unlink(vcf.file)
+  unlink(paste(vcf.file,'idx', sep='.'))
+
+  return(zipped.vcf)
 }
 
 ##' Check for the GATK jar file
