@@ -17,7 +17,7 @@ Type: Package
 LazyLoad: yes
 Author: Gregoire Pau, Jens Reeder
 Description: Libraries to perform NGS analysis.
-Version: 3.11.8
+Version: 3.11.9
 Date: 2012-03-01
 Depends:
     R (>= 3.0.0),

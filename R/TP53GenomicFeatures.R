@@ -12,7 +12,7 @@
 ##' @export
 TP53GenomicFeatures <- function() {
   ## init
-  localDir <- "~/.local/share/HTSeqGenie"
+  localDir <- gsub("gmap$", "HTSeqGenie", file.path(gmapR:::getDefaultGmapGenomePath()))
   genomicFeatures <- file.path(localDir, "gfeatures-p53Genome.RData")
 
   ## is genomic_features file already absent?
