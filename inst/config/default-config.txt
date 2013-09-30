@@ -86,7 +86,7 @@ analyzeVariants.indels: FALSE
 analyzeVariants.rep_mask:    ## path to repeat mask track in bed format
 analyzeVariants.dbsnp:    ## path to dbsnp whitelist in vcf format
 analyzeVariants.callingFilters: nonRef,nonNRef,readCount,likelihoodRatio ##comma separated list of VT calling Filters
-analyzeVariants.postFilters: avgNborCount ##comma separated list of VT post Filters, if empty use VT defaults
+analyzeVariants.postFilters:  ##comma separated list of VT post Filters, for WGS activate avgNborCount
 
 ## GATK
 path.gatk_genomes:

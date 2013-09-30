@@ -8,7 +8,7 @@ test.wrap.callVariants <- function(){
   observed <- wrap.callVariants(bam)
   
   ## only check if we actually get something, more detailed checks should be done in VariantTools
-  checkEquals(length(observed$filtered.variants), 65,
+  checkEquals(length(observed$filtered.variants), 1,
               "run.callVariants() reports correct number of variants")
   checkTrue(file.exists(file.path(save.dir, "results", "test_pe.filtered_variants.RData")),
             "wrap.callVariants writes filtered variants file")
@@ -26,7 +26,7 @@ test.wrap.callVariants.parallel <- function(){
   observed <- wrap.callVariants(bam)
 
   ## only check if we actually get something, more detailed checks should be done in VariantTools
-  checkEquals(length(observed$filtered.variants), 65,
+  checkEquals(length(observed$filtered.variants), 1,
               "wrap.callVariants() runs in parallel")
 }
 
@@ -43,7 +43,7 @@ test.wrap.callVariants.rmsk_dbsnp <- function(){
   observed <- wrap.callVariants(bam)
 
   ## only check if we actually get something, more detailed checks should be done in VariantTools
-  checkEquals(length(observed$filtered.variants), 65,
+  checkEquals(length(observed$filtered.variants), 1,
               "run.callVariants() reports correct number of variants")
   checkTrue(file.exists(file.path(save.dir, "results", "test_pe.filtered_variants.RData")),
             "wrap.callVariants writes filtered variants file")
@@ -81,9 +81,9 @@ notest.writeVCF.vcfStat <-  function(){
     seqnames=Rle('1'),
     alt='G',
     ref='A',
-    high.quality=2,
-    high.quality.ref='0',
-    count.total='2',
+    altCount=2,
+    refCount='0',
+    totalCount='2',
     location='test',
     sampleNames = 'foo'
     )
