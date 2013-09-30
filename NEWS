@@ -1,3 +1,6 @@
+version 3.11.10
+- vignette updated to build on BioC dev
+
 version 3.11.9
 - TP53GenomicFeatures() now uses the same temp dir as TP53Genome(), to fix a build issues on BioC servers	
 

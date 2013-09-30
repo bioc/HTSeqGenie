@@ -151,8 +151,10 @@ the package \Rpackage{DESeq}.
 library("org.Hs.eg.db")
 gc1 <- getTabDataFromFile(H1993dir, "counts_gene")
 gc2 <- getTabDataFromFile(H2073dir, "counts_gene")
-hgnc <- as.character(org.Hs.egSYMBOL[as.character(gc1$name)])
-data.frame(H1993.count=gc1$count, H2073.count=gc2$count, row.names=hgnc)
+entrez <- as.character(gc1$name)
+hgnc <- unlist(as.list(org.Hs.egSYMBOL)[entrez])
+hgnc <- hgnc[entrez]
+data.frame(entrez=entrez, hgnc=hgnc, H1993.count=gc1$count, H2073.count=gc2$count, row.names=NULL)
 @ 
 
 \subsection{Analysis on the full human genome}
