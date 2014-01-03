@@ -57,7 +57,17 @@ callVariantsGATK <- function(bam.file){
        method="UnifiedGenotyper", args=args)
   if(!file.exists(vcf.file)) stop("callVariantsGATK failed to create vcf file.")
 
-  zipped.vcf <- bgzip(vcf.file)
+  if(getConfig.logical("gatk.filter_repeats")){
+    filtered.vcf.file <- filterGATKVars(vcf.file)
+  } else {
+    filtered.vcf.file <- vcf.file
+  }
+  
+  if( grepl(".gz$", filtered.vcf.file)){
+    zipped.vcf <- filtered.vcf.file
+  } else{
+    zipped.vcf <- bgzip(filtered.vcf.file)
+  }
   indexTabix(zipped.vcf, format="vcf")
 
   ## clean up unzipped vcf and index
@@ -84,4 +94,51 @@ checkGATKJar <- function(path=getOption("gatk.path")){
   } else {
     return(FALSE)
   }
+}
+
+filterGATKVars <- function(vcf.file){  
+  genome     <- getConfig("alignReads.genome")
+  rmask.file <- getConfig("analyzeVariants.rep_mask")
+
+  loginfo("gatk.R::filterGATKVars: filtering variants for low complexity regions and repeats")  
+
+  mask <- rtracklayer::import(rmask.file, asRangedData=FALSE)
+  ## Variants are always annotated on +, so we make sure the repeats are also on +
+  strand(mask) <- '+'
+
+  variants <- VariantAnnotation::readVcf(vcf.file, genome)
+  variants <- excludeVariantsByRegions(variants, mask)
+  
+  suppressWarnings(
+                  ## Not nice but currently necessary as
+                  ## loading and re-writing a GATK vcf file leads to
+                  ## Warning message:
+                  ## In asMethod(object) : NAs introduced by coercion
+                  filename <- writeVcf(variants, vcf.file, index=TRUE)
+                  )
+  return(filename)
+}
+
+##' Filter variants by regions
+##'
+##' This function can be used to filter variants in a given region,
+##' e.g. low complexity and repeat regions
+##' @title Filter variants by regions
+##' @param variants Variants as Vranges, GRanges or VCF object
+##' @param mask region to mask, given as GRanges
+##' @return The filtered variants 
+##' @author Jens Reeder 
+excludeVariantsByRegions <- function(variants, mask) {
+
+  if(class(variants)=="CollapsedVCF"){
+    len <- length(rowData(variants))
+  }else{
+    len <- length(variants)
+  }
+  keep = rep(TRUE,len)
+  ov = findOverlaps(variants, mask)
+  keep[ov@queryHits]=FALSE
+  variants = variants[keep,]
+ 
+  return(variants)
 }

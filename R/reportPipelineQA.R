@@ -560,12 +560,7 @@ calculate the proportion of genes that obtain AT LEAST said coverage.',p,br=TRUE
 
 sanityCheck <- function(summary.alignTable, readFiltering, paired_ends){
 
-  if (paired_ends) 
-    gsnap_processed <- sum(summary.alignTable[c("concordant_mult", "concordant_transloc", "concordant_uniq", "halfmapping_mult", "halfmapping_transloc", "halfmapping_uniq", "nomapping",
-                                              "paired_mult", "paired_uniq_inv", "paired_uniq_long", "paired_uniq_scr", "unpaired_mult", "unpaired_transloc", "unpaired_uniq")])
-  else
-    gsnap_processed <- sum(summary.alignTable[c("nomapping", "unpaired_mult", "unpaired_transloc", "unpaired_uniq")])
-
+  gsnap_processed <- sum(summary.alignTable[names(summary.alignTable) != "analyzed"])
   
   sanity_check <- c("All reads passed into gsnap are present in gsnap output" = "FAIL",
                     "There are more unique than multiple mappers " =            "FAIL")

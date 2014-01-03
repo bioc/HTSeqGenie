@@ -1,7 +1,52 @@
+version 3.13.2
+- activate read trimming for illumina 1.5 quality using the 'B' as qual indicator
+
+version 3.13.1
+- deactived the unit tests (test.wrap.callVariants, test.wrap.callVariants.parallel, test.wrap.callVariants.rmsk_dbsnp)
+  until VariantAnnotation is fixed, to be able to compile HTSeqGenie on BioC servers
+
+version 3.13.0
+- change to new dev cycle version number
+
+version 3.12.0
+- release version
+
+version 3.11.20
+- add extra config value to turrn off gatk repeat filtering
+- do not filter GATK variants for repeats by default, as this produces buggy vcf
+
+version 3.11.19
+- make indel calling default for VT
+
+version 3.11.18
+-make the summary qa report much more robust. Now runs on single and paired end,
+ Varaint calling is optional. Also works on non human/mouse genomes
+
+version 3.11.17
+- make sure VRanges are sorted before writing as vcf until Variantannotatin fixes bug
+
+version 3.11.16
+- fixed the NA bug when the file indicated by template_config is not found, now reports an explicit error message
+
+version 3.11.15
+- filter GATK variants by overlap with low_complexit regions if bed file given in config
+
+version 3.11.14
+-fixed bug in VariantCalling where dbsnp whitelist was effectively not passed but lost in the '...' orkus.
+
+version 3.11.13
+- remove getRDataFromFile and replace with safeGetObject() which is used in a couple of scripts
+
+version 3.11.12
+- fix bug in sanity check that did not count circular mappings
+
+version 3.11.11
+- now breaks properly when input FastQ gzipped files are corrupted/truncated
+
 version 3.11.10
 - vignette updated to build on BioC dev
 
-version 3.11.9
+version 3.11.9	   
 - TP53GenomicFeatures() now uses the same temp dir as TP53Genome(), to fix a build issues on BioC servers	
 
 version 3.11.8

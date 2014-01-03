@@ -29,7 +29,7 @@ test.checkConfig.analyzeVariants <- function() {
 
   setupTestFramework(config.filename="test-data/test_config.txt",
                      config.update=list(),
-                     testname="test.alignReads")
+                     testname="test.checkConfig.analyzeVariants")
 
   checkTrue(HTSeqGenie:::checkConfig.analyzeVariants(),
             "checkConfig.analyzeVariants() passes valid config")
@@ -50,4 +50,4 @@ test.checkConfig.analyzeVariants <- function() {
   updateConfig(list(analyzeVariants.callingFilters=''))
   checkTrue(HTSeqGenie:::checkConfig.analyzeVariants(),
                  "checkConfig.analyzeVariants() handles empty vector configs")
-}
+}   

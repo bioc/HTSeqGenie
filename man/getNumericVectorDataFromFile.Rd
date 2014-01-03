@@ -2,10 +2,10 @@
 \alias{getNumericVectorDataFromFile}
 \title{Load data as numerical values}
 \usage{
-  getNumericVectorDataFromFile(dirPath, object_name)
+  getNumericVectorDataFromFile(dir_path, object_name)
 }
 \arguments{
-  \item{dirPath}{Save dir of a pipeline run}
+  \item{dir_path}{Save dir of a pipeline run}
 
   \item{object_name}{Object name}
 }

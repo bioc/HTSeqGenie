@@ -82,7 +82,7 @@ coverage.maxFragmentLength:
 analyzeVariants.do: TRUE
 analyzeVariants.method: VariantTools ## possible choices: VariantTools, GATK
 analyzeVariants.bqual: 23 ## minimum base qual 
-analyzeVariants.indels: FALSE
+analyzeVariants.indels: TRUE
 analyzeVariants.rep_mask:    ## path to repeat mask track in bed format
 analyzeVariants.dbsnp:    ## path to dbsnp whitelist in vcf format
 analyzeVariants.callingFilters: nonRef,nonNRef,readCount,likelihoodRatio ##comma separated list of VT calling Filters
@@ -91,4 +91,5 @@ analyzeVariants.postFilters:  ##comma separated list of VT post Filters, for WGS
 ## GATK
 path.gatk_genomes:
 path.gatk:
+gatk.filter_repeats: FALSE ## if TRUE remove vars overlapping with regions in analyzeVariants.rep_mask bed file 
 gatk.params: --genotype_likelihoods_model BOTH

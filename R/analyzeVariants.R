@@ -109,16 +109,17 @@ buildCallingFilters <- function(){
   dbsnp.file  <- getConfig("analyzeVariants.dbsnp")
   filter.names <- getConfig.vector("analyzeVariants.postFilters")
 
-  all.filters = VariantPostFilters()
-  filters = all.filters[ filter.names ]
-
-  args <- list(variants, post.filters=filters)
   if(!is.null(dbsnp.file)){
     loginfo("analyzeVariants.R/wrap.postFilterVariants: Using dbsnp whitelist for variant filtering.")
     dbsnp <- get(load(dbsnp.file))
-    args <- c(args, whitelist=dbsnp)
+    all.filters <- VariantPostFilters(whitelist=dbsnp)
+  } else {
+    all.filters <- VariantPostFilters()
   }
-  vars <- do.call(postFilterVariants, args)
+  filters = all.filters[ filter.names ]
+  
+  vars <- postFilterVariants(variants, post.filters=filters)
+  
   return(vars)
 }
 
@@ -146,25 +147,26 @@ buildCallingFilters <- function(){
 ##' @return VCF file name
 ##' @author Jens Reeder
 ##' @export
-##' @importFrom VariantAnnotation writeVcf sampleNames<-
+##' @importFrom VariantAnnotation writeVcf sampleNames sampleNames<-
 writeVCF <- function(variants.vranges){
   loginfo("analyzeVariants.R/writeVCF: writing vcf file...")
- 
-  vcf.filename <- file.path(getConfig('save_dir'), "results",
-                            paste(getConfig('prepend_str'),
-                                  ".variants.vcf", sep=""))
 
+  vcf.filename <- NULL
   if (length(variants.vranges)>0) {
+    #fill in sample name if missing from vranges
+    if(all(is.na(sampleNames(variants.vranges)))){
+      sam_id <- getConfig("alignReads.sam_id")
+      if (is.null(sam_id)) sam_id <- ""
+      sampleNames(variants.vranges) <- sam_id
+    }
     ## build vcf object
-    sam_id <- getConfig("alignReads.sam_id")
-    if (is.null(sam_id)) sam_id <- ""
-    sampleNames(variants.vranges) <- sam_id
-    vcf <- as(variants.vranges, "VCF")
+    ## make sure we sort, as otherwise writing the index might crash
+    vcf <- as(sort(variants.vranges), "VCF")
+    vcf.filename <- file.path(getConfig('save_dir'), "results",
+                              paste(getConfig('prepend_str'),
+                                    ".variants.vcf", sep=""))  
     vcf.filename <- writeVcf(vcf, vcf.filename, index=TRUE)
-  } else {
-    vcf.filename <- NULL
-  }
-
+  } 
   loginfo("analyzeVariants.R/writeVCF: ...done")
   return(vcf.filename)
 }
@@ -216,7 +218,3 @@ vcfStat <- function(vcf.filename) {
     tab,
     q.snvs.nalt, q.snvs.freqalt)
 }
-  
-  
-  
-  

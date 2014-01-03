@@ -32,6 +32,25 @@ test.FastQStreamer.getReads.pefq <- function() {
   FastQStreamer.release()
 }
 
+test.FastQStreamer.getReads.truncated <- function() {
+  ## paired-end fastq
+  ## setup test framework
+  config.update <- list(chunk_size=500)
+  setupTestFramework(config.filename="test-data/test_config_single_end.txt", config.update=config.update,
+                     testname="test.FastQStreamer.getReads.truncated")
+  
+  ## init FastQStreamer
+  FastQStreamer.init(input_file=getPackageFile("test-data/truncated.fastq.gz"),
+                     chunk_size=getConfig.integer("chunk_size"))
+  
+  ## try to read 500 reads
+  lreads <- try(FastQStreamer.getReads(), silent=TRUE)
+  checkEquals(class(lreads), "try-error")
+  
+  ## release FastQStreamer
+  FastQStreamer.release()
+}
+
 test.FastQStreamer.getReads.pefq.subsample <- function() {
   ## paired-end fastq with subsample
   ## setup test framework

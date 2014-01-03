@@ -12,6 +12,8 @@ testSuite <- defineTestSuite(name=paste("HTSeqGenie unit testing"),
 tests <- runTestSuite(testSuite)
 outputFilename <- file.path(getwd(), "HTSeqGenie-runit.txt")
 printTextProtocol(tests, fileName=outputFilename)
+printHTMLProtocol(tests, fileName=file.path(getwd(), "HTSeqGenie-runit.html"))
+
 err <- getErrors(tests)
 
 ## conclude

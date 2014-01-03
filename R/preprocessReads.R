@@ -217,7 +217,7 @@ buildShortReadReports <- function(save_dir, paired_ends) {
       
         ## get reads
         fqs <- FastqSampler(filename, n=subsample_nbreads)
-        reads <- yield(fqs)
+        reads <- safe.yield(fqs)
         close(fqs)
         
         ## restore seed

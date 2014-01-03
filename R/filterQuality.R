@@ -22,8 +22,13 @@ filterQuality <- function(lreads) {
   minlength <- getConfig.numeric("filterQuality.minLength")
   if (is.null(minlength)) minlength <- 1
 
-  ## trim reads based on low quality tail
-  lreads <- trimTailsByQuality(lreads)
+  ## trim reads based on low quality tail for illumina 1.5 and 1.8
+  quality_encoding <- getConfig('quality_encoding')
+  if (quality_encoding == 'illumina1.5') {
+    lreads <- trimTailsByQuality(lreads, minqual='B')
+  } else if (quality_encoding == 'illumina1.8') {
+    lreads <- trimTailsByQuality(lreads, minqual='#')
+  }
   
   ## remove reads that got trimmed too short or already came in short
   z <- filterByLength(lreads, minlength, paired_ends)

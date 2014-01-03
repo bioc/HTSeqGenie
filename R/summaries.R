@@ -17,8 +17,7 @@ parseSummaries <- function(save.dirs, summary.name) {
     save.dir <- save.dirs
     z <- try(getNumericVectorDataFromFile(save.dir, summary.name), silent=TRUE)
     if (class(z)=="try-error") {
-      cat("parseSummaries: cannot parse summary=", summary.name, " in save.dir=", save.dir, "\n")
-      z <- NULL
+      return()
     }
     return(t(as.matrix(z)))
   }
@@ -34,9 +33,12 @@ parseSummaries <- function(save.dirs, summary.name) {
 
   dat.summary <- list()
   for (type in summary.types) {
-    dat.summary[[type]] <- parseSummaries(dirs, type)
+    summaries <- parseSummaries(dirs, type)
+    if(length(summaries) > 0 ){
+      dat.summary[[type]] <- summaries
+    }
   }
-
+  
   ## check wether all dirs have the same summaries
   if (length(unique(sapply(dat.summary, nrow))) != 1 )
     stop("inconsistent number of lanes from different summary files")
@@ -69,7 +71,6 @@ parseSummaries <- function(save.dirs, summary.name) {
 
   filename <- file.path(image_dir, "summary_preprocess")  
   z <- summary[, grep(colnames(summary), pattern="read_length", value=TRUE, invert=TRUE)]
-  
   return(.heatmap(z, basename(save_dirs), filename))
 }
 
@@ -88,11 +89,10 @@ parseSummaries <- function(save.dirs, summary.name) {
   summary <- parseSummaries(save_dirs, "summary_analyzed_bamstats")
 
   filename <- file.path(image_dir, "summary_analyzed_bamstats")
-  keep <- c("nm.bin.0",
-            "cigar.withS.nbrecords", "cigar.withN.nbrecords", "cigar.withID.nbrecords",
-            "chromosome.bin.1", "chromosome.bin.Y", "chromosome.bin.MT")
- 
-  z <- round(100*summary[,keep]/summary[,'mapped.nbrecords'],2)
+  keep <- c("mapq.bin.40", "nm.bin.0", "nm.bin.1", "nm.bin.2",
+            "cigar.withS.nbrecords", "cigar.withN.nbrecords", "cigar.withID.nbrecords")
+
+  z <- round(100*summary[, colnames(summary) %in% keep]/summary[,'mapped.nbrecords'],2)
   
   dotboxplot(as.data.frame(z), filename=filename, ylab="Percentage of records")
   return(filename)
@@ -100,7 +100,8 @@ parseSummaries <- function(save.dirs, summary.name) {
 
 .plotVariantsSummary <- function(save_dirs, image_dir) {
 
-  summary <- parseSummaries(save_dirs, "summary_variants")  
+  summary <- parseSummaries(save_dirs, "summary_variants")
+  if(is.null(summary)) return()
   filename <- file.path(image_dir, "summary_variants")
   keep <- c('nb.snvs', 'nb.indels',
             'nb.snvs.C>A', 'nb.snvs.G>A',
@@ -109,46 +110,30 @@ parseSummaries <- function(save.dirs, summary.name) {
             'nb.snvs.A>G', 'nb.snvs.C>G',
             'nb.snvs.T>G', 'nb.snvs.A>T',
             'nb.snvs.C>T', 'nb.snvs.G>T')
-  
-  return(.heatmap(summary[,keep], basename(save_dirs), filename))
+
+  image.name <- .heatmap(summary[,keep], basename(save_dirs), filename)
+  return(image.name)
 }
 
 .plotCountGFSummary <- function(save_dirs, image_dir) {
   summary <- parseSummaries(save_dirs, "summary_counts")
+  if(is.null(summary)) return()
+
   nb_reads <- parseSummaries(save_dirs, "summary_preprocess")[,'processed_reads']
 
   filename <- file.path(image_dir, "summary_counts")
-  counts_by_nbreads <- c('gene_nbreads',
-                         'gene_exonic_nbreads',
-                         'gene_coding_nbreads',
-                         'transcript_nbreads',
-                         'exon_nbreads',
-                         'exon_disjoint_nbreads',
-                         'intergenic_nbreads',
-                         'ncRNA_nbreads',
-                         'ncRNA_nongenic_nbreads')
-  z <- summary[,counts_by_nbreads]/nb_reads
+  z <-  summary[,grep ("_nbreads", colnames(summary))]/nb_reads
  
   return(.heatmap(z, basename(save_dirs), filename))
 }
 
 .plotCountGFbyFeatureSummary <- function(save_dirs, image_dir) {
   summary <- parseSummaries(save_dirs, "summary_counts")
-  nb_reads <- parseSummaries(save_dirs, "summary_preprocess")[,'processed_reads']
-
+  if(is.null(summary)) return()
+  
   filename <- file.path(image_dir, "summary_counts_by_feat")
-  ## TODO require total number per feature
-  counts_by_nbfeat <- c('counts_exon_nbfeatures',
-                        'counts_exon_disjoint_nbfeatures',
-                        'counts_gene_nbfeatures',
-                        'counts_gene_coding_nbfeatures',
-                        'counts_gene_exonic_nbfeatures',
-                        'counts_intergenic_nbfeatures',
-                        'counts_ncRNA_nbfeatures',
-                        'counts_ncRNA_nongenic_nbfeatures',
-                        'counts_transcript_nbfeatures')  
-  z <- summary[,counts_by_nbfeat]
- 
+  z <-  summary[,grep ("_nbfeatures", colnames(summary))]
+  
   return(.heatmap(z, basename(save_dirs), filename))
 }
 
@@ -198,140 +183,152 @@ parseSummaries <- function(save.dirs, summary.name) {
 ##'
 ##' @title Write HTML summary
 ##' @param dirs List of pipeline result dirs 
-##' @param outdir Path to output directory. Does not create dir.
 ##' @param cutoffs list, cutoffs for each plotting/QA function
+##' @param outdir Path to output directory. Does not create dir.
 ##' @return Nothing, but writes file
 ##' @author Jens Reeder
 ##' @export
 ##' @keywords internal
-writeSummary <- function(dirs, outdir="Summary", cutoffs) {
+writeSummary <- function(dirs, cutoffs, outdir="./")  {
 
+  ## This really only seems to work if outdir is the current dir.
+  ## Needs either major refactoring or just drop outdir as argument.
   if(!file.exists(outdir)) stop("Output dir does not exist", outdir)
-  image_dir <- file.path('images')  
+  image_dir <- file.path('images')
   makeDir(image_dir, overwrite='overwrite')
   
   ## create plots
-  prep.sum      <- .plotPreprocessSummary(dirs, image_dir)
-  align.sum     <- .plotAlignmentSummary(dirs, image_dir)
-  bamstats.sum  <- .plotBamStatsSummary(dirs, image_dir)
-  variants.sum  <- .plotVariantsSummary(dirs, image_dir)
-  map.per.chr   <- .plotReadMappingsPerChr(dirs, image_dir)
-  qa            <- .createQAReport(dirs,cutoffs=cutoffs, image_dir)
+  prep.sum          <- .plotPreprocessSummary(dirs, image_dir)
+  align.sum         <- .plotAlignmentSummary(dirs, image_dir)
+  bamstats.sum      <- .plotBamStatsSummary(dirs, image_dir)
+  map.per.chr       <- .plotReadMappingsPerChr(dirs, image_dir)
+  variants.sum      <- .plotVariantsSummary(dirs, image_dir)
+  countGF.sum       <- .plotCountGFSummary(dirs, image_dir)
+  countGFbyFeat.sum <- .plotCountGFbyFeatureSummary(dirs, image_dir)
+  qa                <- .createQAReport(dirs, cutoffs, image_dir)
 
-  qa$calls <- .finalCallFromIndividualQACalls(qa$calls,cutoffs)
-  write.csv(file=file.path(outdir,"qa.calls.csv"),qa$calls)
-  write.csv(file=file.path(outdir,"qa.data.csv"),qa$qc.data)
-
-  ## shortcut to write pdf/png images
-  .hwriteImage <- function(basename){
-    hwriteImage(paste(basename,'png', sep="."), p, br=TRUE,
-                link=paste( basename, 'pdf', sep="."))
-  }
+  write.csv(file=file.path(outdir, "qa.calls.csv"), qa$calls)
+  write.csv(file=file.path(outdir, "qa.data.csv"), qa$qc.data)
 
   ## create html page
-  outfile <- file.path("summary.html")
+  outfile <- file.path(outdir,"summary.html")
   p <- openPage(outfile)
+
+  ## shortcut to write pdf/png images onto page
+  ##closure on p
+  .hwriteImage <- function(basename){
+    hwriteImage(paste(basename, 'png', sep="."), p, br=TRUE,
+                link=paste( basename, 'pdf', sep="."))
+   }
+  
+  .hwrite <- function(x, ...){
+    hwrite(x, p, br=TRUE, ...)
+  }
+
   hwrite("Summary of NGS pipeline run summaries", p, heading=1)
     
-  hwrite("This page summarize per-run statistics and should be used as a first overview before analyzing the results.",p,br=TRUE)
-  hwrite('',p, br=TRUE)
-  hwrite("This page is structured into three sections:",p,br=TRUE)
-  hwrite("QA", link="#qa",p, br=TRUE)
-  hwrite("Results", link="#results",p,br=TRUE)
-  hwrite("Heatmaps of raw summaries", link="#heatmaps",p,br=TRUE)
-  hwrite('',p, br=TRUE)
+  .hwrite("This page summarizes all per-run statistics for a project and should be used as a first overview before analyzing the results. In particular, look for outliers in any of the plots and decide whether theser outliers could affect your analysis.")
+  .hwrite('')
+  .hwrite("This page is structured into three sections:")
+  .hwrite("QA", link="#qa")
+  .hwrite("Results", link="#results")
+  .hwrite("Heatmaps of raw summaries", link="#heatmaps")
+  .hwrite('')
   
   hwrite('', p, name='qa')
   hwrite('Quality control', p, heading=3)
   if(length(qa$fails)>0){
     hwrite('Runs flagged for QA issues', p, heading=4)
-    hwrite("These runs fail one or more of our QA criteria. Please inspect before using.",p,br=TRUE)
+    .hwrite("These runs fail one or more of our QA criteria. Please inspect before using.")
     hwrite(qa$fails, row.names=FALSE, p)
   }
 
   hwrite('Read lengths', p, heading=4)
-  hwrite("Ideally all runs share the same read length. If not, it is up to the analyst to make sure the data can be combined for downstream analysis.",p,br=TRUE)
-  hwrite(as.data.frame(.getEffectiveReadLengths(dirs)), p, br=TRUE)
+  .hwrite("Ideally all runs share the same read length. If not, it is up to the analyst to make sure the data can be combined for downstream analysis.")
+  .hwrite(as.data.frame(.getEffectiveReadLengths(dirs)))
 
   hwrite('QA plots', p, heading=4)
   Map(.hwriteImage, qa$files)
   
   hwrite('Reads mapped per chromosome', p, heading=4)
-  hwrite('This plot shows the number of reads mapped to each chromosome. Note that forward and reverse reads are counted independently and some mappings span two chromosomes.', p, br=TRUE)
+  .hwrite('This plot shows the number of reads mapped to each chromosome. Note that forward and reverse reads are counted independently and some mappings span two chromosomes.')
   .hwriteImage(map.per.chr)
 
-  ##Nest
-  hwrite('', name="results",p)
-  hwrite('Individual pipeline run results',p, heading=3)  
-
-  df <- data.frame("pipeline result dir"=basename(dirs),
-                   "Alignment.reports"="Alignments",
-                   "Feature.counting.reports" ="Feature counting",
-                   "Variant.calling.reports"="Variants"
-                   )
-
-  #html sits in Summary/, but paths are relative to ./
-  linksAln <- file.path(dirs, "reports/reportAlignment.html")
-  linksFC  <- file.path(dirs, "reports/reportFeatureCounts.html")
-  linksVar <- file.path(dirs, "reports/reportVariants.html")  
-  
-  hwrite(df, col.link=list(
-               "Alignment.reports"=linksAln,
-               "Feature.counting.reports"=linksFC,
-               "Variant.calling.reports"=linksVar), p)
-  hwrite('',p, br=TRUE)
-
-  hwrite("", p, name="heatmaps")
-  hwrite("Heatmap of raw summaries", p, heading=3, br=TRUE)
-  
-  hwrite(hwrite("Summary of preprocessing and read filtering",  heading=4), p, name="heatmaps", br=TRUE)
-  hwrite("This heatmap shows the raw number of reads without any normalization or scaling.", p, br=TRUE)
-  .hwriteImage(prep.sum)
-  hwrite('',p, br=TRUE)
-
-  hwrite("Summary of Gsnap alignments",p, heading=4)
-  hwrite("This heatmap shows the number of mapped reads that fall into each gsnap category.", p, br=TRUE)
-  .hwriteImage(align.sum)
-  hwrite('',p, br=TRUE)
-
   hwrite("Summary of analyzed.bam statistics",p, heading=4)
-  hwrite("This heatmap shows the a selected subset of the analyzed.bam statistics.", p, br=TRUE)
+  .hwrite("This plot shows a selected subset of the analyzed.bam summary statistics.")
   .hwriteImage(bamstats.sum)
-  hwrite('',p, br=TRUE)
+  .hwrite('')
 
-  countGF.sum       <- .plotCountGFSummary(dirs, image_dir)
-  countGFbyFeat.sum <- .plotCountGFbyFeatureSummary(dirs, image_dir)
   
-  hwrite("Summary of feature countings", p, heading=4)
-  hwrite("This heatmap shows the number of mapped reads per genomic feature category.", p, br=TRUE)  
-  hwrite("Each row/sample is normalized by the number of analyzed reads of that particular sample.", p, br=TRUE)   
-  .hwriteImage(countGF.sum)
-  hwrite('', p, br=TRUE)
+  hwrite(hwrite('Individual pipeline run results', heading=3), p, name="results")
+  hwrite(create.result.link.table(dirs), p)
+
+  
+  hwrite(hwrite("Heatmap of raw summaries", heading=3), p, name="heatmaps")
+  
+  hwrite("Summary of preprocessing and read filtering", p, heading=4)
+  .hwrite("This heatmap shows the raw number of reads without any normalization or scaling.")
+  .hwriteImage(prep.sum)
+  .hwrite('')
+
+  hwrite("Summary of Gsnap alignments", p, heading=4)
+  .hwrite("This heatmap shows the number of mapped reads that fall into each gsnap category.")
+  .hwriteImage(align.sum)
+  .hwrite('')
+  
+  if(!is.null(countGF.sum)){
+    hwrite("Summary of feature countings", p, heading=4)
+    .hwrite("This heatmap shows the number of mapped reads per genomic feature category.")
+    .hwrite("Each row/sample is normalized by the number of analyzed reads of that particular sample.")
+    .hwriteImage(countGF.sum)
+    .hwrite('')
     
-  hwrite("This heatmap shows the number of genomic features hit by at least one read per feature category.", p, br=TRUE)  
-  hwrite("Ideally, this would be normalized by the number of features in each category, but that's not yet implemented.", p, br=TRUE)   
-  .hwriteImage(countGFbyFeat.sum)
-  hwrite('', p, br=TRUE)
+    .hwrite("This heatmap shows the number of genomic features hit by at least one read per feature category.")
+    .hwriteImage(countGFbyFeat.sum)
+    .hwrite('')
+  }
   
-  hwrite("Summary of variant calling", p, heading=4)
-  hwrite("This heatmap shows some statistics about the called variants.", p, br=TRUE)  
-  .hwriteImage(variants.sum)
-  hwrite('',p, br=TRUE)
-
+  if(!is.null(variants.sum)){
+    hwrite("Summary of variant calling", p, heading=4)
+    .hwrite("This heatmap shows some statistics about the called variants.") 
+    .hwriteImage(variants.sum)
+    .hwrite('')
+  }
   close(p)  
 }
 
-.createQAReport <- function(dirs,cutoffs,image_dir) {
-  plot.names = c("good_reads","perc_good_reads","bad_reads","perc_bad_reads",
-    "detected_genes","junction_reads","in_out_min_max_readlen", "target_quartiles_pct")
-  file_list <- file.path(image_dir,plot.names)
+create.result.link.table <- function(dirs) {
+  df <- data.frame("pipeline result dir"=basename(dirs),
+                   "Alignment.reports"="Alignments",
+                   "Feature.counting.reports"="Feature counting",
+                   "Variant.calling.reports"="Variants"
+                   )
+  
+  ## html sits in Summary/, but paths are relative to ./
+  linksAln <- file.path(dirs, "reports/reportAlignment.html")
+  linksFC  <- file.path(dirs, "reports/reportFeatureCounts.html")
+  linksVar <- file.path(dirs, "reports/reportVariants.html")  
 
-  ### Switching to strategy where plot functions return one or more columns of PASS/FAIL
-  ###  and these are collected in one data.frame
+  links <- list("Alignment.reports"=linksAln,
+                "Feature.counting.reports"=linksFC,
+                "Variant.calling.reports"=linksVar)
+
+  return(hwrite(df, col.link=links))
+}
+
+.createQAReport <- function(dirs, cutoffs, image_dir) {
+
   dat.summary <- .getAllSummaries(dirs)
+  
+  plot.names <- c("good_reads","perc_good_reads","bad_reads","perc_bad_reads",
+                  "detected_genes","junction_reads","in_out_min_max_readlen")
+  if(! is.null(dat.summary$summary_target_length)){
+    plot.names <- c(plot.names, "target_quartiles_pct")
+  }
+  file_list <- file.path(image_dir, plot.names)
 
-  # DF to hold result of each QA test
-  qc.data = data.frame(Technology=rep(cutoffs$seqType,length(dirs)),row.names = basename(dirs))
+  ## DF to hold result of each QA test
+  qc.data = data.frame(Technology=rep(cutoffs$seqType,length(dirs)), row.names=basename(dirs))
 
   ## get all reads count related numbers into one matrix
   dat.reads <-
@@ -343,9 +340,9 @@ writeSummary <- function(dirs, outdir="Summary", cutoffs) {
   ## combine by mapping category
   dat.reads <-
     cbind(dat.reads,
-          mult_mapping=rowSums(dat.reads[,grepl("_mult",colnames(dat.reads))]),
-          unpaired_mapping=rowSums(dat.reads[,grepl("unpaired_",colnames(dat.reads))]),
-          half_mapping=rowSums(dat.reads[,grepl("halfmapping_",colnames(dat.reads))]))
+          mult_mapping=rowSums(dat.reads[ , grepl("_mult",colnames(dat.reads)), drop=FALSE]),
+          unpaired_mapping=rowSums(dat.reads[ , grepl("unpaired_",colnames(dat.reads)), drop=FALSE]),
+          half_mapping=rowSums(dat.reads[ , grepl("halfmapping_",colnames(dat.reads)), drop=FALSE ]))
 
   ## Provide normalization by total, processed and analyzed number of reads
   perc.total <- dat.reads / dat.reads[,"total_reads"] * 100
@@ -357,41 +354,46 @@ writeSummary <- function(dirs, outdir="Summary", cutoffs) {
   perc.analyzed <- dat.reads / dat.reads[,"analyzed"] * 100
   colnames(perc.analyzed) <- paste(colnames(perc.analyzed),"/analyzed",sep="")
 
-  target.length.bin.cols <- colnames(dat.summary$summary_analyzed_bamstats)[ grepl("^target_length.bin",colnames(dat.summary$summary_analyzed_bamstats)) ]
-  target.length.bin.591 = (dat.summary$summary_analyzed_bamstats[,"target_length.bin.591"] / rowSums( dat.summary$summary_analyzed_bamstats[ , target.length.bin.cols ])) * 100
+  target.length.bin.cols <- grep("^target_length.bin",colnames(dat.summary$summary_analyzed_bamstats), value=TRUE)
+  target.length.bin.591 <- dat.summary$summary_analyzed_bamstats[,"target_length.bin.591"] / rowSums( dat.summary$summary_analyzed_bamstats[ , target.length.bin.cols ]) * 100
 
-  column.nm <- colnames(dat.summary$summary_analyzed_bamstats)[ grepl("^nm.bin",colnames(dat.summary$summary_analyzed_bamstats)) ]
-  total.nm = rowSums(dat.summary$summary_analyzed_bamstats[,column.nm])
-  ok.nm = rowSums(dat.summary$summary_analyzed_bamstats[,c("nm.bin.0","nm.bin.1")])
+  column.nm <- grep("^nm.bin", colnames(dat.summary$summary_analyzed_bamstats), value=TRUE)
+  total.nm  <- rowSums(dat.summary$summary_analyzed_bamstats[,column.nm])
+  ok.nm     <- rowSums(dat.summary$summary_analyzed_bamstats[,c("nm.bin.0", "nm.bin.1")])
   nm2plus = ((total.nm - ok.nm) / total.nm) * 100
 
   perc.reads <- cbind(perc.total, perc.processed, perc.analyzed,target.length.bin.591, nm2plus, check.names=FALSE)
 
   ## doing the plots
   ## number/perc of good reads
-
-  qc.data <- cbind(qc.data,.plot.reads.good(dat.reads, image_dir,cutoffs))
-  qc.data <- cbind(qc.data,.plot.perc.reads.good(perc.reads, image_dir,cutoffs))
+  qc.data <- cbind(qc.data,.plot.reads.good(dat.reads, image_dir))
+  qc.data <- cbind(qc.data,.plot.perc.reads.good(perc.reads, image_dir, cutoffs))
 
   ## number/perc of bad reads
   qc.data <- cbind(qc.data,.plot.reads.bad(dat.reads, image_dir))
   qc.data <- cbind(qc.data,.plot.perc.reads.bad(perc.reads, image_dir))
+  if(! is.null(dat.summary$summary_counts)){
+    qc.data$genesDetected <- .plotGenesDetected(dat.summary$summary_counts, image_dir)
+  }
+  qc.data[,"junctionReads"] <- .plotJunctionReads(dat.summary$summary_analyzed_bamstats, image_dir)
 
-  qc.data$genesDetected <- .plotGenesDetected(dat.summary$summary_counts, image_dir)
+  qc.data[,"inOutLenEqual"]  <- .plot.in.out.min.max.readlength(dat.summary$summary_preprocess, image_dir)
 
-  qc.data[,"junctionReads"] <- .plotJunctionReads(
-                              dat.summary$summary_analyzed_bamstats, image_dir,cutoffs)
-
-  qc.data[,"inOutLenEqual"]  <- .plot.in.out.min.max.readlength(dat.summary$summary_preprocess, image_dir, cutoffs)
-
-  qc.data <- cbind(qc.data,.plot.quartile.target.length(dat.summary$summary_target_lengths, image_dir))
-
-  qc.data[,"withS_pct"] = round(100 * (dat.summary$summary_analyzed_bamstats[,"cigar.withS.nbrecords"] / dat.summary$summary_analyzed_bamstats[,"mapped.nbrecords"]),2) # Plotted elsewhere
-  qc.data[,"MT_pct"]    = round(100 * dat.summary$summary_analyzed_bamstats[,"chromosome.bin.MT"] / dat.summary$summary_analyzed_bamstats[,"mapped.nbrecords"],2) # Plotted elsewhere
-
-  calls <- .reportFailedRuns(dirs, qc.data, cutoffs)
+  if(! is.null(dat.summary$summary_target_length)){
+    qc.data <- cbind(qc.data, .plot.quartile.target.length(dat.summary$summary_target_lengths, image_dir))
+  }
   
-  return(list(files=file_list, qc.data=qc.data, calls=calls))
+  total.mapped <- dat.summary$summary_analyzed_bamstats[,"mapped.nbrecords"]
+  qc.data[,"withS_pct"] = round(100 * dat.summary$summary_analyzed_bamstats[, "cigar.withS.nbrecords"] / total.mapped, 2)
+  if("chromosome.bin.MT" %in% colnames(dat.summary$summary_analyzed_bamstats)){
+    qc.data[,"MT_pct"]  = round(100 * dat.summary$summary_analyzed_bamstats[, "chromosome.bin.MT"] / total.mapped, 2)
+  }
+  fails <- .reportFailedRuns(dirs, qc.data, cutoffs)
+  qa    <- list(files=file_list,
+                qc.data=qc.data,
+                calls=.finalCallFromIndividualQACalls(fails, cutoffs))
+  
+  return(qa)
 }
 
 # Given calls from .createQAReport, decide which samples are OK
@@ -416,7 +418,7 @@ writeSummary <- function(dirs, outdir="Summary", cutoffs) {
   return(calls)
 }
 
-.plot.in.out.min.max.readlength <- function(preprocess, image_dir,cutoffs) {
+.plot.in.out.min.max.readlength <- function(preprocess, image_dir) {
   filename <- file.path(image_dir,"in_out_min_max_readlen")
   plotInOut <- function(preprocess) {
     par(mfrow=c(2,2))
@@ -446,12 +448,20 @@ writeSummary <- function(dirs, outdir="Summary", cutoffs) {
   return(qc)
 }
 
-.plot.reads.good <- function(dat.reads, image_dir, cutoffs){
+.plot.reads.good <- function(dat.reads, image_dir){
   filename <- file.path(image_dir,"good_reads")
+  
+  ## For paired ends we take the concordant_uniq
+  ## if that is not available, we fall back to the unpaired_uniq
+  uniq <- c("concordant_uniq", "unpaired_uniq")
+  uniq <- uniq[uniq %in% colnames(dat.reads)][1]
+
   column.reads.good <- c("total_reads","processed_reads","analyzed",
-                         "concordant_uniq",
+                         uniq,
                          "gene_nbreads","gene_exonic_nbreads")
-  qc = data.frame( dat.reads[,column.reads.good], check.names=FALSE )
+
+  qc = data.frame( dat.reads[,colnames(dat.reads) %in% column.reads.good], check.names=FALSE )
+  
   dotboxplot(qc/1e6,
              filename=filename, cutoff=10,
              ylab="Number of reads [million]"
@@ -461,12 +471,16 @@ writeSummary <- function(dirs, outdir="Summary", cutoffs) {
 
 .plot.perc.reads.good <- function(perc.reads, image_dir, cutoffs){
   filename <- file.path(image_dir,"perc_good_reads")
+
+  uniq <- c("concordant_uniq/processed", "unpaired_uniq/processed")
+  uniq <- uniq[uniq %in%  colnames(perc.reads)][1]
+
   column.preads.good <- c("processed_reads/total","highqual_reads/total","analyzed/total",
-                          "concordant_uniq/processed",
+                          uniq,
                           "gene_nbreads/analyzed","gene_exonic_nbreads/analyzed")
-  
-  qc = data.frame(perc.reads[,column.preads.good],check.names=FALSE)
-  dotboxplot(qc, filename=filename, cutoff=cutoffs[["geneReadsPerc"]], ylab="Percentage of reads",ylim=c(0,100))
+  qc = data.frame(perc.reads[,colnames(perc.reads) %in% column.preads.good],check.names=FALSE)
+  dotboxplot(qc, filename=filename, cutoff=cutoffs[["geneReadsPerc"]],
+                  ylab="Percentage of reads", ylim=c(0,100))
   return(qc)
 }
 
@@ -483,41 +497,32 @@ writeSummary <- function(dirs, outdir="Summary", cutoffs) {
 
 .plot.perc.reads.bad <- function(perc.reads, image_dir){
   filename <- file.path(image_dir,"perc_bad_reads")
-  column.preads.bad <- c("adapter_contam/total","rRNA_contam_reads/total",
-                         "nomapping/processed","mult_mapping/processed",
-                         "unpaired_mapping/processed","half_mapping/processed", "target.length.bin.591","nm2plus","nomapping/total")
+  column.preads.bad <- c("adapter_contam/total", "rRNA_contam_reads/total",
+                         "nomapping/processed", "mult_mapping/processed",
+                         "unpaired_mapping/processed", "half_mapping/processed",
+                         "target.length.bin.591", "nm2plus", "nomapping/total")
   qc = data.frame(perc.reads[,column.preads.bad],check.names=FALSE)
   dotboxplot(qc,
              filename=filename, ylab="Percentage of reads",ylim=c(0,100))
   return(qc)
 }
-
-.plot.nm2.pct <- function(dat.reads, image_dir) {
-  filename <- file.path(image_dir,"nm2_reads")
-  column.nm <- colnames(dat.reads)[ grepl("^nm.bin",colnames(dat.reads)) ]
-  total.nm = rowSums(dat.reads[,column.nm])
-  ok.nm = rowSums(dat.reads[,c("nm.bin.0","nm.bin.1")])
-  nm2plus.pct = ((total.nm - ok.nm) / total.nm) * 100
-  dotboxplot(nm2plus.pct,filename=filename,ylab="Percent of Reads With 2+ Mismatches",ylim=c(0,100))
-  return(filename)
-}
   
 .plotGenesDetected <- function(summary_counts, image_dir){
    filename <- file.path(image_dir,"detected_genes")
-   qc = summary_counts[,"counts_gene_nbfeatures"]/1000
-   dotboxplot(qc,
+   counts = summary_counts[,"counts_gene_nbfeatures"]/1000
+   dotboxplot(counts,
              filename=filename, ylab="Number of detected genes [thousand]")
-  return(qc)
+  return(counts)
 }
 
-.plotJunctionReads <- function(summary_bamstats, image_dir, cutoffs){
+.plotJunctionReads <- function(summary_bamstats, image_dir){
   filename <- file.path(image_dir,"junction_reads")
   data <- summary_bamstats[,"cigar.withN.nbrecords"]
   totals <- summary_bamstats[,"mapped.nbrecords"]
   x <- 100 *data.frame(data/totals)
   dotboxplot(x,filename=filename, ylab="Percent of mapped records that are Junction Reads",ylim=c(0,100))
-  qc = x[,1,drop=FALSE]
-  return(qc)
+  counts = x[,1,drop=FALSE]
+  return(counts)
 }
 
 ## output the list of failed lanes and their failure mode
@@ -527,11 +532,13 @@ writeSummary <- function(dirs, outdir="Summary", cutoffs) {
 
   calls[,"goodReads"] = qc.data [,"total_reads"] < cutoffs$totalReads
   calls[,"analyzed"] = qc.data[,"analyzed"] < cutoffs$processedReadsAnalyzed
-  calls[,"concordantUniq"] = qc.data[,"concordant_uniq"] < cutoffs$concordantUniq
-  calls[,"analyzedPerc"] = qc.data[,"analyzed/total"] < cutoffs[["analyzedPerc"]]
-  calls[,"concordantUniqPerc"] = qc.data[,"concordant_uniq/processed"] < cutoffs[["concordantUniqPerc"]]
-  calls[,"geneReadsPerc"] = qc.data[,"gene_nbreads/analyzed"] < cutoffs[["geneReadsPerc"]]
-  calls[,"geneExonicReadsPerc"] = qc.data[,"gene_exonic_nbreads/analyzed"] < cutoffs[["exonicPerc"]]
+  calls[,"concordantUniq"] = qc.data[ colnames(qc.data) %in% c('concordant_uniq', 'unpaired_uniq')][1] < cutoffs$concordantUniq
+  calls[,"analyzedPerc"] = qc.data[,"analyzed/total"] < cutoffs$analyzedPerc
+  calls[,"concordantUniqPerc"] = qc.data[colnames(qc.data) %in% c('concordant_uniq/processed', 'unpaired_uniq/processed')][1] < cutoffs$concordantUniqPerc
+  if("gene_nbreads" %in% colnames(qc.data)){
+    calls[,"geneReadsPerc"] = qc.data[,"gene_nbreads/analyzed"] < cutoffs$geneReadsPerc
+    calls[,"geneExonicReadsPerc"] = qc.data[,"gene_exonic_nbreads/analyzed"] < cutoffs$exonicPerc
+  }
   if (cutoffs$seqType %in% "RNASeq") {
     calls[,"junctionReads"]= qc.data[,"junctionReads"] < cutoffs$junctionReads
   } else {
@@ -540,7 +547,9 @@ writeSummary <- function(dirs, outdir="Summary", cutoffs) {
   }
   calls[,"inOutLenEqual"] = ! qc.data[,"inOutLenEqual"]
   calls[,"cigarWithS"] = qc.data[,"withS_pct"] > cutoffs$cigarWithS
-  calls[,"mtReads"] = qc.data[,"MT_pct"] > cutoffs$mtReads
+  if("MT_pct" %in% colnames(qc.data)){
+    calls[,"mtReads"] = qc.data[,"MT_pct"] > cutoffs$mtReads
+  }
   calls[,"nonMappingPct"] = qc.data[,"nomapping/processed"] > cutoffs$nonMappingPct
   calls[,"highQualPct"] = qc.data[,"highqual_reads/total"] < cutoffs$highQualPct
   return(calls)

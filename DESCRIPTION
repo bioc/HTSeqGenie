@@ -9,7 +9,7 @@ Imports:
     rtracklayer (>= 1.17.19),
     GenomicFeatures (>= 1.9.31),
     VariantTools (>= 1.3.6),
-    VariantAnnotation (>= 1.5.41)
+    VariantAnnotation (>= 1.8.3)
 Maintainer: Gregoire Pau <pau.gregoire@gene.com>
 License: Artistic-2.0
 Title: A NGS analysis pipeline.
@@ -17,11 +17,11 @@ Type: Package
 LazyLoad: yes
 Author: Gregoire Pau, Jens Reeder
 Description: Libraries to perform NGS analysis.
-Version: 3.13.0
+Version: 3.13.2
 Date: 2012-03-01
 Depends:
     R (>= 3.0.0),
-    ShortRead (>= 1.14.4),
+    ShortRead (>= 1.19.13),
     parallel,
     BiocParallel,
     hwriter,

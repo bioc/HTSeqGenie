@@ -38,7 +38,7 @@ checkConfig.template <- function() {
   if (!is.null(template_config)) {
     ff <- findTemplate(template_config)
     ## load ff
-    if (! is.null(ff)) {
+    if (!is.null(ff)) {
       cat(paste("checkConfig.R/checkConfig.template: loading template config=", ff), "\n")
       updateConfig(list(template_config="")) ## remove template_config parameter from current config
       current_config <- getConfig() ## save current config
@@ -61,6 +61,7 @@ findTemplate <- function(template_config){
 
   paths <- file.path(unlist(potential.config.dirs), template_config)
   ff <- paths[file.exists(paths)][1]
+  if (is.na(ff)) ff <- NULL
   return(ff)
 }
 
@@ -342,6 +343,12 @@ checkConfig.analyzeVariants <- function() {
       genome.path <- file.path(gatk.genomes, paste0(genome, ".fa"))
       if(!file.exists(genome.path)){
         stop(paste("GATK genome not found at", genome.path))
+      }
+      if(getConfig.logical("gatk.filter_repeats")){
+        rmask.file <- getConfig("analyzeVariants.rep_mask")
+        if( is.null(rmask.file) || !file.exists(rmask.file)){
+          stop(paste("Repeat mask file either not set or not found at", rmask.file))
+        }
       }
     }
     if ("VariantTools" %in% analyzeVariants.method) {

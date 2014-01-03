@@ -73,7 +73,7 @@ getNumberOfReadsInFASTQFile <- function(filename) {
   fqs <- FastqStreamer(con, n=1e6)
   n <- 0
   repeat {
-    nreads <- length(yield(fqs))
+    nreads <- length(safe.yield(fqs))
     if (nreads==0) break
     else n <- n + nreads
   }
@@ -167,9 +167,9 @@ FastQStreamer.getReads <- function() {
   ## get reads
   lfqs <- FastQStreamer.lfqs
   paired_ends <- length(lfqs)==2
-  lreads <- list(yield(lfqs[[1]]))
+  lreads <- list(safe.yield(lfqs[[1]]))
   if (paired_ends) {
-    lreads <- c(lreads, list(yield(lfqs[[2]])))
+    lreads <- c(lreads, list(safe.yield(lfqs[[2]])))
     if (length(lreads[[1]])!=length(lreads[[2]]))
       stop("io.R/FastQStreamer.getReads: input files must have the same number of reads")
   }
@@ -246,7 +246,7 @@ saveWithID <- function(data, orig_name, id, save_dir, compress=TRUE, format="RDa
     write.table(data, filename, row.names=FALSE, sep="\t", quote=FALSE)
   }
   else{
-    stop("saveWithIDL unknown format: ", format)
+    stop("saveWithID: unknown format: ", format)
   }
   return(filename)
 }
@@ -301,18 +301,27 @@ setUpDirs <- function(save_dir, overwrite="never") {
   invisible(sapply(dirs, makeDir, overwrite=overwrite))
 }
 
-##' Load a saved RData file from a pipeline run
+##' Safely load a R data file
+##'
+##' Attempts to load a file given by object_name.
+##' Bails out if none or more than one files match the object name.
 ##' 
-##' @param dirPath Save dir of a pipeline run
-##' @param object_name object name
-##' @return loaded RData object
+##' @param dir_path Save dir of a pipeline run
+##' @param object_name object name, can be a regexp
+##' @return loaded object
 ##' @export
 ##' @keywords internal
-getRDataFromFile <- function(dirPath, object_name) {
-  filename <- getObjectFilename(file.path(dirPath,"results"), paste(".", object_name, "\\.RData$", sep=""))
-  get(load(filename))
-}
+safeGetObject <- function(dir_path, object_name){
+  filename <- getObjectFilename(file.path(dir_path,"results"), object_name)
+  obj <- try({
+    get(load(filename))
+  }, silent=TRUE)
 
+  if (class(obj)=="try-error") {
+    stop("error: cannot load ", object_name, "in", dir_path, "\n", sep="")
+  }
+  return(obj)
+}
 
 ##' Load tabular data from the NGS pipeline result directory
 ##' @param save_dir A character string containing an NGS pipeline output directory.
@@ -326,14 +335,14 @@ getTabDataFromFile <- function(save_dir, object_name) {
 
 ##' Load data as numerical values
 ##'
-##' @param dirPath Save dir of a pipeline run
+##' @param dir_path Save dir of a pipeline run
 ##' @param object_name Object name
 ##' @return loaded data as table of numbers
 ##' @author Jens Reeder
 ##' @export
 ##' @keywords internal
-getNumericVectorDataFromFile <- function(dirPath, object_name) {
-  df <- getTabDataFromFile(dirPath, object_name)
+getNumericVectorDataFromFile <- function(dir_path, object_name) {
+  df <- getTabDataFromFile(dir_path, object_name)
   v <- as.numeric(df$value)
   names(v) <- df$name
   return(v)
@@ -354,7 +363,7 @@ detectQualityInFASTQFile <- function(filename, nreads=5000) {
     
     ## read qualities
     fqs <- FastqStreamer(con, n=nreads)
-    reads <- yield(fqs)
+    reads <- safe.yield(fqs)
     z <- paste(as.vector(quality(quality(reads))), collapse="")
     quals <- as.numeric(charToRaw(z))
     close(con)
@@ -415,4 +424,16 @@ getObjectFilename <- function(dir_path, object_name) {
          "' in directory ", dir_path)
   }
   return(filename)
+}
+
+##' Overloaded yield(...) method catching truncated exceptions for FastqStreamer
+##'
+##' @title Overloaded yield(...) method catching truncated exceptions for FastqStreamer
+##' @param fqs An instance from the FastqSampler or FastqStreamer class.
+##' @return Same as FastqStreamer::yield
+##' @author Gregoire Pau
+##' @export
+##' @keywords internal
+safe.yield <- function(fqs) {
+  tryCatch(yield(fqs), IncompleteFinalRecord=function(x) stop("io.R/safe.yield: input gzipped file is corrupted/truncated. Aborting.\n"))
 }
