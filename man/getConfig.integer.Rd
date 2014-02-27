@@ -2,7 +2,7 @@
 \alias{getConfig.integer}
 \title{Check if a config parameter is an integer}
 \usage{
-  getConfig.integer(p, tol = 1e-08, ...)
+getConfig.integer(p, tol = 1e-08, ...)
 }
 \arguments{
   \item{p}{Name of parameter}
@@ -13,10 +13,10 @@
   \item{...}{Additinal parameters passed to getConfig()}
 }
 \value{
-  Value of parameter as integer
+Value of parameter as integer
 }
 \description{
-  Throws exception if value is no integer
+Throws exception if value is no integer
 }
 \keyword{internal}
 

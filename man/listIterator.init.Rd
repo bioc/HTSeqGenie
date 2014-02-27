@@ -2,22 +2,22 @@
 \alias{listIterator.init}
 \title{Create a iterator on a list}
 \usage{
-  listIterator.init(x)
+listIterator.init(x)
 }
 \arguments{
   \item{x}{A list.}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Create a iterator on a list
+Create a iterator on a list
 }
 \details{
-  Only one listIterator object can be open at any time.
+Only one listIterator object can be open at any time.
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

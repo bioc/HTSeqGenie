@@ -2,19 +2,19 @@
 \alias{logerror}
 \title{Log info using the logging package}
 \usage{
-  logerror(msg)
+logerror(msg)
 }
 \arguments{
   \item{...}{Arguments passed to logging::loginfo}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Log error (with a try statement)
+Log error (with a try statement)
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

@@ -142,3 +142,71 @@ excludeVariantsByRegions <- function(variants, mask) {
  
   return(variants)
 }
+
+##' Realign indels in pipeline context
+##'
+##' High level function call to realign
+##' indels in the analyzed.bam file using GATK
+##' @title realignIndels
+##' @return Nothing
+##' @author Jens Reeder
+##' @export
+realignIndels <- function(){
+  loginfo("gatk.R/realignIndels: starting to realign indels")
+
+  save_dir <- getConfig("save_dir")
+  analyzed.bam <- getBams(save_dir)$"analyzed"
+
+  safeExecute({
+    realigned.bam <- realignIndelsGATK(analyzed.bam)
+    file.rename(realigned.bam, analyzed.bam)
+    indexBam(analyzed.bam)
+  }, memtracer=getConfig.logical("debug.tracemem"))
+
+  loginfo("gatk.R/realignIndels: finished realigning Indels")
+}
+
+##' realign indels via GATK
+##'
+##' Realing indels using the GATK tools RealignerTargetCreator
+##' and IndelRealigner.
+##' Requires a GATK compatible genome with a name matching
+##' the alignment genome to be installed in 'path.gatk_genome'
+##' 
+##' @param bam.file Path to bam.file
+##' @return Path to realigned bam file
+##' @author Jens Reeder
+realignIndelsGATK <- function(bam.file){
+  gatk.genomes <- getConfig("path.gatk_genomes")
+  jar.path     <- getConfig("path.gatk")
+  genome       <- getConfig("alignReads.genome")
+  num.cores    <- getConfig.integer("num_cores")  
+  save.dir     <- getConfig('save_dir')
+  genome       <- file.path(gatk.genomes, paste0(genome,".fa"))
+  
+  interval.file <- file.path(save.dir, "results",
+                             paste(getConfig('prepend_str'),
+                                   "realigner.intervals", sep="."))
+
+  args <- paste("--num_threads", min(4,num.cores),
+                "-R", genome,
+                "-I", bam.file,
+                "-o", interval.file)
+  
+  gatk(gatk.jar.path=jar.path, method="RealignerTargetCreator", args=args)
+  if(!file.exists(interval.file)) stop("realignIndelsGATK failed to create interval file.")
+  
+  realigned.bam.file <- file.path(save.dir, "results",
+                                  paste(getConfig('prepend_str'),
+                                        "realigned", "bam", sep="."))
+
+  args <- paste("-R", genome,
+                "-I", bam.file,
+                "-o", realigned.bam.file,
+                "--targetIntervals", interval.file)
+
+  gatk(gatk.jar.path=jar.path, method="IndelRealigner", args=args)
+  if(!file.exists(realigned.bam.file)) stop("realignIndelsGATK failed to create bam file.")
+
+  return(realigned.bam.file)
+}

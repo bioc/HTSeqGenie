@@ -1,0 +1,20 @@
+\name{realignIndels}
+\alias{realignIndels}
+\title{realignIndels}
+\usage{
+realignIndels()
+}
+\value{
+Nothing
+}
+\description{
+Realign indels in pipeline context
+}
+\details{
+High level function call to realign indels in the
+analyzed.bam file using GATK
+}
+\author{
+Jens Reeder
+}
+

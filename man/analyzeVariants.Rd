@@ -2,15 +2,15 @@
 \alias{analyzeVariants}
 \title{Calculate and process Variants}
 \usage{
-  analyzeVariants()
+analyzeVariants()
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Calculate and process Variants
+Calculate and process Variants
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 

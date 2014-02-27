@@ -2,21 +2,21 @@
 \alias{wrap.callVariants}
 \title{Variant calling}
 \usage{
-  wrap.callVariants(bam.file)
+wrap.callVariants(bam.file)
 }
 \arguments{
   \item{bam.file}{Aligned reads as bam file}
 }
 \value{
-  Variants as Vranges
+Variants as Vranges
 }
 \description{
-  Call Variants in the pipeline framework
+Call Variants in the pipeline framework
 }
 \details{
-  A wrapper around VariantTools callVariant framework.
+A wrapper around VariantTools callVariant framework.
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 

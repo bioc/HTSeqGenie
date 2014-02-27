@@ -2,8 +2,8 @@
 \alias{relativeBarPlot}
 \title{Make relative bar plots}
 \usage{
-  relativeBarPlot(data, total, labels, title, filename,
-    ylab = "Percent", cex.names = 0.9, ymax = 100)
+relativeBarPlot(data, total, labels, title, filename, ylab = "Percent",
+  cex.names = 0.9, ymax = 100)
 }
 \arguments{
   \item{data}{vector of raw, absolute counts}
@@ -25,10 +25,10 @@
   \item{ymax}{extent of y-axis}
 }
 \value{
-  Nothing, creates two files instead
+Nothing, creates two files instead
 }
 \description{
-  Make relative bar plots
+Make relative bar plots
 }
 \keyword{internal}
 

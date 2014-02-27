@@ -2,7 +2,7 @@
 \alias{safeExecute}
 \title{Execute function in try catch with trace function}
 \usage{
-  safeExecute(expr, memtracer = TRUE, newthread = TRUE)
+safeExecute(expr, memtracer = TRUE, newthread = TRUE)
 }
 \arguments{
   \item{expr}{Expression to safely execute}
@@ -14,13 +14,13 @@
   should be used (to save memory from the main thread)}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Requires the logger to be set
+Requires the logger to be set
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

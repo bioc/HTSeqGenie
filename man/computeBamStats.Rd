@@ -2,23 +2,23 @@
 \alias{computeBamStats}
 \title{Compute record statistics from a bam file}
 \usage{
-  computeBamStats(bam)
+computeBamStats(bam)
 }
 \arguments{
   \item{bam}{A character string containing an existing bam
   file}
 }
 \value{
-  A numeric vector
+A numeric vector
 }
 \description{
-  Compute record statistics from a bam file
+Compute record statistics from a bam file
 }
 \details{
-  The statistics are additive over chunks/lanes.
+The statistics are additive over chunks/lanes.
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

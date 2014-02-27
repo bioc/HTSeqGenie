@@ -34,10 +34,10 @@ filterQuality <- function(lreads) {
   z <- filterByLength(lreads, minlength, paired_ends)
   lreads <- lapply(lreads, function(reads) reads[z])
   
-  comb <- HTSeqGenie::isAboveQualityThresh(lreads[[1]], minquality=minquality,
+  comb <- isAboveQualityThresh(lreads[[1]], minquality=minquality,
                                            minfrac=minfrac)
   if (paired_ends) {
-    comb <- comb & HTSeqGenie::isAboveQualityThresh(lreads[[2]], minquality=minquality,
+    comb <- comb & isAboveQualityThresh(lreads[[2]], minquality=minquality,
                                                     minfrac=minfrac)
   }
   lreads <- lapply(lreads, function(reads) reads[comb])
@@ -123,6 +123,7 @@ filterByLength <- function(lreads, minlength=12, paired=FALSE) {
 ##' @param minqual An ascii encoded quality score
 ##' @return A list of quality trimmed ShortReadQ objects
 ##' @keywords internal
+##' @importMethodsFrom ShortRead trimEnds
 ##' @export
 trimTailsByQuality <- function (lreads, minqual="#"){  
   loginfo(paste("preprocessReads.R/preprocessReadsChunk: Starting trimTailsByQuality ..."))

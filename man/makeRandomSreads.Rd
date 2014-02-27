@@ -1,0 +1,23 @@
+\name{makeRandomSreads}
+\alias{makeRandomSreads}
+\title{Generate a couple if random ShortReadQ, intended for testing}
+\usage{
+makeRandomSreads(num, len)
+}
+\arguments{
+  \item{num}{an integer}
+
+  \item{len}{an integer}
+}
+\value{
+a DNAStringSet
+}
+\description{
+Generate a couple if random ShortReadQ, intended for
+testing
+}
+\author{
+Gregoire Pau
+}
+\keyword{internal}
+

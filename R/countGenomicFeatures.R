@@ -119,7 +119,7 @@ rpkm <- function (counts, widths, nbreads)  {
 }
 
 computeWidth <- function(gf) {
-  if (class(gf)=="GRangesList") BiocGenerics:::sapply(width(reduce(gf)), sum)
+  if (class(gf)=="GRangesList") sapply(width(reduce(gf)), sum)
   else width(gf)
 }
 

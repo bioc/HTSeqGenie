@@ -2,9 +2,8 @@
 \alias{computeCoverage}
 \title{Compute the coverage vector given a bamfile}
 \usage{
-  computeCoverage(bamfile, extendReads = FALSE,
-    paired_ends = FALSE, fragmentLength = NULL,
-    maxFragmentLength = NULL)
+computeCoverage(bamfile, extendReads = FALSE, paired_ends = FALSE,
+  fragmentLength = NULL, maxFragmentLength = NULL)
 }
 \arguments{
   \item{bamfile}{A character string indicating the path of
@@ -26,13 +25,13 @@
   disregarded when computing coverage.}
 }
 \value{
-  A SimpleRleList object containing the coverage
+A SimpleRleList object containing the coverage
 }
 \description{
-  Compute the coverage vector given a bamfile
+Compute the coverage vector given a bamfile
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

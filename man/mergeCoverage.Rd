@@ -2,7 +2,7 @@
 \alias{mergeCoverage}
 \title{Merge coverage files}
 \usage{
-  mergeCoverage(indirs, outdir, prepend_str)
+mergeCoverage(indirs, outdir, prepend_str)
 }
 \arguments{
   \item{indirs}{A character vector, indicating which
@@ -15,13 +15,13 @@
   prefix going to be appended on all output result files}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Merge coverage files
+Merge coverage files
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

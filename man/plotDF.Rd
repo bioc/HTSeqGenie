@@ -2,7 +2,7 @@
 \alias{plotDF}
 \title{Make continuous plots of distribution function}
 \usage{
-  plotDF(df, ylab, xlab, filename)
+plotDF(df, ylab, xlab, filename)
 }
 \arguments{
   \item{df}{distribution function, given as absolute count
@@ -16,13 +16,13 @@
   \item{ylab}{label of y axis}
 }
 \value{
-  Nothing, creates two files instead
+Nothing, creates two files instead
 }
 \description{
-  Make continuous plots of distribution function
+Make continuous plots of distribution function
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 \keyword{internal}
 

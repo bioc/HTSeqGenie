@@ -2,7 +2,7 @@
 \alias{processChunks}
 \title{Process chunk in the pipeline framework}
 \usage{
-  processChunks(inext, fun, nb.parallel.jobs)
+processChunks(inext, fun, nb.parallel.jobs)
 }
 \arguments{
   \item{inext}{A function (without argument) returning an
@@ -16,17 +16,17 @@
   \item{nb.parallel.jobs}{number of parallel jobs}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Process chunk in the pipeline framework
+Process chunk in the pipeline framework
 }
 \details{
-  High-level pipeline-specific version of sclapply, with
-  chunk loggers and safeExecute
+High-level pipeline-specific version of sclapply, with
+chunk loggers and safeExecute
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

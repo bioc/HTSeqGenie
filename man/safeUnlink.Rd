@@ -2,24 +2,24 @@
 \alias{safeUnlink}
 \title{safeUnlink}
 \usage{
-  safeUnlink(path)
+safeUnlink(path)
 }
 \arguments{
   \item{path}{A character string indicating which
   file/directory to delete.}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Symlink-safe file/directory delete function
+Symlink-safe file/directory delete function
 }
 \details{
-  Unlike unlink(), safeUnlink() does not follow symlink
-  directories for deletion.
+Unlike unlink(), safeUnlink() does not follow symlink
+directories for deletion.
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

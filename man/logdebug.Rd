@@ -2,19 +2,19 @@
 \alias{logdebug}
 \title{Log debug using the logging package}
 \usage{
-  logdebug(msg)
+logdebug(msg)
 }
 \arguments{
   \item{...}{Arguments passed to logging::logdebug}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Log debug (with a try statement)
+Log debug (with a try statement)
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

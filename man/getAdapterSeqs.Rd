@@ -2,8 +2,7 @@
 \alias{getAdapterSeqs}
 \title{Read list of Illumina adapter seqs from package data}
 \usage{
-  getAdapterSeqs(paired_ends, force_paired_end_adapter,
-    pair_num = 1)
+getAdapterSeqs(paired_ends, force_paired_end_adapter, pair_num = 1)
 }
 \arguments{
   \item{paired_ends}{Dow we have paired ends reads?}
@@ -14,10 +13,10 @@
   \item{pair_num}{1 for forward read, 2 for reverse read}
 }
 \value{
-  The adapter seq as string
+The adapter seq as string
 }
 \description{
-  Read list of Illumina adapter seqs from package data
+Read list of Illumina adapter seqs from package data
 }
 \keyword{internal}
 

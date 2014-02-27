@@ -1,3 +1,26 @@
+version 3.13.8:
+- fixed the "as.vector(x, mode) : invalid 'mode' argument" bug by adding the "importFrom(BiocGenerics,table)" NAMESPACE directive
+
+version 3.13.7
+- enable indelRealigner in runPipeline controlled by
+config value of alignReads.do
+
+version 3.13.6
+- set gatk.path in options if GATK_PATH env is set to an existing file.
+This is mostly for allowing the unit tests to know if and where a GATK is installed
+
+version 3.13.5:
+- require bamtally bugfixed version of gmapR
+
+version 3.13.4:
+- fixed bug in generateCountFeaturesPlots() when no genes left after filtering.
+  Practically only happens for bacterial or viral genomes when every gene is hit more than 200 times 
+
+version 3.13.3:
+- now saving fragmentLength in summary_coverage.txt
+- using Jinfeng's weighted mean to estimate fragmentLength
+- removed the parallelization in saveCoverage (since saveCoverage is used in parallel)
+
 version 3.13.2
 - activate read trimming for illumina 1.5 quality using the 'B' as qual indicator
 

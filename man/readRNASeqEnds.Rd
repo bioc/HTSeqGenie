@@ -2,8 +2,7 @@
 \alias{readRNASeqEnds}
 \title{Read Paired End Bam Files}
 \usage{
-  readRNASeqEnds(bam_file, scan_bam_what = NULL,
-    remove.strandness = TRUE)
+readRNASeqEnds(bam_file, scan_bam_what = NULL, remove.strandness = TRUE)
 }
 \arguments{
   \item{bam_file}{Path to a bam file}
@@ -15,21 +14,21 @@
   read strands should be set to "*".}
 }
 \value{
-  GRangesList
+GRangesList
 }
 \description{
-  Read paired end BAM files with requested columns from the
-  BAM
+Read paired end BAM files with requested columns from the
+BAM
 }
 \details{
-  This function returns a GRangesList containing
-  information about pair-end alignment data. It is
-  essentially Rsamtools::readGAlignments, but it uses
-  Rsamtools::scanBam to get information that cannot be
-  obtained from readBamGappedAlignments.
+This function returns a GRangesList containing information
+about pair-end alignment data. It is essentially
+Rsamtools::readGAlignments, but it uses Rsamtools::scanBam
+to get information that cannot be obtained from
+readBamGappedAlignments.
 }
 \author{
-  Cory Barr
+Cory Barr
 }
 \keyword{internal}
 

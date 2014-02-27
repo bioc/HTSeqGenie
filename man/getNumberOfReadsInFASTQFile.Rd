@@ -2,19 +2,19 @@
 \alias{getNumberOfReadsInFASTQFile}
 \title{Count reads in Fastq file}
 \usage{
-  getNumberOfReadsInFASTQFile(filename)
+getNumberOfReadsInFASTQFile(filename)
 }
 \arguments{
   \item{filename}{Name of FastQ file}
 }
 \value{
-  Number of reads
+Number of reads
 }
 \description{
-  Count reads in Fastq file
+Count reads in Fastq file
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

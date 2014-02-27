@@ -2,19 +2,19 @@
 \alias{FastQStreamer.release}
 \title{Close the FastQStreamer}
 \usage{
-  FastQStreamer.release()
+FastQStreamer.release()
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Close the FastQStreamer
+Close the FastQStreamer
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \seealso{
-  FastQStreamer.init
+FastQStreamer.init
 }
 \keyword{internal}
 

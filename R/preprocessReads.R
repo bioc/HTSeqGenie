@@ -41,6 +41,15 @@ preprocessReads <- function() {
   }, memtracer=getConfig.logical("debug.tracemem"))
 }
 
+##' Preprocess a chunk
+##'
+##' @title Preprocess a chunk
+##' @param lreads A list of GRanges objects, containing the reads
+##' @param save_dir Save directory of a pipeline run
+##' @return save_dir Save directory of a pipeline run
+##' @author Gregoire Pau
+##' @keywords internal
+##' @importMethodsFrom ShortRead sread
 preprocessReadsChunk <- function(lreads, save_dir=NULL) {
   ## init
   if (missing(save_dir)) save_dir <- file.path(getConfig("save_dir"))
@@ -194,6 +203,16 @@ mergeSummaryPreprocess <- function(indirs, outdir, prepend_str) {
   invisible(summary_preprocess)
 }
 
+##' Build a ShortRead report
+##'
+##' @title Build a ShortRead report
+##' @param save_dir Save directory of a pipeline run
+##' @param paired_ends A logical, indicating whether reads are paired
+##' @return Nothing
+##' @author Gregoire Pau
+##' @keywords internal
+##' @importMethodsFrom ShortRead readFastq qa report
+##' @importFrom ShortRead FastqSampler
 buildShortReadReports <- function(save_dir, paired_ends) {
   ## set the files to merge
   objects <- list(c(filename="processed.aligner_input_1.fastq", report_dir="shortReadReport_1"))

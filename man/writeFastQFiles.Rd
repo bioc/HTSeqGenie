@@ -2,7 +2,7 @@
 \alias{writeFastQFiles}
 \title{Write reads to file}
 \usage{
-  writeFastQFiles(lreads, dir, filename1, filename2)
+writeFastQFiles(lreads, dir, filename1, filename2)
 }
 \arguments{
   \item{lreads}{List of reads as ShortRead objects}
@@ -14,10 +14,10 @@
   \item{filename2}{Name of file 2}
 }
 \value{
-  Named list of filepaths
+Named list of filepaths
 }
 \description{
-  Write reads to file
+Write reads to file
 }
 \keyword{internal}
 

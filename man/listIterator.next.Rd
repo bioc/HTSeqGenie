@@ -2,20 +2,20 @@
 \alias{listIterator.next}
 \title{Get reads from the listIterator}
 \usage{
-  listIterator.next()
+listIterator.next()
 }
 \value{
-  An object. NULL if there are no more objects in the
-  listIterator.
+An object. NULL if there are no more objects in the
+listIterator.
 }
 \description{
-  Get reads from the listIterator
+Get reads from the listIterator
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \seealso{
-  listIterator.init
+listIterator.init
 }
 \keyword{internal}
 

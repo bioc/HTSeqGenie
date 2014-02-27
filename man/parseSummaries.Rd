@@ -2,7 +2,7 @@
 \alias{parseSummaries}
 \title{parse summary files from save dirs}
 \usage{
-  parseSummaries(save.dirs, summary.name)
+parseSummaries(save.dirs, summary.name)
 }
 \arguments{
   \item{save.dirs}{list of result dirs}
@@ -11,17 +11,17 @@
   summary_counts}
 }
 \value{
-  data frame with summaries
+data frame with summaries
 }
 \description{
-  Parse a summary from a list of save_dirs
+Parse a summary from a list of save_dirs
 }
 \details{
-  This function allows to parse a given summary from a list
-  of pipeline results save dirs
+This function allows to parse a given summary from a list
+of pipeline results save dirs
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 \keyword{internal}
 

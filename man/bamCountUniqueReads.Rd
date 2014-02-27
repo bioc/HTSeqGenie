@@ -2,19 +2,19 @@
 \alias{bamCountUniqueReads}
 \title{Uniquely count number of reads in bam file}
 \usage{
-  bamCountUniqueReads(bam)
+bamCountUniqueReads(bam)
 }
 \arguments{
   \item{bam}{Name of bam file}
 }
 \value{
-  number of reads
+number of reads
 }
 \description{
-  Uniquely count number of reads in bam file
+Uniquely count number of reads in bam file
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 \keyword{internal}
 

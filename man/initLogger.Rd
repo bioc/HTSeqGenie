@@ -2,17 +2,17 @@
 \alias{initLogger}
 \title{Init loggers}
 \usage{
-  initLogger()
+initLogger()
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Init loggers (output dir log, using save_dir from
-  getConfig, and console log)
+Init loggers (output dir log, using save_dir from
+getConfig, and console log)
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

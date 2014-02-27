@@ -2,13 +2,13 @@
 \alias{checkConfig}
 \title{Check configuration}
 \usage{
-  checkConfig()
+checkConfig()
 }
 \value{
-  Nothing. Individual checks will throw error instead.
+Nothing. Individual checks will throw error instead.
 }
 \description{
-  Performs all configuration checks
+Performs all configuration checks
 }
 \keyword{internal}
 

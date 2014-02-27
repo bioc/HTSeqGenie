@@ -2,7 +2,7 @@
 \alias{runPipelineConfig}
 \title{Run the NGS analysis pipeline}
 \usage{
-  runPipelineConfig(config_filename, config_update)
+runPipelineConfig(config_filename, config_update)
 }
 \arguments{
   \item{config_filename}{Path to a pipeline configuration
@@ -12,18 +12,18 @@
   update the config parameters}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Run the NGS analysis pipeline from a configuration file
+Run the NGS analysis pipeline from a configuration file
 }
 \details{
-  This is the launcher function for all pipeline runs. It
-  will do some preprocessing steps, then aligns the reads,
-  counts overlap with genomic Features such as genes, exons
-  etc and applies a variant caller.
+This is the launcher function for all pipeline runs. It
+will do some preprocessing steps, then aligns the reads,
+counts overlap with genomic Features such as genes, exons
+etc and applies a variant caller.
 }
 \author{
-  Jens Reeder, Gregoire Pau
+Jens Reeder, Gregoire Pau
 }
 

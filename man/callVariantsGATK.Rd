@@ -2,21 +2,20 @@
 \alias{callVariantsGATK}
 \title{Variant calling via GATK}
 \usage{
-  callVariantsGATK(bam.file)
+callVariantsGATK(bam.file)
 }
 \arguments{
   \item{bam.file}{Path to bam.file}
 }
 \value{
-  Path to variant file
+Path to variant file
 }
 \description{
-  Call variants via GATK using the pipeline framework.
-  Requires a GATK compatible genome with a name matching
-  the alignment genome to be installed in
-  'path.gatk_genome'
+Call variants via GATK using the pipeline framework.
+Requires a GATK compatible genome with a name matching the
+alignment genome to be installed in 'path.gatk_genome'
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 

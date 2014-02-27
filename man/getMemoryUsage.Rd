@@ -2,13 +2,13 @@
 \alias{getMemoryUsage}
 \title{Returns memory usage in bytes}
 \usage{
-  getMemoryUsage()
+getMemoryUsage()
 }
 \value{
-  Memory usage in bytes
+Memory usage in bytes
 }
 \description{
-  For debugging.
+For debugging.
 }
 \keyword{internal}
 

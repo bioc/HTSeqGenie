@@ -2,16 +2,16 @@
 \alias{alignReads}
 \title{Align reads against genome}
 \usage{
-  alignReads()
+alignReads()
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Align reads against genome
+Align reads against genome
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

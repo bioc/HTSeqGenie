@@ -18,11 +18,11 @@ test.computeCoverage <- function() {
   checkEquals(hashCoverage(cov1), 890968)
   checkEquals(hashCoverage(cov2), 895658)
   checkEquals(hashCoverage(cov3), 890968)
-  checkEquals(hashCoverage(cov4), 1290960)
+  checkEquals(hashCoverage(cov4), 1302696)
   checkEquals(hashCoverage(cov5), 1760400)
   checkEquals(hashCoverage(cov6), 867753)
 
   ## check correct fragmentLengths
-  checkEquals(attr(cov4, "fragmentLength"), 110)
+  checkEquals(attr(cov4, "fragmentLength"), 111)
   checkEquals(attr(cov5, "fragmentLength"), 150)       
 }

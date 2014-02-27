@@ -8,6 +8,7 @@
 ##' @param save_dir Save directory
 ##' @return a named logical vector indicating if a read has rRNA contamination
 ##' @author Cory Barr
+##' @importMethodsFrom ShortRead id
 ##' @export
 detectRRNA <- function (lreads, remove_tmp_dir=TRUE, save_dir=NULL) {
   ## init

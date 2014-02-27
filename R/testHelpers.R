@@ -42,7 +42,10 @@ setupTestFramework <- function(config.filename, config.update=list(), testname="
 ##'
 ##' @title buildTP53GenomeTemplate
 ##' @return Path to tp53 template file
-##' @author Jens Reeder 
+##' @author Jens Reeder
+##' @keywords internal
+##' @importFrom gmapR TP53Genome
+##' @importMethodsFrom gmapR directory
 buildTP53GenomeTemplate <- function(){
 
   tp53Genome <- TP53Genome()
@@ -65,7 +68,30 @@ buildTP53GenomeTemplate <- function(){
   return(template_config)
 }
 
-## generate a couple if random ShortReadQ, intended for testing
+##' create fasta genome file of TP53 genome
+##' 
+##' @title buildTP53FastaGenome
+##' @return Path to tp53 genome
+##' @author Jens Reeder
+##' @importFrom rtracklayer export
+##' @importFrom gmapR TP53Genome
+##' @keywords internal
+buildTP53FastaGenome <- function() {
+  tp53seq <- DNAStringSet(getSeq(TP53Genome()))
+  names(tp53seq) = "TP53"
+  export(tp53seq, file.path(tempdir(),"TP53_demo.fa"), format="fasta")
+  return(tempdir())
+}
+
+##' Generate a couple if random ShortReadQ, intended for testing
+##'
+##' @title Generate a couple if random ShortReadQ, intended for testing
+##' @param num an integer
+##' @param len an integer
+##' @return a DNAStringSet
+##' @author Gregoire Pau
+##' @keywords internal
+##' @importMethodsFrom ShortRead FastqQuality ShortReadQ
 makeRandomSreads <- function(num, len) {
   rstring <- apply(matrix(sample(DNA_ALPHABET[1:4], num * len, replace = TRUE), nrow = num),
                    1, paste, collapse = "")

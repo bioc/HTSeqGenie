@@ -2,18 +2,18 @@
 \alias{hashVector}
 \title{Hashing function for vector}
 \usage{
-  hashVector(x)
+hashVector(x)
 }
 \arguments{
   \item{x}{A vector}
 }
 \value{
-  A numeric
+A numeric
 }
 \description{
-  Hashing function for vector
+Hashing function for vector
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 

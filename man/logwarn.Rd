@@ -2,19 +2,19 @@
 \alias{logwarn}
 \title{Log warning using the logging package}
 \usage{
-  logwarn(msg)
+logwarn(msg)
 }
 \arguments{
   \item{...}{Arguments passed to logging::logwarn}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Log warning (with a try statement)
+Log warning (with a try statement)
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

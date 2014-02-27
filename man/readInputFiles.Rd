@@ -2,13 +2,13 @@
 \alias{readInputFiles}
 \title{Read FastQ input files}
 \usage{
-  readInputFiles()
+readInputFiles()
 }
 \value{
-  Reads as list of ShortRead objects
+Reads as list of ShortRead objects
 }
 \description{
-  Uses the global config to find input files
+Uses the global config to find input files
 }
 \keyword{internal}
 

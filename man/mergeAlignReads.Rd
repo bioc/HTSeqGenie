@@ -2,7 +2,7 @@
 \alias{mergeAlignReads}
 \title{Merge after alignReads}
 \usage{
-  mergeAlignReads(indirs, outdir, prepend_str, num_cores)
+mergeAlignReads(indirs, outdir, prepend_str, num_cores)
 }
 \arguments{
   \item{indirs}{A character vector, indicating which
@@ -18,13 +18,13 @@
   processing (for the merge bam step)}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Merge BAMs and create summary alignment file
+Merge BAMs and create summary alignment file
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

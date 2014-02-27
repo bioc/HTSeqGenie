@@ -2,7 +2,7 @@
 \alias{isAboveQualityThresh}
 \title{Check for high quality reads}
 \usage{
-  isAboveQualityThresh(reads, minquality, minfrac)
+isAboveQualityThresh(reads, minquality, minfrac)
 }
 \arguments{
   \item{reads}{A set of reads as ShortReadQ object}
@@ -13,12 +13,12 @@
   minquality to be considered a good read.}
 }
 \value{
-  A boolean vector indicating whether read is considered
-  high quality.
+A boolean vector indicating whether read is considered high
+quality.
 }
 \description{
-  Checks whether reads have more than a fraction of minFrac
-  nucleotides with a score below minquality.
+Checks whether reads have more than a fraction of minFrac
+nucleotides with a score below minquality.
 }
 \keyword{internal}
 

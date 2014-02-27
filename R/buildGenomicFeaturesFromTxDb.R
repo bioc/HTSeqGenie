@@ -9,6 +9,7 @@
 ##'   txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 ##'   genomic_features <- buildGenomicFeaturesFromTxDb(txdb)
 ##' }
+##' @importMethodsFrom GenomicFeatures transcriptsBy exonsBy cdsBy transcripts
 ##' @export
 buildGenomicFeaturesFromTxDb <- function(txdb) {
   ## genes

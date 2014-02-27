@@ -2,16 +2,16 @@
 \alias{calculateCoverage}
 \title{Calculate read coverage}
 \usage{
-  calculateCoverage()
+calculateCoverage()
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Calculate read coverage
+Calculate read coverage
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 \keyword{internal}
 

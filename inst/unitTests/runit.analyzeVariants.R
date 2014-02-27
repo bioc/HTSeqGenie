@@ -1,5 +1,4 @@
 test.wrap.callVariants <- function(){
-  DEACTIVATED("until VariantAnnotation is fixed")
   config.filename <- "test-data/test_config.txt"  
   save.dir <- setupTestFramework(config.filename=config.filename,
                                  config.update=list(num_cores=1),
@@ -20,7 +19,7 @@ test.wrap.callVariants <- function(){
 }
 
 test.wrap.callVariants.parallel <- function(){
-  DEACTIVATED("until VariantAnnotation is fixed")
+
   config.filename <- "test-data/test_config.txt"
   save.dir <- setupTestFramework(config.filename=config.filename,
                                  config.update=list(num_cores=4),
@@ -35,7 +34,7 @@ test.wrap.callVariants.parallel <- function(){
 }
 
 test.wrap.callVariants.rmsk_dbsnp <- function(){
-  DEACTIVATED("until VariantAnnotation is fixed")
+
   config.filename <- "test-data/test_config.txt"  
   save.dir <- setupTestFramework(config.filename=config.filename,
                                  config.update=list(

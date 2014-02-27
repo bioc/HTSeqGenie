@@ -2,7 +2,7 @@
 \alias{writeSummary}
 \title{Write HTML summary}
 \usage{
-  writeSummary(dirs, cutoffs, outdir = "./")
+writeSummary(dirs, cutoffs, outdir = "./")
 }
 \arguments{
   \item{dirs}{List of pipeline result dirs}
@@ -14,13 +14,13 @@
   dir.}
 }
 \value{
-  Nothing, but writes file
+Nothing, but writes file
 }
 \description{
-  Write html Summary for list of runs
+Write html Summary for list of runs
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 \keyword{internal}
 

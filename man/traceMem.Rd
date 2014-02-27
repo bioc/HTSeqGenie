@@ -2,14 +2,14 @@
 \alias{traceMem}
 \title{Show memory usage}
 \usage{
-  traceMem()
+traceMem()
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  For debugging purposes only. Show memory usage if config
-  variable
+For debugging purposes only. Show memory usage if config
+variable
 }
 \keyword{internal}
 

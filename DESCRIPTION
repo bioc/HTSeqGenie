@@ -6,10 +6,15 @@ Imports:
     Rsamtools (>= 1.8.5),
     Biostrings (>= 2.24.1),
     chipseq (>= 1.6.1),
-    rtracklayer (>= 1.17.19),
+    hwriter (>= 1.3.0),
+    Cairo (>= 1.5.5),
     GenomicFeatures (>= 1.9.31),
-    VariantTools (>= 1.3.6),
-    VariantAnnotation (>= 1.8.3)
+    BiocParallel,
+    parallel,
+    tools,
+    rtracklayer (>= 1.17.19),
+    GenomicAlignments,
+    VariantTools (>= 1.3.6)
 Maintainer: Gregoire Pau <pau.gregoire@gene.com>
 License: Artistic-2.0
 Title: A NGS analysis pipeline.
@@ -17,52 +22,14 @@ Type: Package
 LazyLoad: yes
 Author: Gregoire Pau, Jens Reeder
 Description: Libraries to perform NGS analysis.
-Version: 3.13.2
+Version: 3.13.9
 Date: 2012-03-01
 Depends:
     R (>= 3.0.0),
+    gmapR (>= 1.4.3),
     ShortRead (>= 1.19.13),
-    parallel,
-    BiocParallel,
-    hwriter,
-    Cairo,
-    tools,
-    rtracklayer,
-    gmapR (>= 1.1.10)
+    VariantAnnotation (>= 1.8.3)
 Suggests:
     TxDb.Hsapiens.UCSC.hg19.knownGene,
-    GenomicFeatures,
     LungCancerLines,
     org.Hs.eg.db
-Collate:
-    'alignReads.R'
-    'bamUtils.R'
-    'checkConfig.R'
-    'config.R'
-    'detectAdapterContam.R'
-    'detectRRNA.R'
-    'filterQuality.R'
-    'io.R'
-    'preprocessReads.R'
-    'initPipeline.R'
-    'testHelpers.R'
-    'tools.R'
-    'trimReads.R'
-    'zzz.R'
-    'countGenomicFeatures.R'
-    'coverage.R'
-    'createSummaryCounts.R'
-    'mergeLanes.R'
-    'plotDepthByStrand.R'
-    'readRNASeqEnds.R'
-    'reportPipelineQA.R'
-    'runPipeline.R'
-    'targetLengths.R'
-    'summaries.R'
-    'buildGenomicFeaturesFromTxDb.R'
-    'TP53GenomicFeatures.R'
-    'wrapGsnap.R'
-    'picard.R'
-    'analyzeVariants.R'
-    'gatk.R'
-    'logging.R'

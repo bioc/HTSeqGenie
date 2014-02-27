@@ -8,6 +8,7 @@
 ##' @param save_dir Save directory of a pipeline run
 ##' @return Boolean vector indicating vector contamination for each read
 ##' @export
+##' @importMethodsFrom ShortRead id
 ##' @keywords internal
 detectAdapterContam <- function(lreads, save_dir=NULL) {
   ## init
@@ -105,6 +106,7 @@ getAdapterSeqs <- function(paired_ends, force_paired_end_adapter, pair_num=1) {
 ##' @return boolean vector indicating adapter contamination
 ##' @export
 ##' @keywords internal
+##' @importMethodsFrom ShortRead sread
 isAdapter <- function(reads,
                       score_cutoff,
                       adapter_seqs){
@@ -128,6 +130,7 @@ isAdapter <- function(reads,
 ##' @param read_len The read length
 ##' @param n Number of samples
 ##' @keywords internal
+##' @importMethodsFrom ShortRead readFasta sread
 getRandomAlignCutoff <- function(read_len, n) {
   adapter_seqs <- readFasta(getPackageFile("extdata/adapter_data/Illumina_adapters.paired_end.fasta"))
   adapter_seqs<- as.character(sread(adapter_seqs))[1]

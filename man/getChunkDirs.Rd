@@ -2,16 +2,16 @@
 \alias{getChunkDirs}
 \title{Get the list of chunk directories}
 \usage{
-  getChunkDirs()
+getChunkDirs()
 }
 \value{
-  List of chunk directories
+List of chunk directories
 }
 \description{
-  Get the list of chunk directories
+Get the list of chunk directories
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

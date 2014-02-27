@@ -2,9 +2,8 @@
 \alias{setupTestFramework}
 \title{setup test framework}
 \usage{
-  setupTestFramework(config.filename,
-    config.update = list(), testname = "test",
-    package = "HTSeqGenie", use.TP53Genome = TRUE)
+setupTestFramework(config.filename, config.update = list(),
+  testname = "test", package = "HTSeqGenie", use.TP53Genome = TRUE)
 }
 \arguments{
   \item{config.filename}{configuration file}
@@ -19,9 +18,9 @@
   TP53 genome as template config}
 }
 \value{
-  the created temp directory
+the created temp directory
 }
 \description{
-  setup test framework
+setup test framework
 }
 

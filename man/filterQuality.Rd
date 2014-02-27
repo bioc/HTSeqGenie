@@ -2,22 +2,21 @@
 \alias{filterQuality}
 \title{Filter reads by quality}
 \usage{
-  filterQuality(lreads)
+filterQuality(lreads)
 }
 \arguments{
   \item{lreads}{A list of ShortReadQ objects}
 }
 \value{
-  A list of quality filterered ShortReadQ objects
+A list of quality filterered ShortReadQ objects
 }
 \description{
-  Filtering reads by quality score. Discards reads that
-  have more than a fraction of X nucleotides with a score
-  below Y.
+Filtering reads by quality score. Discards reads that have
+more than a fraction of X nucleotides with a score below Y.
 }
 \details{
-  X and Y are controlled by global config variables X:
-  filterQuality.minFrac Y: filterQuality.minQuality
+X and Y are controlled by global config variables X:
+filterQuality.minFrac Y: filterQuality.minQuality
 }
 \keyword{internal}
 

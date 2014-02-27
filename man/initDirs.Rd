@@ -2,16 +2,16 @@
 \alias{initDirs}
 \title{Set up NGS output dir}
 \usage{
-  initDirs()
+initDirs()
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Set up NGS output dir (using save_dir from getConfig)
+Set up NGS output dir (using save_dir from getConfig)
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

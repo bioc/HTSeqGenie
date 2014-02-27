@@ -21,6 +21,7 @@ checkConfig <- function() {
   checkConfig.countGenomicFeatures()
   checkConfig.coverage()
   checkConfig.markDuplicates()
+  checkConfig.realignIndels()
   checkConfig.analyzeVariants()
   checkConfig.noextraparameters()
   
@@ -334,16 +335,7 @@ checkConfig.analyzeVariants <- function() {
     z <- analyzeVariants.method%in%knownMethods
     if (!z) stop("'analyzeVariants.method' must contain the name of a method among: ", paste(knownMethods, collapse=", "))
     if ("GATK" %in% analyzeVariants.method) {
-      gatk.path <- getConfig("path.gatk", stop.ifempty=TRUE)
-      if ( checkGATKJar(gatk.path) != TRUE ){
-        stop("Can't call GATK! Check your path.gatk settings and make sure you have java in your PATH")
-      }
-      gatk.genomes <- getConfig("path.gatk_genomes", stop.ifempty=TRUE)
-      genome <- getConfig("alignReads.genome", stop.ifempty=TRUE)
-      genome.path <- file.path(gatk.genomes, paste0(genome, ".fa"))
-      if(!file.exists(genome.path)){
-        stop(paste("GATK genome not found at", genome.path))
-      }
+      checkConfig.GATK()
       if(getConfig.logical("gatk.filter_repeats")){
         rmask.file <- getConfig("analyzeVariants.rep_mask")
         if( is.null(rmask.file) || !file.exists(rmask.file)){
@@ -388,4 +380,25 @@ checkConfig.analyzeVariants <- function() {
     getConfig.logical("analyzeVariants.indels", stop.ifempty=TRUE)
   }
   invisible(TRUE)
+}
+
+
+## check for GATK and presence of a genome file
+checkConfig.GATK <- function() {
+  gatk.path <- getConfig("path.gatk", stop.ifempty=TRUE)
+  if ( checkGATKJar(gatk.path) != TRUE ){
+    stop("Can't run indelRealigner without GATK! Check your path.gatk settings and make sure you have java in your PATH")
+  }
+  gatk.genomes <- getConfig("path.gatk_genomes", stop.ifempty=TRUE)
+  genome <- getConfig("alignReads.genome", stop.ifempty=TRUE)
+  genome.path <- file.path(gatk.genomes, paste0(genome, ".fa"))
+  if(!file.exists(genome.path)){
+    stop(paste("GATK genome not found at", genome.path))
+  }
+}
+
+checkConfig.realignIndels <- function() {
+  if (getConfig.logical("realignIndels.do", stop.ifempty=TRUE) ){  
+    checkConfig.GATK()
+  }
 }

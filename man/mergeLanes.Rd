@@ -2,9 +2,8 @@
 \alias{mergeLanes}
 \title{Merge input lanes}
 \usage{
-  mergeLanes(indirs, outdir, prepend_str, num_cores,
-    config_update, preMergeChecks.do = TRUE,
-    ignoreConfigParameters)
+mergeLanes(indirs, outdir, prepend_str, num_cores, config_update,
+  preMergeChecks.do = TRUE, ignoreConfigParameters)
 }
 \arguments{
   \item{indirs}{A character vector of directory paths
@@ -30,13 +29,13 @@
   required to be identical}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Merge input lanes built by the NGS pipeline
+Merge input lanes built by the NGS pipeline
 }
 \author{
-  greg
+greg
 }
 \keyword{internal}
 

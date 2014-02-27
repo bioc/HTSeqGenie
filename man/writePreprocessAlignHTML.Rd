@@ -1,0 +1,31 @@
+\name{writePreprocessAlignHTML}
+\alias{writePreprocessAlignHTML}
+\title{writePreprocessAlignHTML}
+\usage{
+writePreprocessAlignHTML(outfile, dirPath, sanity_check, readFilteringTable,
+  ReadMappingsTable, targetLengthTable)
+}
+\arguments{
+  \item{outfile}{a path}
+
+  \item{dirPath}{a path}
+
+  \item{sanity_check}{a logical}
+
+  \item{readFilteringTable}{a table}
+
+  \item{ReadMappingsTable}{a table}
+
+  \item{targetLengthTable}{a table}
+}
+\value{
+Nothing
+}
+\description{
+writePreprocessAlignHTML
+}
+\author{
+Gregoire Pau
+}
+\keyword{internal}
+

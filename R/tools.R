@@ -306,7 +306,9 @@ getTraceback <- function(mto) {
 ##' @return Nothing
 ##' @author Gregoire Pau
 ##' @export
+##' @importFrom parallel mcparallel
 ##' @keywords internal
+##' @importFrom tools SIGTERM
 safeExecute <- function(expr, memtracer=TRUE, newthread=TRUE) {
   ## start memory tracer
   if (memtracer) pmemtracer <- mcparallel(repeat {Sys.sleep(60) ; traceMem()})

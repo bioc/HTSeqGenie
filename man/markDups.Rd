@@ -2,19 +2,19 @@
 \alias{markDups}
 \title{markDups}
 \usage{
-  markDups()
+markDups()
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Mark duplicates in pipeline context
+Mark duplicates in pipeline context
 }
 \details{
-  High level function call to mark duplicates in the
-  analyzed.ba file of a pipelin run.
+High level function call to mark duplicates in the
+analyzed.ba file of a pipelin run.
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 

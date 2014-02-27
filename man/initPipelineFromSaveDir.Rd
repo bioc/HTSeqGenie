@@ -2,7 +2,7 @@
 \alias{initPipelineFromSaveDir}
 \title{Init Pipeline environment from previous run}
 \usage{
-  initPipelineFromSaveDir(save_dir, config_update)
+initPipelineFromSaveDir(save_dir, config_update)
 }
 \arguments{
   \item{save_dir}{Save dir of a previous pipeline run}
@@ -11,17 +11,17 @@
   update the config parameters}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Init Pipeline environment from previous run
+Init Pipeline environment from previous run
 }
 \details{
-  Loads the config file from a previous run stored in
-  [save_dir]/logs/config.txt
+Loads the config file from a previous run stored in
+[save_dir]/logs/config.txt
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

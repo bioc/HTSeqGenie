@@ -189,6 +189,7 @@ parseSummaries <- function(save.dirs, summary.name) {
 ##' @author Jens Reeder
 ##' @export
 ##' @keywords internal
+##' @importFrom hwriter openPage hwrite hwriteImage
 writeSummary <- function(dirs, cutoffs, outdir="./")  {
 
   ## This really only seems to work if outdir is the current dir.

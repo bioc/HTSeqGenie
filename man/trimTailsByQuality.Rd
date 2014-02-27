@@ -2,7 +2,7 @@
 \alias{trimTailsByQuality}
 \title{Trim off low quality tail}
 \usage{
-  trimTailsByQuality(lreads, minqual = "#")
+trimTailsByQuality(lreads, minqual = "#")
 }
 \arguments{
   \item{lreads}{A list (usually a pair) of ShortReadQ
@@ -11,22 +11,22 @@
   \item{minqual}{An ascii encoded quality score}
 }
 \value{
-  A list of quality trimmed ShortReadQ objects
+A list of quality trimmed ShortReadQ objects
 }
 \description{
-  The illuminsa manuals states: If a read ends with a
-  segment of mostly low quality (Q15 or below), then all of
-  the quality values in the segment are replaced with a
-  value of 2( encoded as the letter B in Illumina's
-  text-based encoding of quality scores)... This Q2
-  indicator does not predict a specific error rate, but
-  rather indicates that a specific final portion of the
-  read should not be used in further analyses.
+The illuminsa manuals states: If a read ends with a segment
+of mostly low quality (Q15 or below), then all of the
+quality values in the segment are replaced with a value of
+2( encoded as the letter B in Illumina's text-based
+encoding of quality scores)... This Q2 indicator does not
+predict a specific error rate, but rather indicates that a
+specific final portion of the read should not be used in
+further analyses.
 }
 \details{
-  For illumina 1.8 the special char is encoded as '#',
-  which we chhose as default here. For illumina 1.5 make
-  sure to set the minqual to 'B'
+For illumina 1.8 the special char is encoded as '#', which
+we chhose as default here. For illumina 1.5 make sure to
+set the minqual to 'B'
 }
 \keyword{internal}
 

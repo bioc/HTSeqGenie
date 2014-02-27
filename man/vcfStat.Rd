@@ -2,19 +2,19 @@
 \alias{vcfStat}
 \title{Compute stats on a VCF file}
 \usage{
-  vcfStat(vcf.filename)
+vcfStat(vcf.filename)
 }
 \arguments{
   \item{vcf.filename}{A character pointing to a VCF (or
   gzipped VCF) file}
 }
 \value{
-  A numeric vector
+A numeric vector
 }
 \description{
-  Compute stats on a VCF file
+Compute stats on a VCF file
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 

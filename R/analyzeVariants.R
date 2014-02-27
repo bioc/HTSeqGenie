@@ -48,6 +48,7 @@ callVariantsVariantTools <- function(bam.file) {
 ##' @author Jens Reeder
 ##' @export
 ##' @importFrom VariantTools TallyVariantsParam tallyVariants VariantPostFilters callVariants postFilterVariants VariantCallingFilters
+##' @importFrom BiocParallel MulticoreParam
 wrap.callVariants <- function(bam.file) {  
   loginfo("analyzeVariants.R/wrap.callVariants: Calling variants...")
 
@@ -56,7 +57,7 @@ wrap.callVariants <- function(bam.file) {
 
   ## tally variants
   loginfo("analyzeVariants.R/wrap.callVariants: Tallying variants...")  
-  tally.param  <- .buildTallyParam()
+  tally.param  <- buildTallyParam()
   tally.variants <- tallyVariants(bam.file, tally.param,
                                 BPPARAM = MulticoreParam(workers=num.cores))
 
@@ -73,7 +74,14 @@ wrap.callVariants <- function(bam.file) {
               filtered.variants = variants))
 }
 
-.buildTallyParam <- function(){
+##' Build tally parameters
+##'
+##' @title Build tally parameters
+##' @return a \code{VariantTallyParam} object
+##' @importFrom gmapR GmapGenome
+##' @keywords internal
+##' @author Gregoire Pau
+buildTallyParam <- function(){
   genome      <- getConfig("alignReads.genome")
   genome.dir  <- getConfig("path.gsnap_genomes")
   indels      <- getConfig.logical("analyzeVariants.indels")

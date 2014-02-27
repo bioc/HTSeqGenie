@@ -2,7 +2,7 @@
 \alias{detectQualityInFASTQFile}
 \title{Detect quality protocol from a FASTQ file}
 \usage{
-  detectQualityInFASTQFile(filename, nreads = 5000)
+detectQualityInFASTQFile(filename, nreads = 5000)
 }
 \arguments{
   \item{filename}{Path to a FASTQ or gzipped-FASTQ file}
@@ -11,14 +11,14 @@
   is 5000.}
 }
 \value{
-  A character vector containing the compatible qualities.
-  NULL if none.
+A character vector containing the compatible qualities.
+NULL if none.
 }
 \description{
-  Detect quality protocol from a FASTQ file
+Detect quality protocol from a FASTQ file
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 \keyword{internal}
 

@@ -2,7 +2,7 @@
 \alias{getRandomAlignCutoff}
 \title{Estimate an adapter alignment cutoff score}
 \usage{
-  getRandomAlignCutoff(read_len, n)
+getRandomAlignCutoff(read_len, n)
 }
 \arguments{
   \item{read_len}{The read length}
@@ -10,8 +10,8 @@
   \item{n}{Number of samples}
 }
 \description{
-  Empirically estimate a threshold that discriminates
-  random reads from reads with adapter contamination
+Empirically estimate a threshold that discriminates random
+reads from reads with adapter contamination
 }
 \keyword{internal}
 

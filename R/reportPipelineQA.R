@@ -4,6 +4,8 @@
 ##' @return Name of created HTML file
 ##' @author Melanie Huntley, Cory Barr, Jens Reeder
 ##' @export
+##' @importFrom hwriter hwrite
+##' @importFrom Cairo CairoPDF
 ##' @keywords internal
 writePreprocessAlignReport <- function() {
   loginfo("reportPipelineQA.R/writePreprocessAlignReport: creating joint preprocess-alignment report...")
@@ -44,17 +46,16 @@ writePreprocessAlignReport <- function() {
   }
 
   outfile=file.path(report_dir, "reportAlignment.html")
-  .writePreprocessAlignHTML(outfile, dirPath, sanity_check,
-                            readFilteringTable,
-                            ReadMappingsTable,
-                            targetLengthTable)
+  writePreprocessAlignHTML(outfile, dirPath, sanity_check,
+                           readFilteringTable,
+                           ReadMappingsTable,
+                           targetLengthTable)
   loginfo("reportPipelineQA.R/writePreprocessAlignReport: done")
   return(outfile)
 }
 
 ##' Generates a summary HTML for the Genomic Feature counting step
 ##'
-##' 
 ##' @title Generate pipeline report
 ##' @return Name of created HTML file
 ##' @author Melanie Huntley, Cory Barr, Jens Reeder
@@ -81,7 +82,7 @@ writeGenomicFeaturesReport <- function(){
   .generateCountFeaturesPlots(dirPath, image_dir)
 
   outfile=file.path(report_dir, "reportFeatureCounts.html")
-  .writeFeatureCountsHTML(outfile, dirPath,
+  writeFeatureCountsHTML(outfile, dirPath,
                          ExonsCoveredTable, GenomicFeaturesTable,
                          GenomicFeaturesDetectedTable)
   loginfo("reportPipelineQA.R/writeGenomicFeaturesReport: done")
@@ -125,9 +126,9 @@ writeGenomicFeaturesReport <- function(){
                   ylab = "Percent of reads",
                   filename=file.path(image_dir, "ReadSummaryFilteringMapping"))
   
-####################################
+  ####################################
   ## Plot mapping types
-####################################
+  ####################################
   ## Make names look nicer in plot
   names(readMappings) <- gsub("_", " ", names(readMappings))
   readMappings <- readMappings[grep("analyzed", names(readMappings), invert=TRUE)]
@@ -151,16 +152,15 @@ writeGenomicFeaturesReport <- function(){
 }
 
 .calcHitsByGenomicFeature <- function(dirPath, image_dir, summary.Table, nbreads){
-####################################
+  ####################################
   ## Reads by chromosome
-####################################
+  ####################################
   ## genic reads by chromosome
   hits_by_gene <- getTabDataFromFile(dirPath, "counts_gene")$count
   
-####################################
+  ####################################
   ## types of genomic features mapped to
-####################################
-  
+  ####################################
   hits_by_gene_exonic <- getTabDataFromFile(dirPath, "counts_gene_exonic")$count
 
   hits_by_gene_coding <- getTabDataFromFile(dirPath, "counts_gene_coding")$count
@@ -206,10 +206,10 @@ writeGenomicFeaturesReport <- function(){
                                      error=function(e) numeric(0))
   hits_by_intergenic <- getTabDataFromFile(dirPath, "counts_intergenic")$count
 
-####################################
+  ####################################
   ## number of genomic features
   ## detected
-####################################
+  ####################################
   genes_detected <- sum(hits_by_gene > 0)
   total_genes <- length(hits_by_gene)
   
@@ -274,110 +274,60 @@ writeGenomicFeaturesReport <- function(){
 }
 
 .generateCountFeaturesPlots <- function(dirPath, image_dir){
-####################################
-  ## cumulative distr plots
-####################################
-  hits_by_gene_exonic <- getTabDataFromFile(dirPath, "counts_gene_exonic")$count
-  counts <- hits_by_gene_exonic
-  df <- how_many(counts, decreasing=FALSE)
-
-  plotDF(df,
-         ylab="Percent of genes (exonic) with at most x reads", 
-         xlab="Reads mapped to a gene",
-         filename=file.path(image_dir, "CumulativeDistrOfReadsToGenesExonic")
-         ) 
-
-  df <- df[df$count < 2000,]
-  plotDF(df,
-         ylab="Percent of genes (exonic) with at most x reads",
-         xlab="Reads mapped to a gene",
-         filename=file.path(image_dir, "CumulativeDistrOfReadsToGenesExonic2000")
-         )
-  
-  df <- df[df$count <200,]
-  plotDF(df,
-         ylab="Percent of genes (exonic) with at most x reads",
-         xlab="Reads mapped to a gene",
-         filename=file.path(image_dir, "CumulativeDistrOfReadsToGenesExonic200")
-         )
-
-  ## RPKMs
-  counts  <- getTabDataFromFile(dirPath, "gene_exonic")$rpkm
-  df     <- how_many(counts, decreasing=FALSE)
-
-  ## if there are no mappings, rpkm is undefined
-  if(all(is.finite(df$count))){
-    plotDF(df,
-           ylab="Percent of genes (exonic) with an RPKM of at most x",
-           xlab="RPKM",
-           filename=file.path(image_dir, "CumulativeDistrOfRPKMsToGenesExonic"))
-  
-    df <- df[df$count <500,]
-    plotDF(df,
-         ylab="Percent of genes (exonic) with an RPKM of at most x",
-           xlab="RPKM",
-           filename=file.path(image_dir, "CumulativeDistrOfRPKMsToGenesExonic500"))
-    
-    df <- df[df$count <50,]
-    plotDF(df,
-           ylab="Percent of genes (exonic) with an RPKM of at most x",
-           xlab="RPKM",
-           filename=file.path(image_dir, "CumulativeDistrOfRPKMsToGenesExonic50"))
+  ## Since we have to redo almost the same plot multiple times, we
+  ## define this local helper function that will use variables defined in this function scope
+  .plotDFhelper <- function(counts, limit, filename){
+    data <- counts[counts$count <= limit,]
+    fp <- file.path(image_dir, filename)
+    # there is nothing to plot when all data is filtered
+    if(length(data$count) > 0){
+      plotDF(data,
+             xlab=xlab,
+             ylab=ylab,
+             filename=fp)
+      invisible(fp)
+    }
   }
-####################################
+  
+  hits_by_gene_exonic <- getTabDataFromFile(dirPath, "counts_gene_exonic")$count
+
   ## genes with AT LEAST plots
-####################################
-  counts <- hits_by_gene_exonic
-  df <- how_many(counts, decreasing=TRUE)
+  df <- how_many(hits_by_gene_exonic, decreasing=TRUE)
+  ylab <- "Percent of genes (exonic) with at least x reads"
+  xlab <- "Reads mapped to a gene"  
 
-  plotDF(df,
-         ylab="Percent of genes (exonic) with at least x reads",
-         xlab="Reads mapped to a gene",
-         filename=file.path(image_dir, "DistrOfReadsToGenesExonic"))
+  .plotDFhelper(df, limit=max(df$count), filename="DistrOfReadsToGenesExonic")
+  .plotDFhelper(df, limit=2000, filename="DistrOfReadsToGenesExonic2000")
+  .plotDFhelper(df, limit=200, filename="DistrOfReadsToGenesExonic200")
   
-  df <- df[df$count <2000,]
-  plotDF(df,
-         ylab="Percent of genes (exonic) with at least x reads",
-         xlab="Reads mapped to a gene",
-         filename=file.path(image_dir, "DistrOfReadsToGenesExonic2000"))
-  
-  df <- df[df$count <200,]
-  plotDF(df,
-         ylab="Percent of genes (exonic) with at least x reads",
-         xlab="Reads mapped to a gene",
-         filename=file.path(image_dir, "DistrOfReadsToGenesExonic200"))
-
-  ##RPKMs
-  counts  <- getTabDataFromFile(dirPath, "gene_exonic")$rpkm
-  df <- how_many(counts, decreasing=TRUE)
-
+  ## RPKMs
+  rpkm_by_gene_exonic <- getTabDataFromFile(dirPath, "gene_exonic")$rpkm
+  df <- how_many(rpkm_by_gene_exonic, decreasing=TRUE)
   ## if there are no mappings, rpkm is undefined
   if(all(is.finite(df$count))){
-  
-    plotDF(df,
-           ylab="Percent of genes (exonic) with an RPKM of at least x",
-           xlab="RPKM",
-           filename=file.path(image_dir, "DistrOfRPKMsToGenesExonic"))  
-    
-    df <- df[df$count <200,]
-    plotDF(df,
-           ylab="Percent of genes (exonic) with an RPKM of at least x",
-           xlab="RPKM",
-           filename=file.path(image_dir, "DistrOfRPKMsToGenesExonic200"))
-    
-    df <- df[df$count <50,]
-    plotDF(df,
-           ylab="Percent of genes (exonic) with an RPKM of at least x",
-           xlab="RPKM",
-           filename=file.path(image_dir, "DistrOfRPKMsToGenesExonic50"))
+    xlab <- "RPKM"
+    ylab="Percent of genes (exonic) with an RPKM of at least x"
+    .plotDFhelper(df, limit=max(df$count), filename="DistrOfRPKMsToGenesExonic")    
+    .plotDFhelper(df, limit=200, filename="DistrOfRPKMsToGenesExonic200")
+    .plotDFhelper(df, limit=50, filename="DistrOfRPKMsToGenesExonic50")
   }
 }
 
-####################################
-  ## Writing to html output
-####################################
-.writePreprocessAlignHTML <- function(outfile, dirPath, sanity_check,
-                                     readFilteringTable, ReadMappingsTable,
+##' writePreprocessAlignHTML
+##'
+##' @title writePreprocessAlignHTML
+##' @param outfile a path
+##' @param dirPath a path
+##' @param sanity_check a logical
+##' @param readFilteringTable a table
+##' @param ReadMappingsTable a table
+##' @param targetLengthTable a table
+##' @return Nothing
+##' @author Gregoire Pau
+##' @keywords internal
+##' @importFrom hwriter openPage hwrite hwriteImage
+writePreprocessAlignHTML <- function(outfile, dirPath, sanity_check,
+                                      readFilteringTable, ReadMappingsTable,
                                       targetLengthTable){
   p <- openPage(outfile)
   hwrite('Summary and QA of Pipeline Output', p, heading=1)
@@ -464,7 +414,20 @@ uniquely  mapped, whereas multiple mappings are called multi-mappers.', p, br=TR
   close(p)
 }
 
-.writeFeatureCountsHTML <- function(outfile, dirPath,
+##' writeFeatureCountsHTML
+##'
+##' @title writeFeatureCountsHTML
+##' @param outfile a path
+##' @param dirPath  a path
+##' @param ExonsCoveredTable a table
+##' @param GenomicFeaturesTable a table
+##' @param GenomicFeaturesDetectedTable a table
+##' @return Nothing
+##' @export
+##' @keywords internal
+##' @author Gregoire Pau
+##' @importFrom hwriter openPage hwrite hwriteImage closePage
+writeFeatureCountsHTML <- function(outfile, dirPath,
                                    ExonsCoveredTable, GenomicFeaturesTable,
                                    GenomicFeaturesDetectedTable){
   p <- openPage(outfile)
@@ -494,24 +457,9 @@ uniquely  mapped, whereas multiple mappings are called multi-mappers.', p, br=TR
   hwriteImage(paste('images','GenomicFeaturesDetected.png',sep="/"),p,br=TRUE,link=paste("images","GenomicFeaturesDetected.pdf",sep="/"))
   hwrite('',p,br=TRUE)
   
-  hwrite('Cumulative distribution of reads by genes (exonic)',p,heading=2)
-  hwrite('For various coverages (measured by the number of reads mapping uniquely to the exons of a gene) we
-calculate the proportion of genes that obtain AT MOST said coverage.',p,br=TRUE)
-  hwrite('',p,br=TRUE)
-  hwriteImage(paste('images','CumulativeDistrOfReadsToGenesExonic.png',sep="/"),p,br=TRUE,link=paste("images","CumulativeDistrOfReadsToGenesExonic.pdf",sep="/"))
-  hwrite('',p,br=TRUE)
-  hwrite('Here we restrict the x-axis to 2000 reads mapping to the exons of a gene, or less.',p,br=TRUE)
-  hwrite('',p,br=TRUE)
-  hwriteImage(paste('images','CumulativeDistrOfReadsToGenesExonic2000.png',sep="/"),p,br=TRUE,link=paste("images","CumulativeDistrOfReadsToGenesExonic2000.pdf",sep="/"))
-  hwrite('',p,br=TRUE)
-  hwrite('Here we restrict the x-axis to 200 reads mapping to the exons of a gene, or less.',p,br=TRUE)
-  hwrite('',p,br=TRUE)
-  hwriteImage(paste('images','CumulativeDistrOfReadsToGenesExonic200.png',sep="/"),p,br=TRUE,link=paste("images","CumulativeDistrOfReadsToGenesExonic200.pdf",sep="/"))
-  hwrite('',p,br=TRUE)
   
   hwrite('Distribution of reads by genes (exonic)',p,heading=2)
-  hwrite('For various coverages (measured by the number of reads mapping uniquely to the exons of a gene) we
-calculate the proportion of genes that obtain AT LEAST said coverage.',p,br=TRUE)
+  hwrite('For various coverages (measured by the number of reads mapping uniquely to the exons of a gene) we calculate the proportion of genes that obtain AT LEAST said coverage.',p,br=TRUE)
   hwrite('',p,br=TRUE)
   hwriteImage(paste('images','DistrOfReadsToGenesExonic.png',sep="/"),p,br=TRUE,link=paste("images","DistrOfReadsToGenesExonic.pdf",sep="/"))
   hwrite('',p,br=TRUE)
@@ -522,23 +470,6 @@ calculate the proportion of genes that obtain AT LEAST said coverage.',p,br=TRUE
   hwrite('Here we restrict the x-axis to 200 reads mapping to the exons of a gene.',p,br=TRUE)
   hwrite('',p,br=TRUE)
   hwriteImage(paste('images','DistrOfReadsToGenesExonic200.png',sep="/"),p,br=TRUE,link=paste("images","DistrOfReadsToGenesExonic200.pdf",sep="/"))
-  
-  
-  hwrite('Cumulative distribution of RPKMs for genes (exonic)',p,heading=2)
-  hwrite('For various RPKMs (the number of Reads mapping uniquely to the exons of a gene Per Kilobase
-          of the mappable length of the gene (exonic) per Million mapped reads) we
-          calculate the proportion of genes that obtain AT MOST said RPKM.',p,br=TRUE)
-  hwrite('',p,br=TRUE)
-  hwriteImage(paste('images','CumulativeDistrOfRPKMsToGenesExonic.png',sep="/"),p,br=TRUE,link=paste("images","CumulativeDistrOfRPKMsToGenesExonic.pdf",sep="/"))
-  hwrite('',p,br=TRUE)
-  hwrite('Here we restrict the x-axis to RPKMs of 500, or less.',p,br=TRUE)
-  hwrite('',p,br=TRUE)
-  hwriteImage(paste('images','CumulativeDistrOfRPKMsToGenesExonic500.png',sep="/"),p,br=TRUE,link=paste("images","CumulativeDistrOfRPKMsToGenesExonic500.pdf",sep="/"))
-  hwrite('',p,br=TRUE)
-  hwrite('Here we restrict the x-axis to RPKMs of 50, or less.',p,br=TRUE)
-  hwrite('',p,br=TRUE)
-  hwriteImage(paste('images','CumulativeDistrOfRPKMsToGenesExonic50.png',sep="/"),p,br=TRUE,link=paste("images","CumulativeDistrOfRPKMsToGenesExonic50.pdf",sep="/"))
-  hwrite('',p,br=TRUE)
   
   hwrite('Distribution of RPKMs for genes (exonic)',p,heading=2)
   hwrite('For various RPKMs (the number of Reads mapping uniquely to the exons of a gene Per Kilobase
@@ -655,7 +586,7 @@ how_many <- function(counts, decreasing=TRUE) {
     df <- data.frame(num = 1, count = 1)
   }  else  {
     df <- data.frame(num=seq(1:length(counts)),
-                     count=counts[order(counts,decreasing=decreasing)])
+                     count=sort(counts,decreasing=decreasing))
     df <- df[length(counts):1,]
     df <- df[!duplicated(df$count),]
   }

@@ -2,16 +2,16 @@
 \alias{countGenomicFeatures}
 \title{Count overlaps with genomic features}
 \usage{
-  countGenomicFeatures()
+countGenomicFeatures()
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Count overlaps with genomic features
+Count overlaps with genomic features
 }
 \author{
-  Gegoire Pau
+Gegoire Pau
 }
 \keyword{internal}
 

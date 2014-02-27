@@ -2,17 +2,17 @@
 \alias{buildGenomicFeaturesFromTxDb}
 \title{Build genomic features from a TxDb object}
 \usage{
-  buildGenomicFeaturesFromTxDb(txdb)
+buildGenomicFeaturesFromTxDb(txdb)
 }
 \arguments{
   \item{txdb}{A TxDb object.}
 }
 \value{
-  A list named list of GRanges objects containing the
-  biological entities to account for.
+A list named list of GRanges objects containing the
+biological entities to account for.
 }
 \description{
-  Build genomic features from a TxDb object
+Build genomic features from a TxDb object
 }
 \examples{
 \dontrun{
@@ -22,6 +22,6 @@
 }
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 

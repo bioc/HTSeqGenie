@@ -21,7 +21,8 @@ trimReads <- function (lreads, trim_len){
 ##' @param trim_len The length reads will be truncated to 
 ##' @return A truncated ShortReadQ object
 ##' @export
-##' @keywords internal
+##' @keywords internal 
+##' @importMethodsFrom ShortRead sread ShortReadQ id
 truncateReads <- function(reads, trim_len) {
   if (length(reads)>0) {
     ## nucleotides

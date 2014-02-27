@@ -2,7 +2,7 @@
 \alias{mergeSummaryAlignment}
 \title{Merge summary alignments}
 \usage{
-  mergeSummaryAlignment(indirs, outdir, prepend_str)
+mergeSummaryAlignment(indirs, outdir, prepend_str)
 }
 \arguments{
   \item{indirs}{A character vector, indicating which
@@ -15,13 +15,13 @@
   prefix going to be appended on all output result files}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Merge summary alignments
+Merge summary alignments
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

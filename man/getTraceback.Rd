@@ -2,16 +2,16 @@
 \alias{getTraceback}
 \title{Get traceback from tryKeepTraceback()}
 \usage{
-  getTraceback(mto)
+getTraceback(mto)
 }
 \arguments{
   \item{mto}{An object of the try-error class}
 }
 \value{
-  Traceback as a string
+Traceback as a string
 }
 \description{
-  Get traceback from tryKeepTraceback()
+Get traceback from tryKeepTraceback()
 }
 \keyword{internal}
 

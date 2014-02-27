@@ -62,6 +62,7 @@ mergeBams <- function(inbams, outbam, sort=TRUE, index=TRUE) {
 ##' @return number of reads
 ##' @author Jens Reeder
 ##' @keywords internal
+##' @importMethodsFrom Rsamtools ScanBamParam scanBam
 ##' @export
 bamCountUniqueReads <- function(bam) {
   sb_param <- ScanBamParam(what=c("qname"))

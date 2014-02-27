@@ -2,17 +2,17 @@
 \alias{resource}
 \title{Reload package source code}
 \usage{
-  resource(dirname = ".")
+resource(dirname = ".")
 }
 \arguments{
   \item{dirname}{Directore with files to source}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  When developing code this function can be used to quickly
-  reload all of the packages code, without installing it.
+When developing code this function can be used to quickly
+reload all of the packages code, without installing it.
 }
 \keyword{internal}
 

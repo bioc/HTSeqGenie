@@ -2,9 +2,8 @@
 \alias{sclapply}
 \title{Scheduled parallel processing}
 \usage{
-  sclapply(inext, fun, max.parallel.jobs, ...,
-    stop.onfail = TRUE, tracefun = NULL,
-    tracefun.period = 60)
+sclapply(inext, fun, max.parallel.jobs, ..., stop.onfail = TRUE,
+  tracefun = NULL, tracefun.period = 60)
 }
 \arguments{
   \item{inext}{A function (without argument) returning an
@@ -28,10 +27,10 @@
   tracefun}
 }
 \value{
-  Return value of applied function
+Return value of applied function
 }
 \description{
-  Scheduled parallel processing
+Scheduled parallel processing
 }
 \keyword{internal}
 

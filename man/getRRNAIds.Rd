@@ -2,7 +2,7 @@
 \alias{getRRNAIds}
 \title{Detect reads that look like rRNA}
 \usage{
-  getRRNAIds(file1, file2 = NULL, tmp_dir, rRNADb)
+getRRNAIds(file1, file2 = NULL, tmp_dir, rRNADb)
 }
 \arguments{
   \item{file1}{FastQ file of forward reads}
@@ -17,9 +17,9 @@
   exist in the gsnap genome directory}
 }
 \value{
-  IDs of reads flagged as rRNA
+IDs of reads flagged as rRNA
 }
 \description{
-  Detect reads that look like rRNA
+Detect reads that look like rRNA
 }
 

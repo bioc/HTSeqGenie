@@ -2,7 +2,7 @@
 \alias{getNumericVectorDataFromFile}
 \title{Load data as numerical values}
 \usage{
-  getNumericVectorDataFromFile(dir_path, object_name)
+getNumericVectorDataFromFile(dir_path, object_name)
 }
 \arguments{
   \item{dir_path}{Save dir of a pipeline run}
@@ -10,13 +10,13 @@
   \item{object_name}{Object name}
 }
 \value{
-  loaded data as table of numbers
+loaded data as table of numbers
 }
 \description{
-  Load data as numerical values
+Load data as numerical values
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 \keyword{internal}
 

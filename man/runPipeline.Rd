@@ -2,23 +2,23 @@
 \alias{runPipeline}
 \title{Run the NGS analysis pipeline}
 \usage{
-  runPipeline(...)
+runPipeline(...)
 }
 \arguments{
   \item{...}{A list of parameters. See the vignette for
   details.}
 }
 \value{
-  The path to the NGS output directory.
+The path to the NGS output directory.
 }
 \description{
-  Run the NGS analysis pipeline
+Run the NGS analysis pipeline
 }
 \details{
-  This function starts the pipeline. It first preprocesses
-  the input FASTQ reads, align them, count the read
-  overlaps with genomic features and compute the coverage.
-  See the vignette for details.
+This function starts the pipeline. It first preprocesses
+the input FASTQ reads, align them, count the read overlaps
+with genomic features and compute the coverage. See the
+vignette for details.
 }
 \examples{
 \dontrun{
@@ -55,9 +55,9 @@ save_dir <- runPipeline(
 }
 }
 \author{
-  Jens Reeder, Gregoire Pau
+Jens Reeder, Gregoire Pau
 }
 \seealso{
-  TP53Genome, TP53GenomicFeatures
+TP53Genome, TP53GenomicFeatures
 }
 

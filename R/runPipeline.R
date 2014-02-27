@@ -71,6 +71,9 @@ runPipelineConfig <- function(config_filename, config_update) {
   if (getConfig.logical("markDuplicates.do")) {
     markDups()
   }
+  if (getConfig.logical("realignIndels.do")) {
+    realignIndels()
+  }
   if (getConfig.logical("countGenomicFeatures.do")) {
     countGenomicFeatures()
   }

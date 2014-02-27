@@ -37,6 +37,7 @@ readInputFiles <- function() {
 ##' @return Named list of filepaths
 ##' @export
 ##' @keywords internal
+##' @importMethodsFrom ShortRead writeFastq
 writeFastQFiles <- function (lreads, dir, filename1, filename2) {
   ## get config parameters
   paired_ends <- getConfig.logical("paired_ends")
@@ -45,14 +46,14 @@ writeFastQFiles <- function (lreads, dir, filename1, filename2) {
   filepaths <- list()
   filepaths$fastq_for_aligner_1 <- file.path(dir, filename1)
   loginfo(paste("io.R/writeFastQFiles: writing filename=", filepaths$fastq_for_aligner_1))
-  if (length(lreads[[1]])>0) writeFastq(lreads[[1]], file=filepaths$fastq_for_aligner_1, lane="")
+  if (length(lreads[[1]])>0) writeFastq(lreads[[1]], file=filepaths$fastq_for_aligner_1, lane="", compress=FALSE)
   else cat("", file=filepaths$fastq_for_aligner_1) ## empty FASTQ file 
 
   ## write reverse reads
   if (paired_ends) {
     filepaths$fastq_for_aligner_2 <- file.path(dir, filename2)
     loginfo(paste("io.R/writeFastQFiles: writing filename=", filepaths$fastq_for_aligner_2))
-    if (length(lreads[[2]])>0) writeFastq(lreads[[2]], file=filepaths$fastq_for_aligner_2, lane="")
+    if (length(lreads[[2]])>0) writeFastq(lreads[[2]], file=filepaths$fastq_for_aligner_2, lane="", compress=FALSE)
     else cat("", file=filepaths$fastq_for_aligner_2) ## empty FASTQ file 
   }
 
@@ -66,6 +67,7 @@ writeFastQFiles <- function (lreads, dir, filename1, filename2) {
 ##' @return Number of reads
 ##' @author Gregoire Pau
 ##' @export
+##' @importMethodsFrom ShortRead FastqStreamer
 ##' @keywords internal
 getNumberOfReadsInFASTQFile <- function(filename) {
   if (length(grep("\\.gz$", filename))>0) con <- gzfile(filename)
@@ -434,6 +436,7 @@ getObjectFilename <- function(dir_path, object_name) {
 ##' @author Gregoire Pau
 ##' @export
 ##' @keywords internal
+##' @importMethodsFrom ShortRead yield
 safe.yield <- function(fqs) {
   tryCatch(yield(fqs), IncompleteFinalRecord=function(x) stop("io.R/safe.yield: input gzipped file is corrupted/truncated. Aborting.\n"))
 }

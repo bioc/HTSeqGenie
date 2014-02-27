@@ -2,7 +2,7 @@
 \alias{getConfig}
 \title{Get a configuration parameter}
 \usage{
-  getConfig(p, stop.ifempty = FALSE)
+getConfig(p, stop.ifempty = FALSE)
 }
 \arguments{
   \item{p}{Name of parameter}
@@ -11,13 +11,13 @@
   otherwise returns NULL}
 }
 \value{
-  If parameter is missing, return the config list otherwise
-  return the value of the parameter name as a character
-  string throws an exception if the parameter is not
-  present in the config
+If parameter is missing, return the config list otherwise
+return the value of the parameter name as a character
+string throws an exception if the parameter is not present
+in the config
 }
 \description{
-  Get a configuration parameter
+Get a configuration parameter
 }
 \keyword{internal}
 

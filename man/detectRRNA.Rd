@@ -2,8 +2,7 @@
 \alias{detectRRNA}
 \title{Detect rRNA Contamination in Reads}
 \usage{
-  detectRRNA(lreads, remove_tmp_dir = TRUE,
-    save_dir = NULL)
+detectRRNA(lreads, remove_tmp_dir = TRUE, save_dir = NULL)
 }
 \arguments{
   \item{lreads}{A list of ShortReadQ objects}
@@ -14,19 +13,18 @@
   \item{save_dir}{Save directory}
 }
 \value{
-  a named logical vector indicating if a read has rRNA
-  contamination
+a named logical vector indicating if a read has rRNA
+contamination
 }
 \description{
-  Returns a named vector indicating if a read ID has rRNA
-  contamination or not
+Returns a named vector indicating if a read ID has rRNA
+contamination or not
 }
 \details{
-  Given a genome and fastq data, each read in the fastq
-  data is aligned against the rRNA sequences for that
-  genome
+Given a genome and fastq data, each read in the fastq data
+is aligned against the rRNA sequences for that genome
 }
 \author{
-  Cory Barr
+Cory Barr
 }
 

@@ -2,22 +2,22 @@
 \alias{removeChunkDir}
 \title{Remove chunk directories}
 \usage{
-  removeChunkDir()
+removeChunkDir()
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Remove chunk directories
+Remove chunk directories
 }
 \details{
-  A pipeline run processes the data in small chunks, which
-  are eventually combined into the final result.
-  Afterwards, this function can be called to remove the
-  temporary results per chunk.
+A pipeline run processes the data in small chunks, which
+are eventually combined into the final result. Afterwards,
+this function can be called to remove the temporary results
+per chunk.
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 \keyword{internal}
 

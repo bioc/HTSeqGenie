@@ -2,7 +2,7 @@
 \alias{initPipelineFromConfig}
 \title{Init pipeline environment}
 \usage{
-  initPipelineFromConfig(config_filename, config_update)
+initPipelineFromConfig(config_filename, config_update)
 }
 \arguments{
   \item{config_filename}{Name of config file}
@@ -11,13 +11,13 @@
   update the config parameters}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Init pipeline environment
+Init pipeline environment
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 \keyword{internal}
 

@@ -2,9 +2,8 @@
 \alias{FastQStreamer.init}
 \title{Open a streaming connection to a FastQ file}
 \usage{
-  FastQStreamer.init(input_file, input_file2 = NULL,
-    chunk_size, subsample_nbreads = NULL,
-    max_nbchunks = NULL)
+FastQStreamer.init(input_file, input_file2 = NULL, chunk_size,
+  subsample_nbreads = NULL, max_nbchunks = NULL)
 }
 \arguments{
   \item{input_file}{Path to a FastQ file}
@@ -22,19 +21,19 @@
   read}
 }
 \value{
-  Nothing.
+Nothing.
 }
 \description{
-  Open a streaming connection to a FastQ file
+Open a streaming connection to a FastQ file
 }
 \details{
-  Only one FastQStreamer object can be open at any time.
+Only one FastQStreamer object can be open at any time.
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \seealso{
-  FastQStreamer.getReads
+FastQStreamer.getReads
 }
 \keyword{internal}
 

@@ -2,7 +2,7 @@
 \alias{runPreprocessReads}
 \title{Run the preprocesing steps of the pipeline}
 \usage{
-  runPreprocessReads(config_filename, config_update)
+runPreprocessReads(config_filename, config_update)
 }
 \arguments{
   \item{config_filename}{Path to configuration file}
@@ -11,13 +11,13 @@
   update the config parameters}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Runs the preprocesing steps of the pipeline
+Runs the preprocesing steps of the pipeline
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 \keyword{internal}
 

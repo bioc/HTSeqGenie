@@ -2,16 +2,16 @@
 \alias{setChunkDir}
 \title{Set the base directory for the chunks}
 \usage{
-  setChunkDir()
+setChunkDir()
 }
 \value{
-  path to chunk dir
+path to chunk dir
 }
 \description{
-  Set the base directory for the chunks
+Set the base directory for the chunks
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 \keyword{internal}
 

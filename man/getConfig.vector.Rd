@@ -2,7 +2,7 @@
 \alias{getConfig.vector}
 \title{Return values of a config variable as vector}
 \usage{
-  getConfig.vector(p, ...)
+getConfig.vector(p, ...)
 }
 \arguments{
   \item{p}{Name of parameter}
@@ -10,10 +10,10 @@
   \item{...}{extra params passed to getConfig}
 }
 \value{
-  value of config param as vector
+value of config param as vector
 }
 \description{
-  Return values of a config variable as vector
+Return values of a config variable as vector
 }
 \keyword{internal}
 

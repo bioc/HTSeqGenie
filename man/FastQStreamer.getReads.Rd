@@ -2,20 +2,20 @@
 \alias{FastQStreamer.getReads}
 \title{Get FastQ reads from the FastQ streamer}
 \usage{
-  FastQStreamer.getReads()
+FastQStreamer.getReads()
 }
 \value{
-  A list of ShortRead object containing reads. NULL if
-  there are no more reads to read.
+A list of ShortRead object containing reads. NULL if there
+are no more reads to read.
 }
 \description{
-  Get FastQ reads from the FastQ streamer
+Get FastQ reads from the FastQ streamer
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \seealso{
-  FastQStreamer.init
+FastQStreamer.init
 }
 \keyword{internal}
 

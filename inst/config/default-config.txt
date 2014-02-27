@@ -93,3 +93,6 @@ path.gatk_genomes:
 path.gatk:
 gatk.filter_repeats: FALSE ## if TRUE remove vars overlapping with regions in analyzeVariants.rep_mask bed file 
 gatk.params: --genotype_likelihoods_model BOTH
+
+## realing indels (requires GATK)
+realignIndels.do: FALSE

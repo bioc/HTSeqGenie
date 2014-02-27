@@ -2,7 +2,7 @@
 \alias{checkPicardJar}
 \title{checkPicardJar}
 \usage{
-  checkPicardJar(toolname, path = getOption("picard.path"))
+checkPicardJar(toolname, path = getOption("picard.path"))
 }
 \arguments{
   \item{toolname}{Name of the Picard Tool, e.g.
@@ -11,16 +11,16 @@
   \item{path}{Path to folder containing picard jars}
 }
 \value{
-  TRUE if tool can be called, FALSE otherwise
+TRUE if tool can be called, FALSE otherwise
 }
 \description{
-  Check for a jar file from picard tools
+Check for a jar file from picard tools
 }
 \details{
-  Call a tool from picard and see if it responds.
+Call a tool from picard and see if it responds.
 }
 \author{
-  Jens Reeder
+Jens Reeder
 }
 \keyword{internal}
 

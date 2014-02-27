@@ -2,7 +2,7 @@
 \alias{makeDir}
 \title{Make a directory after performing an existence check}
 \usage{
-  makeDir(dir, overwrite = "never")
+makeDir(dir, overwrite = "never")
 }
 \arguments{
   \item{dir}{Name of directory to create}
@@ -11,11 +11,11 @@
   erase, overwrite}
 }
 \value{
-  Path to created directory
+Path to created directory
 }
 \description{
-  Throws an exception if file or directory with same name
-  exist and overwrite is TRUE.
+Throws an exception if file or directory with same name
+exist and overwrite is TRUE.
 }
 \keyword{internal}
 

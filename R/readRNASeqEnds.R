@@ -14,6 +14,8 @@
 ##' @author Cory Barr
 ##' @export
 ##' @keywords internal
+##' @importMethodsFrom GenomicAlignments cigar 
+##' @importFrom GenomicAlignments readGAlignments
 readRNASeqEnds <- function(bam_file, scan_bam_what=NULL, remove.strandness=TRUE) {
   scan_bam_what0 <- union(scan_bam_what, "flag")
   sbp <- ScanBamParam(what=scan_bam_what0)

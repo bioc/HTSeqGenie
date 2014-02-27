@@ -2,7 +2,7 @@
 \alias{rpkm}
 \title{Calculate RPKM}
 \usage{
-  rpkm(counts, widths, nbreads)
+rpkm(counts, widths, nbreads)
 }
 \arguments{
   \item{counts}{A vector of counts}
@@ -14,13 +14,13 @@
   to each bin}
 }
 \value{
-  vecotr of RPKMs
+vecotr of RPKMs
 }
 \description{
-  Calculate RPKM
+Calculate RPKM
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 

@@ -56,8 +56,8 @@ test.getRRNAIds <- function() {
                            quality = FastqQuality("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"),
                            id      = BStringSet("tp53_substring_1_50#0/2"))
 
-  writeFastq(shortread1, file=file1, lane='')
-  writeFastq(shortread2, file=file2, lane='')
+  writeFastq(shortread1, file=file1, lane='', compress=FALSE)
+  writeFastq(shortread2, file=file2, lane='', compress=FALSE)
 
   ## run the function to test
   ids <- getRRNAIds(file1 = file1,
@@ -76,7 +76,7 @@ test.getRRNAIds_random <-function() {
   file1 <-file.path(tmpdir, "1.fastq")
 
   random_sreads <- HTSeqGenie:::makeRandomSreads(100,100)
-  writeFastq(random_sreads, file=file1, lane='')
+  writeFastq(random_sreads, file=file1, lane='', compress=FALSE)
   ids <- getRRNAIds(file1 = file1,
                     tmp_dir = tmpdir,
                     rRNADb = genome( TP53Genome() ))

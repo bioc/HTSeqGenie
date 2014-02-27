@@ -33,10 +33,7 @@ test.callVariantsGATK <- function() {
   if (checkGATKJar()){
     config.filename <- "test-data/test_config.txt"
 
-    #create fasta genome file of TP53 genome
-    tp53seq <- DNAStringSet(getSeq(TP53Genome()))
-    names(tp53seq) = "TP53"
-    export(tp53seq, file.path(tempdir(),"TP53_demo.fa"), format="fasta")
+    buildTP53FastaGenome()
 
     save.dir <- setupTestFramework(config.filename=config.filename,
                                    config.update=list(num_cores=1,
@@ -47,7 +44,7 @@ test.callVariantsGATK <- function() {
     
     bam.file <- getPackageFile("test-data/variant_calling/tp53_test.bam")
 
-    callVariantsGATK(bam.file)
+    HTSeqGenie:::callVariantsGATK(bam.file)
     checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.gz")),
               "callVariantsGATK writes vcf.gz file")
     checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.gz.tbi")),
@@ -62,10 +59,7 @@ test.callVariantsGATK.withFiltering <- function() {
   if (checkGATKJar()){
     config.filename <- "test-data/test_config.txt"
 
-    #create fasta genome file of TP53 genome
-    tp53seq <- DNAStringSet(getSeq(TP53Genome()))
-    names(tp53seq) = "TP53"
-    export(tp53seq, file.path(tempdir(),"TP53_demo.fa"), format="fasta")
+    buildTP53FastaGenome()
 
     save.dir <- setupTestFramework(config.filename=config.filename,
                                    config.update=list(num_cores=1,
@@ -78,7 +72,7 @@ test.callVariantsGATK.withFiltering <- function() {
     
     bam.file <- getPackageFile("test-data/variant_calling/tp53_test.bam")
 
-    callVariantsGATK(bam.file)
+    HTSeqGenie:::callVariantsGATK(bam.file)
     checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.gz")),
               "callVariantsGATK writes vcf.gz file")
     checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.gz.tbi")),
@@ -121,4 +115,31 @@ test.excludeVariantsByRegion <- function(){
   observed = HTSeqGenie:::excludeVariantsByRegions(variants, gr)
   checkEquals(length(observed), 1,
               " variant outside of mask is not filtered")
+}
+
+test.realignIndelsGATK <- function() {
+  if (checkGATKJar()){
+    config.filename <- "test-data/test_config.txt"
+
+    buildTP53FastaGenome()
+    
+    save.dir <- setupTestFramework(config.filename=config.filename,
+                                   config.update=list(
+                                     num_cores=1,
+                                     path.gatk=getOption('gatk.path'),
+                                     path.gatk_genomes=tempdir() ),
+                                   testname="test.realignIndelsGATK")
+    
+    bam.file <- getPackageFile("test-data/Realigner/jiggling_indels.bam")
+    
+    observed.file <- HTSeqGenie:::realignIndelsGATK(bam.file)
+    checkTrue(file.exists(observed.file),
+              "realignIndelsGATK() writes realigned bam file")
+    ## TODO peek into file anch check for changes in cigar
+    checkEquals(unique(cigar(readGAlignments(observed.file)[3:4])),
+                "23M1D77M", "... and indels in second read where shifted")    
+  }
+  else{
+    DEACTIVATED("realingIndelsGATK() tests need gatk.path option set")
+  }
 }

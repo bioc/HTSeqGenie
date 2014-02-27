@@ -2,7 +2,7 @@
 \alias{mergePreprocessReads}
 \title{Merge after preprocessReads}
 \usage{
-  mergePreprocessReads(indirs, outdir, prepend_str)
+mergePreprocessReads(indirs, outdir, prepend_str)
 }
 \arguments{
   \item{indirs}{A character vector, indicating which
@@ -15,15 +15,14 @@
   prefix going to be appended on all output result files}
 }
 \value{
-  Nothing
+Nothing
 }
 \description{
-  Merge detectAdapterContam, merge preprocessed reads,
-  create summary preprocess, build shortReadReport, remove
-  processed
+Merge detectAdapterContam, merge preprocessed reads, create
+summary preprocess, build shortReadReport, remove processed
 }
 \author{
-  Gregoire Pau
+Gregoire Pau
 }
 \keyword{internal}
 
