@@ -59,7 +59,7 @@ wrap.callVariants <- function(bam.file) {
   loginfo("analyzeVariants.R/wrap.callVariants: Tallying variants...")  
   tally.param  <- buildTallyParam()
   tally.variants <- tallyVariants(bam.file, tally.param,
-                                BPPARAM = MulticoreParam(workers=num.cores))
+                                  BPPARAM = MulticoreParam(workers=num.cores))
 
   loginfo("analyzeVariants.R/wrap.callVariants: calling variants...")
   variants <- callVariants(tally.variants, calling.filters=buildCallingFilters())
@@ -87,17 +87,25 @@ buildTallyParam <- function(){
   indels      <- getConfig.logical("analyzeVariants.indels")
   bqual       <- getConfig.numeric("analyzeVariants.bqual")
   rmask.file  <- getConfig("analyzeVariants.rep_mask")
-  
+  positions.file <- getConfig("analyzeVariants.positions")
+
   ## we use the low level interface here, so we have access to the raw variants
   args <- list(GmapGenome(genome = genome,
                           directory = path.expand(genome.dir)),
                high_base_quality = bqual,
-               indels = indels)            
+               indels = indels)
+
   if(!is.null(rmask.file)){
     loginfo("analyzeVariants.R/wrap.callVariants: Using repeat masker track for tally filtering.")
     mask <- rtracklayer::import(rmask.file, asRangedData=FALSE)
     args <- c(args, mask=mask)
-  }  
+  }
+
+  if(!is.null(positions.file)){
+    regions <- readRDS(positions.file)
+    args <- c(args, which=regions)
+  }
+  
   tally.param <- do.call(TallyVariantsParam, args)
 
   return(tally.param)

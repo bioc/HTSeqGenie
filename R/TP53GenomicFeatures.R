@@ -13,7 +13,8 @@
 TP53GenomicFeatures <- function() {
   ## init
   localDir <- gsub("gmap$", "HTSeqGenie", file.path(gmapR:::getDefaultGmapGenomePath()))
-  genomicFeatures <- file.path(localDir, "gfeatures-p53Genome.RData")
+  genomicFeatures <- paste0("TP53-gfeatures_", packageVersion("TxDb.Hsapiens.UCSC.hg19.knownGene"),".RData")
+  genomicFeatures <- file.path(localDir, genomicFeatures)
 
   ## is genomic_features file already absent?
   if (!file.exists(genomicFeatures)) {

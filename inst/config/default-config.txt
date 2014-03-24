@@ -87,6 +87,7 @@ analyzeVariants.rep_mask:    ## path to repeat mask track in bed format
 analyzeVariants.dbsnp:    ## path to dbsnp whitelist in vcf format
 analyzeVariants.callingFilters: nonRef,nonNRef,readCount,likelihoodRatio ##comma separated list of VT calling Filters
 analyzeVariants.postFilters:  ##comma separated list of VT post Filters, for WGS activate avgNborCount
+analyzeVariants.positions: ## Path to a GRanges object as RDS used for limiting varaint calling on this region
 
 ## GATK
 path.gatk_genomes:

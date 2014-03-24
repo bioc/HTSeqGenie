@@ -154,3 +154,22 @@ test.detectQualityInFASTQFile <- function(){
   unlink(file1)
 }
 
+test.getObjectFilename <- function(){
+
+  expected = file.path(tempdir(), "AAA_BBB.tmp")
+  system(paste("touch ", expected, sep=" "))
+  
+  observed = getObjectFilename(tempdir(), "AAA")
+  checkEquals(observed, expected, "getObjectFilename() finds file by partial match")
+
+  observed = getObjectFilename(tempdir(), "AAA_BBB.tmp")
+  checkEquals(observed, expected, "getObjectFilename() finds file by complete match")
+
+  observed = getObjectFilename(tempdir(), "A+_B+.tmp")
+  checkEquals(observed, expected, "getObjectFilename() finds file by regexp")
+
+  observed = getObjectFilename(tempdir(), "A+_B+.X?tmp")
+  checkEquals(observed, expected, "getObjectFilename() finds file by regexp")
+
+  unlink(expected)
+}

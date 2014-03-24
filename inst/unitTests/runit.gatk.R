@@ -45,9 +45,9 @@ test.callVariantsGATK <- function() {
     bam.file <- getPackageFile("test-data/variant_calling/tp53_test.bam")
 
     HTSeqGenie:::callVariantsGATK(bam.file)
-    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.gz")),
-              "callVariantsGATK writes vcf.gz file")
-    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.gz.tbi")),
+    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.bgz")),
+              "callVariantsGATK writes vcf.bgz file")
+    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.bgz.tbi")),
               "callVariantsGATK writes vcf index file")
   }
   else{
@@ -73,9 +73,9 @@ test.callVariantsGATK.withFiltering <- function() {
     bam.file <- getPackageFile("test-data/variant_calling/tp53_test.bam")
 
     HTSeqGenie:::callVariantsGATK(bam.file)
-    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.gz")),
-              "callVariantsGATK writes vcf.gz file")
-    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.gz.tbi")),
+    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.bgz")),
+              "callVariantsGATK writes vcf.bgz file")
+    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.bgz.tbi")),
               "callVariantsGATK writes vcf index file")
 }
   else{
@@ -141,5 +141,40 @@ test.realignIndelsGATK <- function() {
   }
   else{
     DEACTIVATED("realingIndelsGATK() tests need gatk.path option set")
+  }
+}
+
+
+
+test.realignIndels <- function() {
+  if (checkGATKJar()){
+    config.filename <- "test-data/test_config.txt"
+
+    buildTP53FastaGenome()
+
+    save.dir <- setupTestFramework(config.filename=config.filename,
+                                   config.update=list(num_cores=1,
+                                     path.gatk=getOption('gatk.path'),
+                                     path.gatk_genomes=tempdir()),
+                                   testname="test.realignIndels")
+    
+    bam.file <- getPackageFile("test-data/Realigner/jiggling_indels.bam")
+    analyzed.bam <- file.path(save.dir, "bams", "test_pe.analyzed.bam")
+    file.copy(bam.file, analyzed.bam)
+    indexBam(analyzed.bam)
+
+    #test starts here
+    realignIndels()
+    
+    # function overwrites existing files, so check for change in size as proof of action
+    checkTrue(file.exists(analyzed.bam),
+              "callVariantsGATK writes bam")
+    checkTrue(file.info(bam.file)$size != file.info(analyzed.bam)$size,
+              " and the size has changed")
+    checkTrue(file.exists(paste0(analyzed.bam, '.bai')),
+              "callVariantsGATK writes index file")
+  }
+  else{
+    DEACTIVATED("test.realignIndels() tests need gatk.path option set")
   }
 }

@@ -27,7 +27,6 @@ test.wrap.callVariants.parallel <- function(){
   
   bam <- getPackageFile("test-data/variant_calling/tp53_test.bam")
   observed <- wrap.callVariants(bam)
-  
   ## only check if we actually get something, more detailed checks should be done in VariantTools
   checkEquals(length(observed$filtered.variants), 75,
               "wrap.callVariants() runs in parallel")
@@ -79,6 +78,23 @@ test.wrap.callVariants.filters <- function(){
   checkEquals(names(VariantAnnotation::hardFilters(observed$filtered.variants)), c(),
               "we can turn off all filkters for variant calling")
 }
+
+test.wrap.callVariants.which <- function(){
+
+  config.filename <- "test-data/test_config.txt"  
+  save.dir <- setupTestFramework(config.filename=config.filename,
+                                 config.update=list(
+                                   analyzeVariants.positions = getPackageFile("test-data/variant_calling/which.rds")
+                                   ),
+                                 testname="test.wrap.callVariants.which")
+  
+  bam <- getPackageFile("test-data/variant_calling/tp53_test.bam")
+  observed <- wrap.callVariants(bam)
+ 
+  checkEquals(length(observed$filtered.variants), 1,
+              "run.callVariants() reports correct number of variants")
+}
+
 
 #de-activated until VariantAnnotatioon can handle simple VRanges
 notest.writeVCF.vcfStat <-  function(){

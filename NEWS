@@ -1,3 +1,13 @@
+version 3.13.11:
+- now use TxDb.Hsapiens.UCSC.hg19.knownGene's version number in the TP53 genomic feature cache file, to avoid
+  bugs when updating TxDb.Hsapiens.UCSC.hg19.knownGene
+
+version 3.13.10:
+- added an optional which config to limit VariantTools variant calling to certain regions
+
+version 3.13.9:
+- NA
+
 version 3.13.8:
 - fixed the "as.vector(x, mode) : invalid 'mode' argument" bug by adding the "importFrom(BiocGenerics,table)" NAMESPACE directive
 

@@ -63,7 +63,7 @@ callVariantsGATK <- function(bam.file){
     filtered.vcf.file <- vcf.file
   }
   
-  if( grepl(".gz$", filtered.vcf.file)){
+  if( grepl('bgz$', filtered.vcf.file)){
     zipped.vcf <- filtered.vcf.file
   } else{
     zipped.vcf <- bgzip(filtered.vcf.file)
@@ -108,14 +108,9 @@ filterGATKVars <- function(vcf.file){
 
   variants <- VariantAnnotation::readVcf(vcf.file, genome)
   variants <- excludeVariantsByRegions(variants, mask)
-  
-  suppressWarnings(
-                  ## Not nice but currently necessary as
-                  ## loading and re-writing a GATK vcf file leads to
-                  ## Warning message:
-                  ## In asMethod(object) : NAs introduced by coercion
-                  filename <- writeVcf(variants, vcf.file, index=TRUE)
-                  )
+ 
+  filename <- writeVcf(variants, vcf.file, index=TRUE)
+  ## returns filename in the form vcf.file.bgz
   return(filename)
 }
 
@@ -151,6 +146,7 @@ excludeVariantsByRegions <- function(variants, mask) {
 ##' @return Nothing
 ##' @author Jens Reeder
 ##' @export
+##' @importFrom tools file_path_sans_ext
 realignIndels <- function(){
   loginfo("gatk.R/realignIndels: starting to realign indels")
 
@@ -160,7 +156,10 @@ realignIndels <- function(){
   safeExecute({
     realigned.bam <- realignIndelsGATK(analyzed.bam)
     file.rename(realigned.bam, analyzed.bam)
-    indexBam(analyzed.bam)
+    # Realigner put a file with bai instead of bam right next to the bam file.
+    # In our world we call these files .bam.bai files
+    file.rename(paste0(file_path_sans_ext(realigned.bam), ".bai"),
+                paste0(analyzed.bam, ".bai"))
   }, memtracer=getConfig.logical("debug.tracemem"))
 
   loginfo("gatk.R/realignIndels: finished realigning Indels")
@@ -184,7 +183,7 @@ realignIndelsGATK <- function(bam.file){
   save.dir     <- getConfig('save_dir')
   genome       <- file.path(gatk.genomes, paste0(genome,".fa"))
   
-  interval.file <- file.path(save.dir, "results",
+  interval.file <- file.path(save.dir, "bams",
                              paste(getConfig('prepend_str'),
                                    "realigner.intervals", sep="."))
 
@@ -196,7 +195,7 @@ realignIndelsGATK <- function(bam.file){
   gatk(gatk.jar.path=jar.path, method="RealignerTargetCreator", args=args)
   if(!file.exists(interval.file)) stop("realignIndelsGATK failed to create interval file.")
   
-  realigned.bam.file <- file.path(save.dir, "results",
+  realigned.bam.file <- file.path(save.dir, "bams",
                                   paste(getConfig('prepend_str'),
                                         "realigned", "bam", sep="."))
 
@@ -207,6 +206,7 @@ realignIndelsGATK <- function(bam.file){
 
   gatk(gatk.jar.path=jar.path, method="IndelRealigner", args=args)
   if(!file.exists(realigned.bam.file)) stop("realignIndelsGATK failed to create bam file.")
+  file.remove(interval.file)
 
   return(realigned.bam.file)
 }

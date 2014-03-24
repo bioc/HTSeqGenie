@@ -344,37 +344,7 @@ checkConfig.analyzeVariants <- function() {
       }
     }
     if ("VariantTools" %in% analyzeVariants.method) {
-      ## analyzeVariants.bqual
-      analyzeVariants.bqual <- getConfig.numeric("analyzeVariants.bqual", stop.ifempty=TRUE)
-      if(analyzeVariants.bqual < 0 || analyzeVariants.bqual > 41)
-        stop("analyzeVariants.bqual must be an integer between 0 and 41")     
-      
-      ## analyzeVariants.rep_mask
-      rmask.file <- getConfig("analyzeVariants.rep_mask")
-      if(!(is.null(rmask.file))){
-        if(!file.exists(rmask.file)){
-          stop(paste("Repeat mask file not found at", rmask.file))
-        }
-      }
-      ## analyzeVariants.dbsnp
-      dbsnp <- getConfig("analyzeVariants.dbsnp", stop.ifempty=FALSE)
-      if(!(is.null(dbsnp))){
-        if(!file.exists(dbsnp)){
-          stop(paste("dbsnp Rdata file not found at", dbsnp))
-        }
-      }
-      ## analyzeVariants.callingFilters
-      calling.filters <- getConfig.vector("analyzeVariants.callingFilters")
-      all.filters = VariantCallingFilters()
-      if (! all(calling.filters %in% names(all.filters))) {
-        stop("Some of the VariantCallingFilters are not provided by VariantTools!")
-      }
-      ## analyzeVariants.postFilters
-      post.filters <- getConfig.vector("analyzeVariants.postFilters")
-      all.filters = VariantPostFilters()
-      if (! all(post.filters %in% names(all.filters))) {
-        stop("Some of the VariantPostFilters are not provided by VariantTools!")
-      }
+      checkConfig.analyzeVariants.VT()
     }
     ## analyzeVariants.indels
     getConfig.logical("analyzeVariants.indels", stop.ifempty=TRUE)
@@ -382,6 +352,48 @@ checkConfig.analyzeVariants <- function() {
   invisible(TRUE)
 }
 
+
+## check VT related config values
+checkConfig.analyzeVariants.VT <- function() {
+  ## analyzeVariants.bqual
+  analyzeVariants.bqual <- getConfig.numeric("analyzeVariants.bqual", stop.ifempty=TRUE)
+  if(analyzeVariants.bqual < 0 || analyzeVariants.bqual > 41)
+    stop("analyzeVariants.bqual must be an integer between 0 and 41")     
+  
+  ## analyzeVariants.rep_mask
+  rmask.file <- getConfig("analyzeVariants.rep_mask")
+  if(!(is.null(rmask.file))){
+    if(!file.exists(rmask.file)){
+      stop(paste("Repeat mask file not found at", rmask.file))
+    }
+  }
+  ## analyzeVariants.dbsnp
+  dbsnp <- getConfig("analyzeVariants.dbsnp", stop.ifempty=FALSE)
+  if(!(is.null(dbsnp))){
+    if(!file.exists(dbsnp)){
+      stop(paste("dbsnp Rdata file not found at", dbsnp))
+    }
+  }
+  ## analyzeVariants.callingFilters
+  calling.filters <- getConfig.vector("analyzeVariants.callingFilters")
+  all.filters = VariantCallingFilters()
+  if (! all(calling.filters %in% names(all.filters))) {
+    stop("Some of the VariantCallingFilters are not provided by VariantTools!")
+  }
+  ## analyzeVariants.postFilters
+  post.filters <- getConfig.vector("analyzeVariants.postFilters")
+  all.filters = VariantPostFilters()
+  if (! all(post.filters %in% names(all.filters))) {
+    stop("Some of the VariantPostFilters are not provided by VariantTools!")
+  }
+  ## analyzeVariants.positions
+  include.regions <- getConfig("analyzeVariants.positions")
+  if(!(is.null(include.regions))){
+    if(!file.exists(include.regions)){
+      stop(paste("Repeat mask file not found at", include.regions))
+    }
+  }
+}
 
 ## check for GATK and presence of a genome file
 checkConfig.GATK <- function() {

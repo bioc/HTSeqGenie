@@ -76,6 +76,7 @@ buildTP53GenomeTemplate <- function(){
 ##' @importFrom rtracklayer export
 ##' @importFrom gmapR TP53Genome
 ##' @keywords internal
+##' @export
 buildTP53FastaGenome <- function() {
   tp53seq <- DNAStringSet(getSeq(TP53Genome()))
   names(tp53seq) = "TP53"
