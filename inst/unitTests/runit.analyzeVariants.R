@@ -32,7 +32,7 @@ test.wrap.callVariants.parallel <- function(){
               "wrap.callVariants() runs in parallel")
 }
 
-test.wrap.callVariants.rmsk_dbsnp <- function(){
+notest.wrap.callVariants.rmsk_dbsnp <- function(){
 
   config.filename <- "test-data/test_config.txt"  
   save.dir <- setupTestFramework(config.filename=config.filename,
@@ -80,18 +80,23 @@ test.wrap.callVariants.filters <- function(){
 }
 
 test.wrap.callVariants.which <- function(){
+  ## build analyzeVariant position file
+  gr <- TP53Which()
+  whichFile <- tempfile()
+  saveRDS(gr, whichFile)
 
+  ## run variant calling
   config.filename <- "test-data/test_config.txt"  
   save.dir <- setupTestFramework(config.filename=config.filename,
                                  config.update=list(
-                                   analyzeVariants.positions = getPackageFile("test-data/variant_calling/which.rds")
+                                   analyzeVariants.positions=whichFile
                                    ),
                                  testname="test.wrap.callVariants.which")
   
   bam <- getPackageFile("test-data/variant_calling/tp53_test.bam")
   observed <- wrap.callVariants(bam)
  
-  checkEquals(length(observed$filtered.variants), 1,
+  checkEquals(length(observed$filtered.variants), 5,
               "run.callVariants() reports correct number of variants")
 }
 

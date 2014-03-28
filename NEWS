@@ -1,3 +1,7 @@
+version 3.13.12:
+- now uses TP53Which() (instead of which.rds) for variant calling tests
+- now builds in BioC
+
 version 3.13.11:
 - now use TxDb.Hsapiens.UCSC.hg19.knownGene's version number in the TP53 genomic feature cache file, to avoid
   bugs when updating TxDb.Hsapiens.UCSC.hg19.knownGene
