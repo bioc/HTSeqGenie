@@ -1,3 +1,6 @@
+version 3.13.13:
+- removed the "no job lefts" tests in test.sclapply()
+
 version 3.13.12:
 - now uses TP53Which() (instead of which.rds) for variant calling tests
 - now builds in BioC
