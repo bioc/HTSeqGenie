@@ -79,6 +79,7 @@ wrap.callVariants <- function(bam.file) {
 ##' @title Build tally parameters
 ##' @return a \code{VariantTallyParam} object
 ##' @importFrom gmapR GmapGenome
+##' @importFrom GenomicRanges tileGenome
 ##' @keywords internal
 ##' @author Gregoire Pau
 buildTallyParam <- function(){
@@ -88,22 +89,34 @@ buildTallyParam <- function(){
   bqual       <- getConfig.numeric("analyzeVariants.bqual")
   rmask.file  <- getConfig("analyzeVariants.rep_mask")
   positions.file <- getConfig("analyzeVariants.positions")
+  
+  gmap.genome <- GmapGenome(genome = genome,
+                            directory = path.expand(genome.dir))
 
   ## we use the low level interface here, so we have access to the raw variants
-  args <- list(GmapGenome(genome = genome,
-                          directory = path.expand(genome.dir)),
+  args <- list(gmap.genome,
                high_base_quality = bqual,
                indels = indels)
 
   if(!is.null(rmask.file)){
-    loginfo("analyzeVariants.R/wrap.callVariants: Using repeat masker track for tally filtering.")
+    loginfo("analyzeVariants.R/buildTallyParam: Using repeat masker track for tally filtering.")
     mask <- rtracklayer::import(rmask.file, asRangedData=FALSE)
     args <- c(args, mask=mask)
   }
 
   if(!is.null(positions.file)){
+    loginfo("analyzeVariants.R/buildTallyParam: restricting variant calls using 'which'")
     regions <- readRDS(positions.file)
     args <- c(args, which=regions)
+  } else{
+    ## tile width of 1e7 turns out to be a good compromise between speed and memory.
+    ## Large enough to not overflow even for large WGS and fast enough for samples with
+    ## just a few reads
+    if(seqlengths(seqinfo(gmap.genome)) > 1e7){
+      loginfo("analyzeVariants.R/buildTallyParam: using genome tiling for memory saving'")
+      tiles <- unlist(tileGenome(seqinfo(gmap.genome), tilewidth=1e7))
+      args <- c(args, which=tiles)
+    }
   }
   
   tally.param <- do.call(TallyVariantsParam, args)
@@ -167,7 +180,7 @@ buildCallingFilters <- function(){
 writeVCF <- function(variants.vranges){
   loginfo("analyzeVariants.R/writeVCF: writing vcf file...")
 
-  vcf.filename <- NULL
+  vcf.gz <- NULL
   if (length(variants.vranges)>0) {
     #fill in sample name if missing from vranges
     if(all(is.na(sampleNames(variants.vranges)))){
@@ -181,10 +194,15 @@ writeVCF <- function(variants.vranges){
     vcf.filename <- file.path(getConfig('save_dir'), "results",
                               paste(getConfig('prepend_str'),
                                     ".variants.vcf", sep=""))  
-    vcf.filename <- writeVcf(vcf, vcf.filename, index=TRUE)
+    ## if we let writeVcf index, it makes us a .bgz file which breaks IGV
+    ## thus we compress and index ourselves using the accepted .gz suffix
+    vcf.filename <- writeVcf(vcf, vcf.filename, index=FALSE)
+    vcf.gz <- bgzip(vcf.filename, dest=paste0(vcf.filename, ".gz"))
+    indexTabix(vcf.gz, format = "vcf")
+    unlink(vcf.filename)
   } 
   loginfo("analyzeVariants.R/writeVCF: ...done")
-  return(vcf.filename)
+  return(vcf.gz)
 }
 
 ##' Compute stats on a VCF file

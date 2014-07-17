@@ -25,7 +25,7 @@ test.markDuplicates <- function(){
     outfile <- markDuplicates(inp)
     
     checkTrue(file.exists(outfile), 'markDuplicates() creates file')
-    reads <- scanBam(tmp, param=ScanBamParam(what=c("flag")))[[1]]
+    reads <- scanBam(outfile, param=ScanBamParam(what=c("flag")))[[1]]
     checkEqualsNumeric(sum(reads$flag > 1024), 2, "markDuplicates finds one pair of dups.") 
   } else {
     DEACTIVATED("Skipped markDuplicates() test")

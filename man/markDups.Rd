@@ -12,7 +12,7 @@ Mark duplicates in pipeline context
 }
 \details{
 High level function call to mark duplicates in the
-analyzed.ba file of a pipelin run.
+analyzed.bam file of a pipelin run.
 }
 \author{
 Jens Reeder

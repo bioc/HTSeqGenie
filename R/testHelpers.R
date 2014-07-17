@@ -71,16 +71,20 @@ buildTP53GenomeTemplate <- function(){
 ##' create fasta genome file of TP53 genome
 ##' 
 ##' @title buildTP53FastaGenome
-##' @return Path to tp53 genome
+##' @return Path to tp53 genome directory
 ##' @author Jens Reeder
 ##' @importFrom rtracklayer export
 ##' @importFrom gmapR TP53Genome
 ##' @keywords internal
 ##' @export
 buildTP53FastaGenome <- function() {
-  tp53seq <- DNAStringSet(getSeq(TP53Genome()))
+  tp53 <- TP53Genome()
+  genome.name <- genome(tp53)
+  
+  tp53seq <- DNAStringSet(getSeq(tp53))
   names(tp53seq) = "TP53"
-  export(tp53seq, file.path(tempdir(),"TP53_demo.fa"), format="fasta")
+  export(tp53seq, file.path(tempdir(),paste0(genome.name,".fa")), format="fasta")
+
   return(tempdir())
 }
 

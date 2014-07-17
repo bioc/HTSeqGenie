@@ -51,23 +51,15 @@ callVariantsGATK <- function(bam.file){
                 "-R", genome,
                 "-I", bam.file,
                 "-o", vcf.file,
+                "--genotype_likelihoods_model", 'BOTH', ## choice of SNP, INDEL or BOTH
                 gatk.params)
 
   gatk(gatk.jar.path=jar.path,
        method="UnifiedGenotyper", args=args)
   if(!file.exists(vcf.file)) stop("callVariantsGATK failed to create vcf file.")
 
-  if(getConfig.logical("gatk.filter_repeats")){
-    filtered.vcf.file <- filterGATKVars(vcf.file)
-  } else {
-    filtered.vcf.file <- vcf.file
-  }
-  
-  if( grepl('bgz$', filtered.vcf.file)){
-    zipped.vcf <- filtered.vcf.file
-  } else{
-    zipped.vcf <- bgzip(filtered.vcf.file)
-  }
+  filtered.vcf.file <- filterGATKVars(vcf.file)
+  zipped.vcf <- .zipUp(filtered.vcf.file)
   indexTabix(zipped.vcf, format="vcf")
 
   ## clean up unzipped vcf and index
@@ -76,6 +68,16 @@ callVariantsGATK <- function(bam.file){
 
   return(zipped.vcf)
 }
+
+.zipUp <- function(filename){  
+  if( grepl('gz$', filename)){
+    zipped.vcf <- filename
+  } else{
+    zipped.vcf <- bgzip(filename, dest=paste0(filename, ".gz"))
+  }
+  return(zipped.vcf)
+}
+ 
 
 ##' Check for the GATK jar file
 ##
@@ -97,6 +99,11 @@ checkGATKJar <- function(path=getOption("gatk.path")){
 }
 
 filterGATKVars <- function(vcf.file){  
+
+  if(!getConfig.logical("gatk.filter_repeats")){
+    return(vcf.file)
+  }
+  
   genome     <- getConfig("alignReads.genome")
   rmask.file <- getConfig("analyzeVariants.rep_mask")
 
@@ -109,8 +116,8 @@ filterGATKVars <- function(vcf.file){
   variants <- VariantAnnotation::readVcf(vcf.file, genome)
   variants <- excludeVariantsByRegions(variants, mask)
  
-  filename <- writeVcf(variants, vcf.file, index=TRUE)
-  ## returns filename in the form vcf.file.bgz
+  filename <- writeVcf(variants, vcf.file, index=FALSE)
+  ## returns filename in the form xxx.vcf
   return(filename)
 }
 
@@ -153,16 +160,17 @@ realignIndels <- function(){
   save_dir <- getConfig("save_dir")
   analyzed.bam <- getBams(save_dir)$"analyzed"
 
-  safeExecute({
-    realigned.bam <- realignIndelsGATK(analyzed.bam)
-    file.rename(realigned.bam, analyzed.bam)
-    # Realigner put a file with bai instead of bam right next to the bam file.
-    # In our world we call these files .bam.bai files
-    file.rename(paste0(file_path_sans_ext(realigned.bam), ".bai"),
-                paste0(analyzed.bam, ".bai"))
+  realigned.bam <- safeExecute({
+    realignIndelsGATK(analyzed.bam)
   }, memtracer=getConfig.logical("debug.tracemem"))
+  
+  file.rename(realigned.bam, analyzed.bam)
+  ## Realigner puts a file with bai instead of bam right next to the bam file.
+  ## In our world we call these files .bam.bai files
+  file.rename(paste0(file_path_sans_ext(realigned.bam), ".bai"),
+              paste0(analyzed.bam, ".bai"))
 
-  loginfo("gatk.R/realignIndels: finished realigning Indels")
+  loginfo("gatk.R/realignIndels: done")
 }
 
 ##' realign indels via GATK
@@ -177,6 +185,7 @@ realignIndels <- function(){
 ##' @author Jens Reeder
 realignIndelsGATK <- function(bam.file){
   gatk.genomes <- getConfig("path.gatk_genomes")
+  gatk.params  <- getConfig("gatk.params")
   jar.path     <- getConfig("path.gatk")
   genome       <- getConfig("alignReads.genome")
   num.cores    <- getConfig.integer("num_cores")  
@@ -190,7 +199,8 @@ realignIndelsGATK <- function(bam.file){
   args <- paste("--num_threads", min(4,num.cores),
                 "-R", genome,
                 "-I", bam.file,
-                "-o", interval.file)
+                "-o", interval.file,
+                gatk.params)
   
   gatk(gatk.jar.path=jar.path, method="RealignerTargetCreator", args=args)
   if(!file.exists(interval.file)) stop("realignIndelsGATK failed to create interval file.")
@@ -202,7 +212,8 @@ realignIndelsGATK <- function(bam.file){
   args <- paste("-R", genome,
                 "-I", bam.file,
                 "-o", realigned.bam.file,
-                "--targetIntervals", interval.file)
+                "--targetIntervals", interval.file,
+                gatk.params)
 
   gatk(gatk.jar.path=jar.path, method="IndelRealigner", args=args)
   if(!file.exists(realigned.bam.file)) stop("realignIndelsGATK failed to create bam file.")

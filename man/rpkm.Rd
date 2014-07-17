@@ -14,7 +14,7 @@ rpkm(counts, widths, nbreads)
   to each bin}
 }
 \value{
-vecotr of RPKMs
+vector of RPKMs
 }
 \description{
 Calculate RPKM

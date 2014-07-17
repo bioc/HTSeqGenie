@@ -45,9 +45,9 @@ test.callVariantsGATK <- function() {
     bam.file <- getPackageFile("test-data/variant_calling/tp53_test.bam")
 
     HTSeqGenie:::callVariantsGATK(bam.file)
-    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.bgz")),
-              "callVariantsGATK writes vcf.bgz file")
-    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.bgz.tbi")),
+    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.gz")),
+              "callVariantsGATK writes vcf.gz file")
+    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.gz.tbi")),
               "callVariantsGATK writes vcf index file")
   }
   else{
@@ -73,9 +73,9 @@ test.callVariantsGATK.withFiltering <- function() {
     bam.file <- getPackageFile("test-data/variant_calling/tp53_test.bam")
 
     HTSeqGenie:::callVariantsGATK(bam.file)
-    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.bgz")),
-              "callVariantsGATK writes vcf.bgz file")
-    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.bgz.tbi")),
+    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.gz")),
+              "callVariantsGATK writes vcf.gz file")
+    checkTrue(file.exists(file.path(save.dir, "results", "test_pe.variants.vcf.gz.tbi")),
               "callVariantsGATK writes vcf index file")
 }
   else{
@@ -178,3 +178,20 @@ test.realignIndels <- function() {
     DEACTIVATED("test.realignIndels() tests need gatk.path option set")
   }
 }
+
+test_zipUp <- function(){
+
+  testfile <- file.path(HTSeqGenie:::createTmpDir(),
+                        "test.vcf")
+  file.copy(system.file("extdata", "ex2.vcf", package="VariantAnnotation"),
+            testfile)
+
+ 
+  observed <- HTSeqGenie:::.zipUp(testfile)
+  checkTrue(file.exists(observed), ".zipUp creates file")
+  checkTrue(grepl('gz$', observed), "...and the file has gz suffix")
+
+  observed2 <- HTSeqGenie:::.zipUp(observed)
+  checkEquals(observed, observed2, "zipUp does not modify already zipped filed")
+}
+  

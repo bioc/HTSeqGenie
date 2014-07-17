@@ -166,10 +166,13 @@ parseSummaries <- function(save.dirs, summary.name) {
     names(res) <- gsub("^chromosome.bin\\.", "", names(res))
     res
   })
-  
+
   data <- as.data.frame(do.call(rbind, summary_analyzed_bamstats))
-  data <- data[,grep("GL", colnames(data), invert=TRUE)] ## get rid of human contigs not assembled into chr
-  data <- data[,grep("NT", colnames(data), invert=TRUE)]  ## and the same for mouse
+  ## leave genomes without unwanted contigs alone (i.e. bacteria)
+  if(sum(grep("GL|NT", colnames(data))) > 1){ 
+    data <- data[,grep("GL", colnames(data), invert=TRUE)] ## get rid of human contigs not assembled into chr
+    data <- data[,grep("NT", colnames(data), invert=TRUE)] ## and the same for mouse
+  }
   data <- data/1e6
   
   filename <- file.path(image_dir,"chr_mappings")

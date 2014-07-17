@@ -5,7 +5,7 @@
 buildTP53FastaGenome()
 }
 \value{
-Path to tp53 genome
+Path to tp53 genome directory
 }
 \description{
 create fasta genome file of TP53 genome

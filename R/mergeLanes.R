@@ -93,11 +93,6 @@ preMergeChecks <- function(indirs) {
     stop("mergeLanes.R/preMergeChecks: max read lengths of input dirs are not identical [",
          paste(paste(indirs, ": ", max_read_lengths, sep=""), collapse=", "), "]")
   }
-
-  if (length(unique(min_read_lengths))!=1) {
-    stop("mergeLanes.R/preMergeChecks: min read lengths of input dirs are not identical [",
-         paste(paste(indirs, ": ", min_read_lengths, sep=""), collapse=", "), "]")
-  }
   
   if(getConfig.logical("analyzeVariants.do")){
     .IDverify(indirs)
@@ -111,7 +106,7 @@ preMergeChecks <- function(indirs) {
 .IDverify <- function(indirs, iivar_min=0.8){
   if (length(indirs)>1) {
     variant.files <- sapply(indirs, function(indir)
-                            getObjectFilename(file.path(indir, "results"), "variants.vcf.gz$"))
+                            findVariantFile(indir))
     ## Genome slot not used for comparison, so it does not matter what we put there
     conc.matrix <- VariantTools::calculateConcordanceMatrix(variant.files, genome="unknown")
     conc.calls <- VariantTools::callVariantConcordance(conc.matrix, iivar_min)

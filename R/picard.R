@@ -7,7 +7,7 @@
 ##' @return Nothing
 ##' @author Jens Reeder, Michael Lawrence
 ##' @keywords internal
-picard <- function(tool, ..., path = getOption("picard.path"))
+picard <- function(tool, ..., path=getOption("picard.path"))
 {
   args <- list(...)
   unnamed.args <- nchar(names(args)) == 0L
@@ -43,7 +43,7 @@ picard <- function(tool, ..., path = getOption("picard.path"))
 ##' @return Path to output bam file
 ##' @author Jens Reeder
 ##' @export
-markDuplicates <- function(bamfile, outfile=NULL, path=NULL) {
+markDuplicates <- function(bamfile, outfile=NULL, path=getOption("picard.path")) {
   if (is.null(outfile)){
     ## put it right next to input file
     outfile <- paste(gsub("\\.bam$", "", bamfile) , "marked_dups", "bam", sep='.')
@@ -92,7 +92,7 @@ checkPicardJar <- function(toolname, path=getOption("picard.path")){
 ##' Mark duplicates in pipeline context
 ##'
 ##' High level function call to mark duplicates
-##' in the analyzed.ba file of a pipelin run.
+##' in the analyzed.bam file of a pipelin run.
 ##' @title markDups
 ##' @return Nothing
 ##' @author Jens Reeder
@@ -111,5 +111,5 @@ markDups <- function(){
   }, memtracer=getConfig.logical("debug.tracemem"))
 
 
-  loginfo("picard.R/markDups: finished marking duplicates")
+  loginfo("picard.R/markDups: done")
 }

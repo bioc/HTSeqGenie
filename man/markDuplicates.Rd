@@ -2,7 +2,7 @@
 \alias{markDuplicates}
 \title{markDuplicates}
 \usage{
-markDuplicates(bamfile, outfile = NULL, path = NULL)
+markDuplicates(bamfile, outfile = NULL, path = getOption("picard.path"))
 }
 \arguments{
   \item{bamfile}{Name of input bam file}

@@ -25,6 +25,7 @@ countGenomicFeatures <- function() {
     merge_nbfeatures <- mergeCounts(chunkdirs, save_dir, prepend_str)
     mergeSummaryCounts(chunkdirs, save_dir, prepend_str, merge_nbfeatures)   
     writeGenomicFeaturesReport()
+    loginfo("countGenomicFeatures.R/countGenomicFeatures: done...")
   }, memtracer=getConfig.logical("debug.tracemem"))
 
 }
@@ -32,7 +33,7 @@ countGenomicFeatures <- function() {
 ##' Count reads by genomic Feature
 ##'
 ##' given a BAM-file output from gsnap (with the MD tag), count
-##' hits to exons, genes, transcripts, etc.
+##' hits to exons, genes, ncRNAs, etc.
 ##' and quantify miRNA/ncRNA contaminatino 
 ##' @title Count reads by genomic Feature
 ##' @param save_dir PAth to a pipeline run's save dir
@@ -51,7 +52,7 @@ countGenomicFeaturesChunk <- function(save_dir) {
   analyzedbam <- grep("analyzed\\.bam$", bams, value=TRUE)
   reads <- readRNASeqEnds(analyzedbam)
   
-  ## load "genomic_features": pre-calculated granges of exons, transcripts, genes, cds, etc to count overlaps
+  ## load "genomic_features": pre-calculated granges of exons, genes, cds, etc to count overlaps
   filename <- file.path(getConfig("path.genomic_features"), getConfig("countGenomicFeatures.gfeatures"))
   genomic_features <- get(load(filename))
   
@@ -110,7 +111,7 @@ consolidateByRead <- function(grl) {
 ##' @param counts A vector of counts
 ##' @param widths vector of the width of each bin the counts were perfomred on
 ##' @param nbreads vector containing number of reads mapped to each bin
-##' @return vecotr of RPKMs
+##' @return vector of RPKMs
 ##' @author Gregoire Pau
 ##' @export
 ##' @keywords internal
@@ -193,12 +194,12 @@ mergeCounts <- function(dirs_to_merge, merged_dir, prepend_str) {
 }
 
 
-##' Given GRanges, counts number of hits by gene, transcript, exon, intergenic, etc
+##' Given GRanges, counts number of hits by gene, exon, intergenic, etc
 ##'
 ##' Given a GRanges object, this function performs an overlap against
 ##' a previously created set of genomic regions. These genomic
 ##' regions include genes, coding portions of genes (CDS),
-##' transcripts, exons, intergenic regions, and exon groups (which
+##' exons, intergenic regions, and exon groups (which
 ##' contain two or more exons)
 ##' @title Count RNA-Seq Pipeline Genomic Features
 ##' @param reads GRangesList object of interval, usually where reads aligned

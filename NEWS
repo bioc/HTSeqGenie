@@ -1,5 +1,42 @@
+version 3.15.1
+- start next dev cycle
+- remove count_transcripts and count_ncRNA_nongenic from QA
+
+version 3.14.1
+- 3.14.1 release
+- fixed the fragmentLength NA bug spotted by Jinfeng
+
+version 3.13.20:
+- use .gz suffix for vcf files to make IGV happy
+- reactivate genome tiling with larger tiles of 1e8
+ 
+version 3.13.19:
+- force coverage to use SimpleIntegerLists if data becomes too dense
+- disable genome tiling during bam_tallying, as it incures a huge time overhead 
+  under some circumstances
+
+version 3.13.18:
+- new convenience function findVariantFile
+- use genome tiling with VariantTools to keep memory footprint small
+
+version 3.13.17:
+- depend on VariantTools 1.6.1 to get the bamtally memory leak fix
+
+version 3.13.16:
+- version bump to match HTSeqGenie.gne
+
+version 3.13.14:
+- turn off read_min_length check in mergeLanes as due to qual trimming we now expect lanes to differ
+
 version 3.13.13:
-- removed the "no job lefts" tests in test.sclapply()
+- speed up coverage step for WGS data by switching back to SimpleIntegerList if the coverage becomes too ragged.
+
+version 3.13.12:
+- repurpose the gatk.params config value, for general GATK params. This param will be passed on to all
+  GATK calls. An example would be
+  gatk.params:  -L intervals.bed
+  to restrict realignment and variant calling to a certain subset of the genome thus saving 
+  huge amounts of time for targeted sequencing approaches with a few hundred genes.
 
 version 3.13.12:
 - now uses TP53Which() (instead of which.rds) for variant calling tests

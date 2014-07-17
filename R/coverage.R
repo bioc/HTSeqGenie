@@ -52,20 +52,53 @@ calculateCoverage <- function() {
 ##' @keywords internal
 ##' @export
 mergeCoverage <- function(indirs, outdir, prepend_str) {
-  ## merge coverages
-  cov <- NULL
+  sparse <- TRUE
+  cov <- 0L
   for (indir in indirs) {
     filename <- dir(file.path(indir, "results"), pattern="coverage.RData", full.names=TRUE)
-    cov0 <- get(load(filename))
-    if (is.null(cov)) cov <- cov0
-    else cov <- cov + cov0
+    cov.next <- get(load(filename))
+ 
+    if(!sparse) {
+      cov.next <- as(cov.next, "SimpleIntegerList")
+    }
+    cov <- cov.next + cov
+    if(sparse){
+      ## check if we are still sparse
+      ## once we switch to dense, we stay there
+      sparse <- isSparse(cov)
+      if(!sparse){
+        cov <- as(cov, "SimpleIntegerList")
+      }
+    }
   }
+  ## make sure we always return the same type
+  cov <- as(cov, "SimpleRleList")
 
-  ## restore seqlengths
-  seqlengths(cov) <- seqlengths(cov0)
-
-  ## save coverage
+  
+  ## restore seqlengths and fragmentLength
+  seqlengths(cov) <- seqlengths(cov.next)
+  attr(cov, "fragmentLength") <- attr(cov.next, "fragmentLength")
   saveCoverage(cov, outdir, prepend_str)
+}
+
+
+##' Check coverage for sparseness
+##'
+##' Some Rle related operations become very slow when they are dealing with
+##' data that violates their sparseness assumption. This method provides an estimate about
+##' whether the data is dense or sparse. More precicely it checks
+##' if the fraction of the number of runs over the total length is smaller than a threshold
+##' 
+##' @title isSparse
+##' @param cov A cov object as SimpleRleList
+##' @param threshold Fraction of number of runs over total length
+##' @return Boolean whether this object is dense or sparse
+##' @importMethodsFrom IRanges runLength unlist length
+##' @author Jens Reeder
+isSparse <- function(cov, threshold=0.1) {
+  density <- sum(as.numeric(unlist(lapply(runLength(cov), length)))) /
+    sum(as.numeric(lapply(cov, length)))
+  return(density < threshold)
 }
 
 ##' Compute the coverage vector given a bamfile

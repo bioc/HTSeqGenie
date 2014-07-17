@@ -428,6 +428,23 @@ getObjectFilename <- function(dir_path, object_name) {
   return(filename)
 }
 
+##' Get the filename of the variant file
+##'
+##' Depending on the variant caller used and the version of
+##' VariantAnotation used to create the file a file might have the
+##' ending vcf.gz, vcf.bgz. To function hides all this mess.
+##' @title Get a vcf filename given a HTSeqGenie directory
+##' @param dir_path A character string containing a dir path
+##' @return A character vector containing an existing filename, stops if 0 or more than 1
+##' @author Jens Reeder
+##' @export
+##' @keywords internal
+findVariantFile <- function(save_dir){
+  vcf <- getObjectFilename(file.path(save_dir, "results"),
+                           "variants.vcf.b?gz$")
+  return(vcf)
+}
+
 ##' Overloaded yield(...) method catching truncated exceptions for FastqStreamer
 ##'
 ##' @title Overloaded yield(...) method catching truncated exceptions for FastqStreamer

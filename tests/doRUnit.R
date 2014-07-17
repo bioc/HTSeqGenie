@@ -4,4 +4,7 @@ library("HTSeqGenie")
 gatk <- Sys.getenv("GATK_PATH")
 if(file.exists(gatk)) options(gatk.path=gatk)
 
+picard <- Sys.getenv("PICARD_PATH")
+if(file.exists(picard)) options(picard.path=picard)
+
 source(getPackageFile("unitTests/runTests.R"))

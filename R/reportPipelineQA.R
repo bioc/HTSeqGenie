@@ -193,17 +193,16 @@ writeGenomicFeaturesReport <- function(){
 }
 
 .calcGenomicFeaturesDetected <- function(dirPath, image_dir){
-
+  ## TODO: this should be made more general by either getting the bins from the gf
+  ## or by looking at the existing counts_* files
+  
   ## genic reads by chromosome
   hits_by_gene <- getTabDataFromFile(dirPath, "counts_gene")$count 
   hits_by_gene_exonic <- getTabDataFromFile(dirPath, "counts_gene_exonic")$count
   hits_by_gene_coding <- getTabDataFromFile(dirPath, "counts_gene_coding")$count
   hits_by_exon <- getTabDataFromFile(dirPath, "counts_exon")$count
-  hits_by_transcript <- getTabDataFromFile(dirPath, "counts_transcript")$count
   hits_by_ncRNA <- tryCatch(getTabDataFromFile(dirPath, "counts_ncRNA")$count,
                             error=function(e) numeric(0))
-  hits_by_ncRNA_nongenic <- tryCatch(getTabDataFromFile(dirPath, "counts_ncRNA_nongenic")$count,
-                                     error=function(e) numeric(0))
   hits_by_intergenic <- getTabDataFromFile(dirPath, "counts_intergenic")$count
 
   ####################################
@@ -222,15 +221,9 @@ writeGenomicFeaturesReport <- function(){
   exons_detected <- sum(hits_by_exon > 0)
   total_exons <- length(hits_by_exon)
 
-  transcripts_detected <- sum(hits_by_transcript > 0)
-  total_transcripts <- length(hits_by_transcript)
-
   ncRNA_detected <- sum(hits_by_ncRNA > 0)
   total_ncRNA <- length(hits_by_ncRNA)
 
-  ncRNA_nongenic_detected <- sum(hits_by_ncRNA_nongenic > 0)
-  total_ncRNA_nongenic <- length(hits_by_ncRNA_nongenic)
-  
   intergenic_detected <- sum(hits_by_intergenic > 0)
   total_intergenic <- length(hits_by_intergenic)
 
@@ -238,14 +231,12 @@ writeGenomicFeaturesReport <- function(){
                                 "Genes (exonic)" = genes_exonic_detected,
                                 "CDS" = genes_coding_detected,
                                 "Exons" = exons_detected,
-                                "Transcripts" = transcripts_detected,
                                 "ncRNA" = ncRNA_detected,
-                                "ncRNA_nongenic" = ncRNA_nongenic_detected,
                                 "Intergenic" = intergenic_detected)
  
   total <- c(total_genes, total_genes_exonic, total_genes_coding, total_exons,
-             total_transcripts, total_ncRNA, total_ncRNA_nongenic, total_intergenic)
-  ymax <- floor(max((genomicFeatures_detected/total)*100)+0.5)                     
+             total_ncRNA, total_intergenic)
+  ymax <- floor(max((genomicFeatures_detected/total)*100)+0.5)
 
   relativeBarPlot(data = genomicFeatures_detected,
                   total = total,
