@@ -15,14 +15,14 @@ Imports:
     rtracklayer (>= 1.17.19),
     GenomicAlignments,
     VariantTools (>= 1.6.1)
-Maintainer: Gregoire Pau <pau.gregoire@gene.com>
+Maintainer: Jens Reeder <reeder.jens@gene.com>
 License: Artistic-2.0
 Title: A NGS analysis pipeline.
 Type: Package
 LazyLoad: yes
 Author: Gregoire Pau, Jens Reeder
 Description: Libraries to perform NGS analysis.
-Version: 3.15.1
+Version: 3.15.2
 Date: 2014-06-10
 Depends:
     R (>= 3.0.0),
