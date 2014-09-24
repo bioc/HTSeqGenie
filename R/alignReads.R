@@ -102,7 +102,10 @@ buildGsnapParams <- function() {
 
   ## extra params
   if (!is.null(sam_id)) params <- paste(params, " --read-group-id=", sam_id, sep="")
-  if (!is.null(snp_index)) params <- paste(params, "-v", snp_index)
+  ## From the gsnap help: Note that suffix arrays will bias against SNP alleles in
+  ##                      SNP-tolerant alignment.
+  ## We better turn suffix arrays off for snp tolerance
+  if (!is.null(snp_index)) params <- paste(params, "-v", snp_index, "--use-sarray=0")
   if (!is.null(splice_index)) params <- paste(params, "-s", splice_index)
   if (!is.null(max_mismatches)) params <- paste(params, "-m", max_mismatches)
   

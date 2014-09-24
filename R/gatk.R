@@ -8,15 +8,19 @@
 ##' @param gatk.jar.path Path to the gatk jar file
 ##' @param method Name of the gatk method, e.g. UnifiedGenotyper 
 ##' @param args additional args passed to gatk
+##' @param maxheap Maximal heap space allocated for java,
+##'               GATK recommends 4G heap for most of its apps
 ##' @return 0 for success, stops otherwise
 ##' @export
 ##' @author Jens Reeder
-gatk <- function(gatk.jar.path=getOption("gatk.path"), method, args){
+gatk <- function(gatk.jar.path=getOption("gatk.path"), method, args, maxheap="4g"){
   
-  args <- cbind(paste("-jar", gatk.jar.path,
+  args <- cbind(paste("-XX:+UseSerialGC", ## keeps java from taking over a multicore server using lots of GC threads
+                      paste0("-Xmx", maxheap),
+                      "-jar", gatk.jar.path,
                       "-T", method),
                 args)
-  loginfo(paste("analyzeVariants/gatk: Calling gatk: java", paste(args, collapse=' ')))
+  loginfo(paste("gatk.R/gatk: Calling gatk: java", paste(args, collapse=' ')))
   retcode <- system2('java', args, stdout=FALSE)
   if(retcode != 0){
     stop( paste("GATK command [ java", paste(args, collapse=" "), "] failed."))
@@ -153,7 +157,6 @@ excludeVariantsByRegions <- function(variants, mask) {
 ##' @return Nothing
 ##' @author Jens Reeder
 ##' @export
-##' @importFrom tools file_path_sans_ext
 realignIndels <- function(){
   loginfo("gatk.R/realignIndels: starting to realign indels")
 
@@ -165,20 +168,21 @@ realignIndels <- function(){
   }, memtracer=getConfig.logical("debug.tracemem"))
   
   file.rename(realigned.bam, analyzed.bam)
-  ## Realigner puts a file with bai instead of bam right next to the bam file.
-  ## In our world we call these files .bam.bai files
-  file.rename(paste0(file_path_sans_ext(realigned.bam), ".bai"),
+  file.rename(paste0(realigned.bam, ".bai"),
               paste0(analyzed.bam, ".bai"))
 
   loginfo("gatk.R/realignIndels: done")
 }
 
-##' realign indels via GATK
+##' Realign indels via GATK
 ##'
 ##' Realing indels using the GATK tools RealignerTargetCreator
 ##' and IndelRealigner.
 ##' Requires a GATK compatible genome with a name matching
 ##' the alignment genome to be installed in 'path.gatk_genome'
+##'
+##' Since GATKs IndelRealigner is not parallelized, we run it in
+##' parallel per chromosome.
 ##' 
 ##' @param bam.file Path to bam.file
 ##' @return Path to realigned bam file
@@ -191,33 +195,63 @@ realignIndelsGATK <- function(bam.file){
   num.cores    <- getConfig.integer("num_cores")  
   save.dir     <- getConfig('save_dir')
   genome       <- file.path(gatk.genomes, paste0(genome,".fa"))
+  chunk.dir    <- getConfig('chunk_dir')
   
-  interval.file <- file.path(save.dir, "bams",
-                             paste(getConfig('prepend_str'),
-                                   "realigner.intervals", sep="."))
-
-  args <- paste("--num_threads", min(4,num.cores),
-                "-R", genome,
-                "-I", bam.file,
-                "-o", interval.file,
-                gatk.params)
-  
-  gatk(gatk.jar.path=jar.path, method="RealignerTargetCreator", args=args)
-  if(!file.exists(interval.file)) stop("realignIndelsGATK failed to create interval file.")
+  if(any(grepl("-L", gatk.params))){
+    ## user provided -L flag, so we can't parallelize by chr
+    realigned.bam.files <- realignOne(bam.file, genome, gatk.params,
+                                      jar.path, chunk.dir)
+  } else {
+ 
+    fun <- function(chr, ...) {
+      realignOne(bam.file, genome, paste("-L", chr, gatk.params),
+                 jar.path, chunk.dir)
+    }
+    listIterator.init( getGenomeSegments() )
+    realigned.bam.files <- sclapply(listIterator.next, fun, max.parallel.jobs=num.cores)
+  }
   
   realigned.bam.file <- file.path(save.dir, "bams",
                                   paste(getConfig('prepend_str'),
                                         "realigned", "bam", sep="."))
 
+  bam <- catBams(realigned.bam.files, realigned.bam.file)
+  return(bam)
+}
+  
+realignOne <- function(bam.file, genome, gatk.params, jar.path, chunk.dir){
+
+  tmp.dir <- createTmpDir(prefix="realigner", dir=chunk.dir)
+  interval.file <- file.path(tmp.dir, "realigner.intervals")
+  realigned.bam.file <- file.path(tmp.dir, "realigned.bam")
+  
+  args <- paste("-R", genome,
+                "-I", bam.file,
+                "-o", interval.file,
+                gatk.params)
+  
+  gatk(gatk.jar.path=jar.path, method="RealignerTargetCreator", args=args, maxheap="2g")
+  if(!file.exists(interval.file)) stop("realignIndelsGATK failed to create interval file.")
+  
   args <- paste("-R", genome,
                 "-I", bam.file,
                 "-o", realigned.bam.file,
                 "--targetIntervals", interval.file,
                 gatk.params)
 
-  gatk(gatk.jar.path=jar.path, method="IndelRealigner", args=args)
+  gatk(gatk.jar.path=jar.path, method="IndelRealigner", args=args, maxheap="2g")
   if(!file.exists(realigned.bam.file)) stop("realignIndelsGATK failed to create bam file.")
   file.remove(interval.file)
 
   return(realigned.bam.file)
 }
+
+getGenomeSegments <- function() {
+  genome     <- getConfig("alignReads.genome")
+  genome.dir <- getConfig("path.gsnap_genomes")
+
+  gmap.genome <- GmapGenome(genome = genome,
+                            directory = path.expand(genome.dir))
+  return (seqnames( seqinfo(gmap.genome)))
+}
+

@@ -54,6 +54,27 @@ mergeBams <- function(inbams, outbam, sort=TRUE, index=TRUE) {
   invisible(outbam)
 }
 
+## Rsamtools does not expose samtools cat, so we have to use the cmd line
+## check new htslib/Rsamtool when it gets released
+catBams <- function(inbams, outbam){
+
+  if(length(inbams)==1) return(inbams[[1]])
+  if(system2("samtools", stderr=FALSE) == 0){
+    ## this is mostly to make sure it runs on the test servers, which might not have samtools installed
+    warning("Problems calling samtools. Falling back to Rsamtools merge, which might be slower")
+    return(mergeBams(inbams, outbam))
+  }
+  args <- paste( c("cat", "-o", paste(outbam), inbams))
+  
+  retcode <- system2( "samtools", args)
+  if(retcode != 0){
+    stop( paste("samtools command [ ", paste(args, collapse=" "), "] failed."))
+  }
+  indexBam(outbam)
+  return(outbam)
+}
+
+
 ##' Uniquely count number of reads in bam file
 ##'
 ##'

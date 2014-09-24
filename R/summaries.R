@@ -304,18 +304,15 @@ writeSummary <- function(dirs, cutoffs, outdir="./")  {
 create.result.link.table <- function(dirs) {
   df <- data.frame("pipeline result dir"=basename(dirs),
                    "Alignment.reports"="Alignments",
-                   "Feature.counting.reports"="Feature counting",
-                   "Variant.calling.reports"="Variants"
+                   "Feature.counting.reports"="Feature counting"
                    )
   
   ## html sits in Summary/, but paths are relative to ./
   linksAln <- file.path(dirs, "reports/reportAlignment.html")
   linksFC  <- file.path(dirs, "reports/reportFeatureCounts.html")
-  linksVar <- file.path(dirs, "reports/reportVariants.html")  
 
   links <- list("Alignment.reports"=linksAln,
-                "Feature.counting.reports"=linksFC,
-                "Variant.calling.reports"=linksVar)
+                "Feature.counting.reports"=linksFC)
 
   return(hwrite(df, col.link=links))
 }

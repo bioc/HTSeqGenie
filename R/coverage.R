@@ -41,47 +41,6 @@ calculateCoverage <- function() {
   }, memtracer=getConfig.logical("debug.tracemem"))
 }
 
-##' Merge coverage files
-##'
-##' @title Merge coverage files
-##' @param indirs A character vector, indicating which directories have to be merged
-##' @param outdir A character string indicating the output directory (which must exist)
-##' @param prepend_str A character string, containing a prefix going to be appended on all output result files
-##' @return Nothing
-##' @author Gregoire Pau
-##' @keywords internal
-##' @export
-mergeCoverage <- function(indirs, outdir, prepend_str) {
-  sparse <- TRUE
-  cov <- 0L
-  for (indir in indirs) {
-    filename <- dir(file.path(indir, "results"), pattern="coverage.RData", full.names=TRUE)
-    cov.next <- get(load(filename))
- 
-    if(!sparse) {
-      cov.next <- as(cov.next, "SimpleIntegerList")
-    }
-    cov <- cov.next + cov
-    if(sparse){
-      ## check if we are still sparse
-      ## once we switch to dense, we stay there
-      sparse <- isSparse(cov)
-      if(!sparse){
-        cov <- as(cov, "SimpleIntegerList")
-      }
-    }
-  }
-  ## make sure we always return the same type
-  cov <- as(cov, "SimpleRleList")
-
-  
-  ## restore seqlengths and fragmentLength
-  seqlengths(cov) <- seqlengths(cov.next)
-  attr(cov, "fragmentLength") <- attr(cov.next, "fragmentLength")
-  saveCoverage(cov, outdir, prepend_str)
-}
-
-
 ##' Check coverage for sparseness
 ##'
 ##' Some Rle related operations become very slow when they are dealing with
@@ -97,8 +56,58 @@ mergeCoverage <- function(indirs, outdir, prepend_str) {
 ##' @author Jens Reeder
 isSparse <- function(cov, threshold=0.1) {
   density <- sum(as.numeric(unlist(lapply(runLength(cov), length)))) /
-    sum(as.numeric(lapply(cov, length)))
+             sum(as.numeric(lapply(cov, length)))
   return(density < threshold)
+}
+
+##' Merge coverage files
+##'
+##' Merges coverage objects, usually SipleRleLists, in a tree-reduce
+##' fashion. The coverage object dynamically switches to a SimpleIntegerList,
+##' once the data becomes too dense. 
+##' 
+##' @title Merge coverage files
+##' @param indirs A character vector, indicating which directories have to be merged
+##' @param outdir A character string indicating the output directory (which must exist)
+##' @param prepend_str A character string, containing a prefix going to be appended on all output result files
+##' @return Nothing
+##' @author Jens Reeder
+##' @keywords internal
+##' @export
+mergeCoverage <- function(indirs, outdir, prepend_str) {
+
+  .merge <- function(covs){
+    l <- length(covs)
+    if (l == 1){
+      return( covs[[1]]) 
+    } else {
+      cov.a = .merge(covs[seq(1, l, 2)]) ## take every second, starting at 1
+      cov.b = .merge(covs[seq(2, l, 2)]) ## and starting at 2
+      cov.combined <- cov.a + cov.b
+
+      if( class(cov.combined) != "SimpleIntegerList"
+         && ! isSparse(cov.combined)){
+        cov.combined <- as(cov.combined, "SimpleIntegerList")
+      }
+      return (cov.combined)
+    }
+  }
+  
+  covs <- lapply(indirs,
+         function(indir){
+           filename <- dir(file.path(indir, "results"), pattern="coverage.RData", full.names=TRUE)
+           cov.next <- get(load(filename))
+           ## SimpleRleLists can be bigger, useful for WGS
+           return( as(cov.next, 'SimpleRleList'))
+         }
+         )
+    
+  coverage <- .merge(covs)
+  
+  ## restore seqlengths and fragmentLength
+  seqlengths(coverage) <- seqlengths(covs[[1]])
+  attr(coverage, "fragmentLength") <- attr(covs[[1]], "fragmentLength")
+  saveCoverage(coverage, outdir, prepend_str)
 }
 
 ##' Compute the coverage vector given a bamfile

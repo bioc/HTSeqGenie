@@ -135,16 +135,41 @@ test.realignIndelsGATK <- function() {
     observed.file <- HTSeqGenie:::realignIndelsGATK(bam.file)
     checkTrue(file.exists(observed.file),
               "realignIndelsGATK() writes realigned bam file")
-    ## TODO peek into file anch check for changes in cigar
     checkEquals(unique(cigar(readGAlignments(observed.file)[3:4])),
                 "23M1D77M", "... and indels in second read where shifted")    
   }
   else{
-    DEACTIVATED("realingIndelsGATK() tests need gatk.path option set")
+    DEACTIVATED("realignIndelsGATK() tests need gatk.path option set")
   }
 }
 
+test.realignIndelsGATK.parallel <- function() {
+  if (checkGATKJar()){
+    config.filename <- "test-data/test_config.txt"
 
+    HTSeqGenie:::buildAnyFastaGenome(c("KRAS", "TP53"))
+    
+    save.dir <- setupTestFramework(config.filename=config.filename,
+                                   config.update=list(
+                                     alignReads.genome="KRAS_TP53_demo_2.14.0",
+                                     num_cores=2,
+                                     path.gatk=getOption('gatk.path'),
+                                     path.gatk_genomes=tempdir() ),
+                                   testname="test.realignIndelsGATK.parallel")
+    ## we run into locking issues if to GATK process try to create the dict simultanouesly
+    file.copy(getPackageFile("test-data/Realigner/KRAS_TP53_demo_2.14.0.dict"), tempdir())
+    bam.file <- getPackageFile("test-data/Realigner/jiggling_indels_tp53_kras.bam")
+
+    observed.file <- HTSeqGenie:::realignIndelsGATK(bam.file)
+    checkTrue(file.exists(observed.file),
+              "realignIndelsGATK() writes realigned bam file")
+    checkEquals(unique(cigar(readGAlignments(observed.file)[3:4])),
+                "23M1D77M", "... and indels in second read where shifted")    
+  }
+  else{
+    DEACTIVATED("realignIndelsGATK() tests need gatk.path option set")
+  }
+}
 
 test.realignIndels <- function() {
   if (checkGATKJar()){

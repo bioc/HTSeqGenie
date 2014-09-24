@@ -1,3 +1,10 @@
+version 3.15.3
+- parallelize Indel realignment by chromosome
+
+version 3.15.2
+- use a binary tree-reduce like algorithm to merge coverages. 
+  For a big WGS this reduced runtime from 12h to 2 h. 
+ 
 version 3.15.1
 - start next dev cycle
 - remove count_transcripts and count_ncRNA_nongenic from QA

@@ -70,7 +70,7 @@ test.mergeCoverage <- function (){
 
 test.mergeCoverage.sparse <- function (){
 
-  ## our coveages are always SimpleRleList,
+  ## our coverages are always SimpleRleList,
   ## the compressed ones are not able to store the genome in 32 bit vector
   cov1 <- as(RleList('1' = RleList('1' = c(1:10))), "SimpleRleList")
   
@@ -90,6 +90,7 @@ test.mergeCoverage.sparse <- function (){
   checkTrue(all((cov1*3L)==observed))
   ## They are not equal, as observed has a seqinfo slot
   ## checkEquals(observed, cov1*3L)
-
+  checkTrue(class(observed) == 'SimpleIntegerList', "returns a SimpleIntegerList")
+  
   unlink(file.path(outpath, "results/bla.coverage.RData"))
 }

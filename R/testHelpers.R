@@ -88,6 +88,47 @@ buildTP53FastaGenome <- function() {
   return(tempdir())
 }
 
+##TODO wait for GeneGenome to pop up in gmapR and then merge this functionality with TP53
+buildAnyFastaGenome <- function(genes) {
+  gnome <- AnyGenome(genes)
+  genome.name <- genome(gnome)
+  
+  tp53seq <- DNAStringSet(getSeq(gnome))
+  names(tp53seq) = genes
+  fasta.name <- file.path(tempdir(),paste0(genome.name,".fa"))
+  export(tp53seq, fasta.name, format="fasta")
+  indexFa(fasta.name)
+  return(tempdir())
+}
+
+## copied and generalized from gmapR, backported into gmapR as GeneGenome
+AnyGenome <- function (genes = c("TP53")){
+  
+  genomeName <- gmapR:::geneGenomeName(paste(genes, collapse="_"))
+ 
+  if (genomeName %in% genome(GmapGenomeDirectory(create = TRUE))) {
+    GmapGenome(genomeName)
+  }
+  else {
+    gmapR:::checkPackageInstalled("TxDb.Hsapiens.UCSC.hg19.knownGene")
+    gmapR:::checkPackageInstalled("BSgenome.Hsapiens.UCSC.hg19")
+    gmapR:::checkPackageInstalled("org.Hs.eg.db")
+    txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
+    roi <- gmapR:::getGeneRoi(txdb, org.Hs.eg.db::org.Hs.eg.db, genes)
+    strand(roi) <- "+"
+    p53Seq <- getSeq(BSgenome.Hsapiens.UCSC.hg19::Hsapiens,
+                     roi, as.character = FALSE)
+    names(p53Seq) <- genes
+    genome <- GmapGenome(genome = p53Seq, name = genomeName,
+                         create = TRUE)
+    exons <- gmapR:::subsetRegion(exonsBy(txdb), roi, genes)
+    spliceSites(genome, "knownGene") <- exons
+    
+    genome
+  }
+}
+
+
 ##' Generate a couple if random ShortReadQ, intended for testing
 ##'
 ##' @title Generate a couple if random ShortReadQ, intended for testing

@@ -277,10 +277,12 @@ makeDir <- function(dir, overwrite="never"){
 ##' a temp directory with a defined prefix, so one knows which test
 ##' produced which directory.
 ##' @param prefix A string that will preceed the directory name
+##' @param dir Directory where the random dir will be created under.
+##'            Defaults to tempdir()
 ##' @return Name of temporary directory
 ##' @keywords internal
-createTmpDir <- function(prefix=NULL) {
-  tmpname <- file.path(tempdir(), paste(c(prefix, sample(letters,8)), collapse=""))
+createTmpDir <- function(prefix=NULL, dir=tempdir()) {
+  tmpname <- file.path(dir, paste(c(prefix, sample(letters,8)), collapse=""))
   makeDir(tmpname, overwrite="erase")
   return(tmpname)
 }
