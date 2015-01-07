@@ -14,6 +14,10 @@
 calculateTargetLengths <- function(bamfile, save_dir, trim=0.4){
   ## get isize
   target_len <- scanBam(bamfile, param=ScanBamParam(what="isize"))[[1]]$isize
+  if(length(target_len)==0){
+     logwarn("No reads to compute target length for")  
+     return(NA)
+  }
   target_len <- abs(as.numeric(target_len))
   target_len_summary <- summary(target_len)
   

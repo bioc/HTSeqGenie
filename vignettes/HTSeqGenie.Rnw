@@ -120,6 +120,7 @@ H1993dir <- do.call(runPipeline,
                       ## output
                       save_dir="H1993",
                       prepend_str="H1993",
+                      alignReads.sam_id="H1993",
                       overwrite_save_dir="erase"
                       ))
 
@@ -136,6 +137,7 @@ H2073dir <- do.call(runPipeline,
                       ## output
                       save_dir="H2073",
                       prepend_str="H2073",
+                      alignReads.sam_id="H2073",
                       overwrite_save_dir="erase"
                       ))
 @

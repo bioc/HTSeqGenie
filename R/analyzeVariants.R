@@ -11,10 +11,8 @@ analyzeVariants <- function(){
   save_dir <- getConfig('save_dir')
   analyzeVariants.method <- getConfig("analyzeVariants.method", stop.ifempty=TRUE)
   prepend_str <- getConfig("prepend_str")
-  bam.file <- file.path(save_dir, 'bams',
-                        paste(getConfig('prepend_str'),
-                              'analyzed.bam', sep="."))
-
+  bam.file <- getAnalyzedBamFile()
+  
   safeExecute({
     if(analyzeVariants.method=='GATK'){
       vcf.filename <- callVariantsGATK(bam.file)
@@ -33,7 +31,15 @@ analyzeVariants <- function(){
 
 callVariantsVariantTools <- function(bam.file) {
   variants <- wrap.callVariants(bam.file)
-  vcf.filename <- writeVCF(variants$filtered.variants)
+
+  filename <- file.path(getConfig('save_dir'), "results",
+                        paste(getConfig('prepend_str'),
+                              ".variants.vcf", sep=""))
+  vcf.filename <- writeVCF(variants$filtered.variants, filename=filename)
+
+  if(getConfig.logical("analyzeVariants.genotype")){
+    .callGenotypes(variants$raw.variants)
+  } 
   return(vcf.filename)
 }
 
@@ -49,9 +55,7 @@ callVariantsVariantTools <- function(bam.file) {
 ##' @export
 ##' @importFrom VariantTools TallyVariantsParam tallyVariants VariantPostFilters callVariants postFilterVariants VariantCallingFilters
 ##' @importFrom BiocParallel MulticoreParam
-wrap.callVariants <- function(bam.file) {  
-  loginfo("analyzeVariants.R/wrap.callVariants: Calling variants...")
-
+wrap.callVariants <- function(bam.file) {
   ## get config parameters
   num.cores   <- getConfig.integer("num_cores")
 
@@ -74,32 +78,37 @@ wrap.callVariants <- function(bam.file) {
               filtered.variants = variants))
 }
 
+##' @importFrom gmapR GmapGenome
+getGmapGenome <- function(){
+  genome      <- getConfig("alignReads.genome")
+  genome.dir  <- getConfig("path.gsnap_genomes")
+  
+  gmap.genome <- GmapGenome(genome = genome,
+                            directory = path.expand(genome.dir))
+  return(gmap.genome)
+}
+
 ##' Build tally parameters
 ##'
 ##' @title Build tally parameters
 ##' @return a \code{VariantTallyParam} object
-##' @importFrom gmapR GmapGenome
 ##' @importFrom GenomicRanges tileGenome
 ##' @keywords internal
 ##' @author Gregoire Pau
 buildTallyParam <- function(){
-  genome      <- getConfig("alignReads.genome")
-  genome.dir  <- getConfig("path.gsnap_genomes")
   indels      <- getConfig.logical("analyzeVariants.indels")
   bqual       <- getConfig.numeric("analyzeVariants.bqual")
   rmask.file  <- getConfig("analyzeVariants.rep_mask")
   positions.file <- getConfig("analyzeVariants.positions")
+  gmap.genome <- getGmapGenome()
   
-  gmap.genome <- GmapGenome(genome = genome,
-                            directory = path.expand(genome.dir))
-
   ## we use the low level interface here, so we have access to the raw variants
   args <- list(gmap.genome,
                high_base_quality = bqual,
                indels = indels)
 
   if(!is.null(rmask.file)){
-    loginfo("analyzeVariants.R/buildTallyParam: Using repeat masker track for tally filtering.")
+    loginfo("analyzeVariants.R/buildTallyParam: Using repeat masker track for tally filtering")
     mask <- rtracklayer::import(rmask.file, asRangedData=FALSE)
     args <- c(args, mask=mask)
   }
@@ -113,7 +122,7 @@ buildTallyParam <- function(){
     ## Large enough to not overflow even for large WGS and fast enough for samples with
     ## just a few reads
     if(seqlengths(seqinfo(gmap.genome)) > 1e7){
-      loginfo("analyzeVariants.R/buildTallyParam: using genome tiling for memory saving'")
+      loginfo("analyzeVariants.R/buildTallyParam: using genome tiling for memory saving")
       tiles <- unlist(tileGenome(seqinfo(gmap.genome), tilewidth=1e7))
       args <- c(args, which=tiles)
     }
@@ -168,16 +177,46 @@ buildCallingFilters <- function(){
              save_dir=file.path(getConfig('save_dir'), "results"),
              compress=FALSE)
 }
-         
+
+##' @importFrom gmapR GmapGenome
+##' @importFrom rtracklayer BigWigFile
+##' @importMethodsFrom VariantTools callGenotypes
+##' @importFrom VariantTools CallGenotypesParam
+.callGenotypes <- function(variants){
+  loginfo("analyzeVariants.R/.callGenotypes: calling genotypes...")  
+
+  save.dir    <- getConfig("save_dir")
+  prepend.str <- getConfig("prepend_str")
+  ## Genotyping is heavy on memory, 14GB, per chunk
+  ## Until we optimize this is VT, we simpley trade speed for less memory
+  num.cores   <- max(1, getConfig.integer("num_cores") %/% 2)
+  gmap.genome <- getGmapGenome()
+  
+  bwfile <- file.path(save.dir, "results", paste(prepend.str, "coverage", "bw", sep="."))
+  
+  cg.param <- CallGenotypesParam(genome=gmap.genome)
+
+  genotypes <- callGenotypes(variants, BigWigFile(bwfile), param=cg.param,
+                             BPPARAM = MulticoreParam(workers=num.cores))
+
+  genotypes <- genotypes[, c("GT", "GQ", "PL", "MIN_DP")]
+  geno.file <- file.path(save.dir, "results", paste0(prepend.str, ".genotypes.vcf"))  
+  writeVCF(genotypes, filename=geno.file)
+  
+  loginfo("analyzeVariants.R/.callGenotypes: done")  
+  return(geno.file)
+}  
+
 ##' Write variants to VCF file
 ##' 
 ##' @title writeVCF
 ##' @param variants.vranges Genomic Variants as VRanges object
+##' @param filename Name of vcf file to write
 ##' @return VCF file name
 ##' @author Jens Reeder
 ##' @export
 ##' @importFrom VariantAnnotation writeVcf sampleNames sampleNames<-
-writeVCF <- function(variants.vranges){
+writeVCF <- function(variants.vranges, filename){
   loginfo("analyzeVariants.R/writeVCF: writing vcf file...")
 
   vcf.gz <- NULL
@@ -191,12 +230,9 @@ writeVCF <- function(variants.vranges){
     ## build vcf object
     ## make sure we sort, as otherwise writing the index might crash
     vcf <- as(sort(variants.vranges), "VCF")
-    vcf.filename <- file.path(getConfig('save_dir'), "results",
-                              paste(getConfig('prepend_str'),
-                                    ".variants.vcf", sep=""))  
     ## if we let writeVcf index, it makes us a .bgz file which breaks IGV
     ## thus we compress and index ourselves using the accepted .gz suffix
-    vcf.filename <- writeVcf(vcf, vcf.filename, index=FALSE)
+    vcf.filename <- writeVcf(vcf, filename, index=FALSE)
     vcf.gz <- bgzip(vcf.filename, dest=paste0(vcf.filename, ".gz"))
     indexTabix(vcf.gz, format = "vcf")
     unlink(vcf.filename)

@@ -3,10 +3,12 @@
 \alias{writeVCF}
 \title{writeVCF}
 \usage{
-writeVCF(variants.vranges)
+writeVCF(variants.vranges, filename)
 }
 \arguments{
 \item{variants.vranges}{Genomic Variants as VRanges object}
+
+\item{filename}{Name of vcf file to write}
 }
 \value{
 VCF file name

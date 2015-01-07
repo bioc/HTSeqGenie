@@ -79,7 +79,7 @@ mergeCoverage <- function(indirs, outdir, prepend_str) {
   .merge <- function(covs){
     l <- length(covs)
     if (l == 1){
-      return( covs[[1]]) 
+      return( covs[[1]] ) 
     } else {
       cov.a = .merge(covs[seq(1, l, 2)]) ## take every second, starting at 1
       cov.b = .merge(covs[seq(2, l, 2)]) ## and starting at 2
@@ -99,14 +99,20 @@ mergeCoverage <- function(indirs, outdir, prepend_str) {
            cov.next <- get(load(filename))
            ## SimpleRleLists can be bigger, useful for WGS
            return( as(cov.next, 'SimpleRleList'))
-         }
+         }               
          )
-    
-  coverage <- .merge(covs)
   
+  coverage <- .merge(covs)
+
   ## restore seqlengths and fragmentLength
   seqlengths(coverage) <- seqlengths(covs[[1]])
   attr(coverage, "fragmentLength") <- attr(covs[[1]], "fragmentLength")
+
+  ## cov 2 bw conversion in saveCoverage takes some space, we we clean up
+  ## before doing it
+  remove(covs)
+  gc()
+
   saveCoverage(coverage, outdir, prepend_str)
 }
 
@@ -123,9 +129,6 @@ mergeCoverage <- function(indirs, outdir, prepend_str) {
 ##' @return A SimpleRleList object containing the coverage
 ##' @author Gregoire Pau
 ##' @keywords internal
-##' @importMethodsFrom BiocGenerics table
-##' @importFrom rtracklayer export
-##' @importMethodsFrom chipseq estimate.mean.fraglen
 ##' @export
 computeCoverage <- function(bamfile, extendReads=FALSE, paired_ends=FALSE, fragmentLength=NULL,
                             maxFragmentLength=NULL) {
@@ -140,12 +143,7 @@ computeCoverage <- function(bamfile, extendReads=FALSE, paired_ends=FALSE, fragm
     reads <- unlist(reads)
     if (extendReads) {
       if (is.null(fragmentLength)) {
-        ## fragmentLength is estimated on each chromosome by estimate.mean.fraglen()
-        ## global fragmentLength estimation is computed using a weighted mean on reads per chromosomes
-        ## (to minimize inaccurate fragment estimation on chromosomes with few reads)
-        fraglen.chr <- estimate.mean.fraglen(reads, method="coverage")
-        ctfrag.chr <- table(seqnames(reads))
-        fragmentLength <- round(sum(fraglen.chr * ctfrag.chr[names(fraglen.chr)])/sum(ctfrag.chr))
+        fragmentLength <- estimateFragmentLength(reads)
       }
       reads <- resize(reads, width=fragmentLength)
     }
@@ -163,12 +161,26 @@ computeCoverage <- function(bamfile, extendReads=FALSE, paired_ends=FALSE, fragm
   cov
 }
 
+## fragmentLength is estimated on each chromosome by estimate.mean.fraglen()
+## global fragmentLength estimation is computed using a weighted mean on reads per chromosomes
+## (to minimize inaccurate fragment estimation on chromosomes with few reads)
+##' @importMethodsFrom chipseq estimate.mean.fraglen
+##' @importMethodsFrom BiocGenerics table
+estimateFragmentLength <- function(reads) {
+  fraglen.chr <- estimate.mean.fraglen(reads, method="coverage")
+  ctfrag.chr <- table(seqnames(reads))
+  fragmentLength <- round(sum(fraglen.chr * ctfrag.chr[names(fraglen.chr)])/sum(ctfrag.chr))
+  return(fragmentLength)
+}
+
+##' @importFrom rtracklayer export
 saveCoverage <- function(cov, save_dir, prepend_str) {
   ## save coverage as a RData file
   saveWithID(cov, "coverage", prepend_str, save_dir=file.path(save_dir, "results"), compress=FALSE)
 
   ## save coverage as a BigWig file
   bwfile <- file.path(save_dir, "results", paste(prepend_str, "coverage", "bw", sep="."))
+  loginfo(paste("coverage.R/saveCoverage: saving file=", bwfile))
   rtracklayer::export(cov, con=bwfile, format="bw")
 
   ## fragmentLength
@@ -176,6 +188,17 @@ saveCoverage <- function(cov, save_dir, prepend_str) {
   if (is.null(fragmentLength)) fragmentLength <- NA
   
   ## compute coverage stats
+  dat <- computeCoverageStats(cov)
+  dat <- c(estimated.fragmentLength=fragmentLength, dat)
+
+  ## save summary results
+  df <- data.frame(name=names(dat), value=dat)
+  saveWithID(df, "summary_coverage", id=prepend_str, save_dir=file.path(save_dir, "results"), format="tab")
+  
+  invisible(TRUE)
+}
+
+computeCoverageStats <- function(cov){
   cm <- sapply(1:length(cov), function(i) mean(cov[[i]]))
   chr.length <- as.numeric(seqlengths(cov))
   coverage.mean.genome <- sum(chr.length*cm)/sum(chr.length)
@@ -189,8 +212,7 @@ saveCoverage <- function(cov, save_dir, prepend_str) {
   coverage.fraction.atleast1read <- setNames(cf1, paste0("coverage.fraction.atleast1read.", names(cov)))
   coverage.fraction.atleast2read <- setNames(cf2, paste0("coverage.fraction.atleast2read.", names(cov)))
   coverage.fraction.atleast5read <- setNames(cf5, paste0("coverage.fraction.atleast5read.", names(cov)))
-  dat <- c(estimated.fragmentLength=fragmentLength,
-           coverage.mean.genome=coverage.mean.genome,
+  dat <- c(coverage.mean.genome=coverage.mean.genome,
            coverage.fraction.atleast1read.genome=coverage.fraction.atleast1read.genome,
            coverage.fraction.atleast2read.genome=coverage.fraction.atleast2read.genome,
            coverage.fraction.atleast5read.genome=coverage.fraction.atleast5read.genome,
@@ -199,10 +221,6 @@ saveCoverage <- function(cov, save_dir, prepend_str) {
            coverage.fraction.atleast2read,
            coverage.fraction.atleast5read
            )
-  
-  ## save summary results
-  df <- data.frame(name=names(dat), value=dat)
-  saveWithID(df, "summary_coverage", id=prepend_str, save_dir=file.path(save_dir, "results"), format="tab")
-  
-  invisible(TRUE)
+  return(dat)
 }
+  

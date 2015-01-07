@@ -148,16 +148,21 @@ test.realignIndelsGATK.parallel <- function() {
     config.filename <- "test-data/test_config.txt"
 
     HTSeqGenie:::buildAnyFastaGenome(c("KRAS", "TP53"))
+    ## genome name changes with each version bump of the underlying txdb
+    ## this mess is hidden by using this function
+    genome.name <- gmapR:::geneGenomeName('KRAS_TP53')
     
     save.dir <- setupTestFramework(config.filename=config.filename,
                                    config.update=list(
-                                     alignReads.genome="KRAS_TP53_demo_2.14.0",
+                                     alignReads.genome=genome.name,
                                      num_cores=2,
                                      path.gatk=getOption('gatk.path'),
                                      path.gatk_genomes=tempdir() ),
                                    testname="test.realignIndelsGATK.parallel")
-    ## we run into locking issues if to GATK process try to create the dict simultanouesly
-    file.copy(getPackageFile("test-data/Realigner/KRAS_TP53_demo_2.14.0.dict"), tempdir())
+    
+    ## we run into locking issues if two GATK process try to create the dict simultanously
+    file.copy(getPackageFile(paste0("test-data/Realigner/KRAS_TP53_demo.dict")),
+              file.path(tempdir(), paste0(genome.name, ".dict")))
     bam.file <- getPackageFile("test-data/Realigner/jiggling_indels_tp53_kras.bam")
 
     observed.file <- HTSeqGenie:::realignIndelsGATK(bam.file)

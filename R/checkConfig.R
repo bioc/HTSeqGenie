@@ -224,7 +224,7 @@ checkConfig.alignReads <- function() {
   if (!is.null(max_mismatches) && max_mismatches<0) stop("config parameter 'alignReads.max_mismatches' must be a positive integer")
   
   ## alignReads.sam_id
-  sam_id <- getConfig("alignReads.sam_id")
+  sam_id <- getConfig("alignReads.sam_id", stop.ifempty=TRUE)
   if (!is.null(sam_id)) {
     if (regexpr(" ", sam_id)>0) stop("'alignReads.sam_id' contains a whitespace: ", sam_id)
   }
@@ -393,6 +393,7 @@ checkConfig.analyzeVariants.VT <- function() {
       stop(paste("Repeat mask file not found at", include.regions))
     }
   }
+  getConfig.logical("analyzeVariants.genotype", stop.ifempty=TRUE)
 }
 
 ## check for GATK and presence of a genome file

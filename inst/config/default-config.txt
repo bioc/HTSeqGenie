@@ -88,6 +88,7 @@ analyzeVariants.dbsnp:    ## path to dbsnp whitelist in vcf format
 analyzeVariants.callingFilters: nonRef,nonNRef,readCount,likelihoodRatio ##comma separated list of VT calling Filters
 analyzeVariants.postFilters:  ##comma separated list of VT post Filters, for WGS activate avgNborCount
 analyzeVariants.positions: ## Path to a GRanges object as RDS used for limiting variant calling on this region
+analyzeVariants.genotype: FALSE ## toggles Genotyping via VT
 
 ## GATK
 path.gatk_genomes:

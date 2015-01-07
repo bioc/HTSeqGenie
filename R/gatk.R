@@ -202,13 +202,15 @@ realignIndelsGATK <- function(bam.file){
     realigned.bam.files <- realignOne(bam.file, genome, gatk.params,
                                       jar.path, chunk.dir)
   } else {
- 
+    ## temporarily increase loglevel so gatk calls for each chr do not clutter stdout
+    setLevel("WARN") 
     fun <- function(chr, ...) {
       realignOne(bam.file, genome, paste("-L", chr, gatk.params),
                  jar.path, chunk.dir)
     }
     listIterator.init( getGenomeSegments() )
     realigned.bam.files <- sclapply(listIterator.next, fun, max.parallel.jobs=num.cores)
+    setLevel(getConfig("debug.level"))
   }
   
   realigned.bam.file <- file.path(save.dir, "bams",
@@ -247,11 +249,6 @@ realignOne <- function(bam.file, genome, gatk.params, jar.path, chunk.dir){
 }
 
 getGenomeSegments <- function() {
-  genome     <- getConfig("alignReads.genome")
-  genome.dir <- getConfig("path.gsnap_genomes")
-
-  gmap.genome <- GmapGenome(genome = genome,
-                            directory = path.expand(genome.dir))
-  return (seqnames( seqinfo(gmap.genome)))
+  return (seqnames( seqinfo( getGmapGenome())))
 }
 

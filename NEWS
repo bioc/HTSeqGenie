@@ -1,3 +1,13 @@
+version 3.16.1
+- fix bug in indel realignment step when moving bam index file
+- call genotypes via VariantTools controlled by config value
+- adapt to changes in API of VariantTools BSgenome.Hsapiens.UCSC.hg19
+- use GeneGenome from gmapR to create test genomes
+- do some cleanup and gc during coverage computation
+
+version 3.16.0 
+- bioc release
+
 version 3.15.3
 - parallelize Indel realignment by chromosome
 

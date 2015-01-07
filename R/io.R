@@ -447,6 +447,16 @@ findVariantFile <- function(save_dir){
   return(vcf)
 }
 
+## this path is ciontructed over and over again, so we factor it out here
+## similar functions for other files will follow
+getAnalyzedBamFile <- function(){
+   file <- file.path(getConfig('save_dir'), 'bams',
+                     paste(getConfig('prepend_str'),
+                           'analyzed.bam', sep="."))
+   return(file)
+ }
+
+
 ##' Overloaded yield(...) method catching truncated exceptions for FastqStreamer
 ##'
 ##' @title Overloaded yield(...) method catching truncated exceptions for FastqStreamer
