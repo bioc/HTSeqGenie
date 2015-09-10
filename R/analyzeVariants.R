@@ -100,7 +100,7 @@ buildTallyParam <- function(){
 
   if(!is.null(rmask.file)){
     loginfo("analyzeVariants.R/buildTallyParam: Using repeat masker track for tally filtering.")
-    mask <- rtracklayer::import(rmask.file, asRangedData=FALSE)
+    mask <- rtracklayer::import(rmask.file)
     args <- c(args, mask=mask)
   }
 

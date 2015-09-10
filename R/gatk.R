@@ -113,7 +113,7 @@ filterGATKVars <- function(vcf.file){
 
   loginfo("gatk.R::filterGATKVars: filtering variants for low complexity regions and repeats")  
 
-  mask <- rtracklayer::import(rmask.file, asRangedData=FALSE)
+  mask <- rtracklayer::import(rmask.file)
   ## Variants are always annotated on +, so we make sure the repeats are also on +
   strand(mask) <- '+'
 
