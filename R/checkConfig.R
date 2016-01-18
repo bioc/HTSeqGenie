@@ -12,6 +12,7 @@ checkConfig <- function() {
   checkConfig.output()
   checkConfig.system()
   checkConfig.debug()
+  checkConfig.mergeReads()
   checkConfig.trimReads()
   checkConfig.filterQuality()
   checkConfig.detectAdapterContam()
@@ -155,12 +156,39 @@ checkConfig.debug <- function() {
   }
 }
 
+##' @importFrom peared pear.version
+checkConfig.mergeReads <- function() {
+  mergeReads.do <- getConfig.logical("mergeReads.do", stop.ifempty=TRUE)
+  if (mergeReads.do) {
+    if(!getConfig.logical("paired_ends")) stop("mergeReads.do:TRUE  requires paired_ends:TRUE")      
+    version <- try(pear.version(), silent=TRUE)
+    if (class(version)=="try-error") stop("Can't execute or find pear binary")
+    updateConfig(list('paired_ends'=FALSE))
+    ## optional
+    getConfig("mergeReads.pear_param")
+  }
+}
+
 checkConfig.trimReads <- function() {
   trimReads.do <- getConfig.logical("trimReads.do", stop.ifempty=TRUE)
+  trimReads.length <- getConfig.integer("trimReads.length")
+  trimReads.trim5 <- getConfig.integer("trimReads.trim5")
+
   if (trimReads.do) {
-    p <- "trimReads.length"
-    a <- getConfig.integer(p, stop.ifempty=TRUE)
-    if (a<=0) stop("config parameter '", p, "' must be a non-zero positive integer")
+    if (is.null(trimReads.length) & trimReads.trim5==0) {
+      stop("config parameter 'trimReads.do' is TRUE but neither 'trimReads.length' nor 'trimReads.trim5' are set")
+    }
+    if (!is.null(trimReads.length)) {
+      if (trimReads.length<=0) stop("config parameter 'trimReads.length' must be a non-zero positive integer")
+    }
+    if (trimReads.trim5<0) {
+      stop("config parameter 'trimReads.trim5' must be a strictly positive integer")
+    }
+  }
+  else {
+    if (!is.null(trimReads.length) | trimReads.trim5>0) {
+      stop("config parameters 'trimReads.length' or 'trimReads.trim5' are set but 'trimReads.do' is FALSE")
+    }
   }
 }
 
@@ -224,7 +252,7 @@ checkConfig.alignReads <- function() {
   if (!is.null(max_mismatches) && max_mismatches<0) stop("config parameter 'alignReads.max_mismatches' must be a positive integer")
   
   ## alignReads.sam_id
-  sam_id <- getConfig("alignReads.sam_id")
+  sam_id <- getConfig("alignReads.sam_id", stop.ifempty=TRUE)
   if (!is.null(sam_id)) {
     if (regexpr(" ", sam_id)>0) stop("'alignReads.sam_id' contains a whitespace: ", sam_id)
   }
@@ -325,7 +353,6 @@ checkConfig.markDuplicates <- function() {
 }
 
 checkConfig.analyzeVariants <- function() {
-
   if (getConfig.logical("analyzeVariants.do", stop.ifempty=TRUE) ){  
     ## analyzeVariants.method
     analyzeVariants.method <- getConfig("analyzeVariants.method", stop.ifempty=TRUE)
@@ -336,22 +363,21 @@ checkConfig.analyzeVariants <- function() {
     if (!z) stop("'analyzeVariants.method' must contain the name of a method among: ", paste(knownMethods, collapse=", "))
     if ("GATK" %in% analyzeVariants.method) {
       checkConfig.GATK()
-      if(getConfig.logical("gatk.filter_repeats")){
-        rmask.file <- getConfig("analyzeVariants.rep_mask")
-        if( is.null(rmask.file) || !file.exists(rmask.file)){
-          stop(paste("Repeat mask file either not set or not found at", rmask.file))
-        }
-      }
     }
     if ("VariantTools" %in% analyzeVariants.method) {
       checkConfig.analyzeVariants.VT()
     }
     ## analyzeVariants.indels
     getConfig.logical("analyzeVariants.indels", stop.ifempty=TRUE)
+
+    ## analyzeVariants.vep_options
+    vep.options <- getConfig("analyzeVariants.vep_options")
+    if(!is.null(vep.options)){
+      if (!checkVEP()) stop("Can't find or execute variant_effect_predictor.pl")
+    }
   }
   invisible(TRUE)
 }
-
 
 ## check VT related config values
 checkConfig.analyzeVariants.VT <- function() {
@@ -393,6 +419,7 @@ checkConfig.analyzeVariants.VT <- function() {
       stop(paste("Repeat mask file not found at", include.regions))
     }
   }
+  getConfig.logical("analyzeVariants.genotype", stop.ifempty=TRUE)
 }
 
 ## check for GATK and presence of a genome file
@@ -406,6 +433,14 @@ checkConfig.GATK <- function() {
   genome.path <- file.path(gatk.genomes, paste0(genome, ".fa"))
   if(!file.exists(genome.path)){
     stop(paste("GATK genome not found at", genome.path))
+  }
+  
+  ## check repeat mask file used for filtering WGS variants
+  if(getConfig.logical("gatk.filter_repeats")){
+    rmask.file <- getConfig("analyzeVariants.rep_mask")
+    if( is.null(rmask.file) || !file.exists(rmask.file)){
+      stop(paste("Repeat mask file either not set or not found at", rmask.file))
+    }
   }
 }
 

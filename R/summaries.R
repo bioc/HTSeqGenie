@@ -169,9 +169,11 @@ parseSummaries <- function(save.dirs, summary.name) {
 
   data <- as.data.frame(do.call(rbind, summary_analyzed_bamstats))
   ## leave genomes without unwanted contigs alone (i.e. bacteria)
-  if(sum(grep("GL|NT", colnames(data))) > 1){ 
+  if(sum(grep("GL|KI|NT|JH", colnames(data))) > 1){ 
     data <- data[,grep("GL", colnames(data), invert=TRUE)] ## get rid of human contigs not assembled into chr
+    data <- data[,grep("KI", colnames(data), invert=TRUE)] ##
     data <- data[,grep("NT", colnames(data), invert=TRUE)] ## and the same for mouse
+    data <- data[,grep("JH", colnames(data), invert=TRUE)] ## 
   }
   data <- data/1e6
   

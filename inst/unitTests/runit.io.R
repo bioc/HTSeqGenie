@@ -150,7 +150,7 @@ test.detectQualityInFASTQFile <- function(){
                            quality = FastqQuality("BCDEFGHIBCDEFGHIBCDEFGHIBCDEFGHIBCDEFGHIBCDEFGHI"),
                            id      = BStringSet("read_with_all_quals/1"))
   writeFastq(shortread1, file=file1, lane='')
-  checkEquals(detectQualityInFASTQFile(file1), c("sanger", "solexa", "illumina1.3", "illumina1.5", "illumina1.8", "GATK-rescaled"))
+  checkEquals(detectQualityInFASTQFile(file1), c("solexa", "illumina1.3", "illumina1.5", "illumina1.8", "GATK-rescaled", "sanger"))
   unlink(file1)
 }
 

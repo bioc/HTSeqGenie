@@ -373,7 +373,7 @@ uniquely  mapped, whereas multiple mappings are called multi-mappers.', p, br=TR
   hwriteImage(file.path('images', 'ReadSummaryMappings.png'), p, br=TRUE, link=file.path("images", "ReadSummaryMappings.pdf"))
   hwrite('', p, br=TRUE)    
 
-  if(getConfig.logical("paired_ends")) {  
+  if(getConfig.logical("paired_ends") && !is.na(targetLengthTable)) {  
     hwrite('Distribution of target lengths for mapped reads',p,heading=2)
     hwrite(targetLengthTable, p, style='text-align:right')
     hwrite('',p,br=TRUE)

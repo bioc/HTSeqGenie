@@ -282,8 +282,18 @@ makeDir <- function(dir, overwrite="never"){
 ##' @return Name of temporary directory
 ##' @keywords internal
 createTmpDir <- function(prefix=NULL, dir=tempdir()) {
-  tmpname <- file.path(dir, paste(c(prefix, sample(letters,8)), collapse=""))
-  makeDir(tmpname, overwrite="erase")
+  tmpname <- NULL
+  while(is.null(tmpname)){
+    tmpname <- try(
+                   {
+                     tmp <- file.path(dir, paste(c(prefix, sample(letters,8)), collapse=""))
+                     makeDir(tmp, overwrite="never")
+                     return(tmp)
+                   }, silent=TRUE)
+     if (class(tmpname)=="try-error") {
+       tmpname <- NULL ## restarts while
+     }
+  }
   return(tmpname)
 }
 
@@ -359,6 +369,7 @@ getNumericVectorDataFromFile <- function(dir_path, object_name) {
 ##' @return A character vector containing the compatible qualities. NULL if none.
 ##' @author Jens Reeder
 ##' @export
+##' @importMethodsFrom IRanges as.vector
 ##' @keywords internal
 detectQualityInFASTQFile <- function(filename, nreads=5000) {
   cquals <- try({
@@ -379,9 +390,9 @@ detectQualityInFASTQFile <- function(filename, nreads=5000) {
     ## "illumina1.5" upper bound is now 105 instead of 104, to accomodate Phred-qualities of 41 (instead of 40)
     ## some bam files from the TCGA project come with rescaled phred qualities from 1-50
     ## to accomodate for them we invent a new quality range "GATK-rescaled"
-    knownquals <- data.frame(qual=c("sanger", "solexa", "illumina1.3", "illumina1.5", "illumina1.8", "GATK-rescaled"),
-                             min=c(33,  59,  64,  66, 33, 33), 
-                             max=c(73, 104, 104, 105, 74, 83), stringsAsFactors=FALSE)
+    knownquals <- data.frame(qual=c("solexa", "illumina1.3", "illumina1.5", "illumina1.8", "GATK-rescaled", "sanger"),
+                             min=c(59,  64,   66, 33, 33, 33), 
+                             max=c(104, 104, 105, 74, 83, 73), stringsAsFactors=FALSE)
     
     ## check compatible qualities
     rquals <- range(quals)
@@ -391,7 +402,7 @@ detectQualityInFASTQFile <- function(filename, nreads=5000) {
     }))
   }, silent=TRUE)
   
-  if (class(cquals)=="try-error") stop("io.R/detectQualityInFASTQFile: cannot read FASTQ reads in filename=", filename)
+  if (class(cquals)=="try-error") stop("io.R/detectQualityInFASTQFile: cannot read FASTQ reads in filename=", filename, cquals)
   else cquals
 }
 
@@ -447,6 +458,16 @@ findVariantFile <- function(save_dir){
   return(vcf)
 }
 
+## this path is ciontructed over and over again, so we factor it out here
+## similar functions for other files will follow
+getAnalyzedBamFile <- function(){
+   file <- file.path(getConfig('save_dir'), 'bams',
+                     paste(getConfig('prepend_str'),
+                           'analyzed.bam', sep="."))
+   return(file)
+ }
+
+
 ##' Overloaded yield(...) method catching truncated exceptions for FastqStreamer
 ##'
 ##' @title Overloaded yield(...) method catching truncated exceptions for FastqStreamer
@@ -458,4 +479,49 @@ findVariantFile <- function(save_dir){
 ##' @importMethodsFrom ShortRead yield
 safe.yield <- function(fqs) {
   tryCatch(yield(fqs), IncompleteFinalRecord=function(x) stop("io.R/safe.yield: input gzipped file is corrupted/truncated. Aborting.\n"))
+}
+
+## file.rename only warns, but we like it to fail instead
+safe.file.rename <- function(from, to){
+  success <- file.rename(from, to)
+  if(!all(success)){
+    stop(paste("Renaming file", from, "to", to, "failed"))
+  }
+}
+
+##' Read single/paired end BAM files with requested columns from the BAM
+##'
+##' @title Read single/paired End Bam Files
+##' @param filename Path to a bam file
+##' @param paired_ends A logical indicating whether the reads are paired
+##' @param remove.strandness A logical indicating whether read strands should be set to "*".
+##' @return GRangesList
+##' @author Cory Barr
+##' @export
+##' @keywords internal
+##' @importMethodsFrom Rsamtools ScanBamParam 
+##' @importFrom Rsamtools scanBamFlag
+##' @importFrom GenomicAlignments readGAlignments
+readRNASeqEnds <- function(filename, paired_ends, remove.strandness=TRUE) {
+  ## bam file
+  scf <- scanBamFlag(isNotPassingQualityControls=FALSE, isDuplicate=FALSE)
+  sbp <- ScanBamParam(flag=scf, what="groupid")
+  if (paired_ends) bamfile <- BamFile(filename, asMates=TRUE)
+  else bamfile <- BamFile(filename)
+
+  ## read bam
+  reads <- readGAlignmentsFromBam(bamfile, param=sbp, use.names=FALSE, with.which_label=FALSE)
+  if (remove.strandness) strand(reads) <- "*"
+  groupid <- values(reads)$groupid
+  reads <- grglist(reads) ## use cigar information to split gapped reads into granges
+  
+  ## pair reads
+  if (paired_ends) {
+    z <- rep(groupid, elementLengths(reads))
+    reads <- unlist(reads)
+    reads <- split(reads, z)
+  }
+
+  ## return reads
+  return(reads)
 }

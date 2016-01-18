@@ -106,7 +106,7 @@ markDups <- function(){
 
   safeExecute({
     markDups.bam <- markDuplicates(analyzed.bam, path=picard.path)
-    file.rename(markDups.bam, analyzed.bam)
+    safe.file.rename(markDups.bam, analyzed.bam)
     indexBam(analyzed.bam)
   }, memtracer=getConfig.logical("debug.tracemem"))
 

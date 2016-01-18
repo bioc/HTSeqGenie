@@ -21,7 +21,8 @@ test.runPipeline <- function() {
                           ## aligner
                           path.gsnap_genomes=path(directory(tp53Genome)),
                           alignReads.genome=genome(tp53Genome),
-                          
+                          alignReads.sam_id="test",
+      
                           ## gene model
                           path.genomic_features=dirname(tp53GenomicFeatures),
                           countGenomicFeatures.gfeatures=basename(tp53GenomicFeatures)

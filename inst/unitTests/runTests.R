@@ -1,7 +1,16 @@
 ## load library
-library("HTSeqGenie")
 library("RUnit")
+library("HTSeqGenie")
+library("TxDb.Hsapiens.UCSC.hg19.knownGene")
+
 library(gmapR) # to get the TP53genome
+
+## setting this env will let the GATK tests allow to run
+gatk <- Sys.getenv("GATK_PATH")
+if(file.exists(gatk)) options(gatk.path=gatk)
+
+picard <- Sys.getenv("PICARD_PATH")
+if(file.exists(picard)) options(picard.path=picard)
 
 ## reload sources
 resource()
@@ -15,6 +24,9 @@ printTextProtocol(tests, fileName=outputFilename)
 printHTMLProtocol(tests, fileName=file.path(getwd(), "HTSeqGenie-runit.html"))
 
 err <- getErrors(tests)
+
+## show warnings
+warnings()
 
 ## conclude
 if( (err$nFail + err$nErr) > 0) {

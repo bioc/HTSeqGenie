@@ -1,3 +1,4 @@
+##' @importMethodsFrom Rsamtools asBam 
 wrapGsnap <- function(fp1, fp2, gsnapParams, outputdir, prepend_str, remove.nomapping=FALSE) {
   ## get config parameters
   nbthreads_perchunk <- getConfig.integer("alignReads.nbthreads_perchunk")
@@ -31,7 +32,7 @@ wrapGsnap <- function(fp1, fp2, gsnapParams, outputdir, prepend_str, remove.noma
   }
 
   ## output sams
-  ## gsnap sam fiels have no ending, so are hard to recognize.
+  ## gsnap sam files have no ending, so are hard to recognize.
   ## We find them by excluding files that do not look like sam files. This is fragile.
   outsams <- grep(paste("/", prepend_str, sep=""), dir(outputdir, full.names=TRUE), value=TRUE)
   outsams <- grep("ba[mi]$", outsams, invert=TRUE, value=TRUE)
@@ -66,6 +67,11 @@ wrapGsnap <- function(fp1, fp2, gsnapParams, outputdir, prepend_str, remove.noma
                                   unlink(sam)
                                   return(bam)
                                 }))
+  if(length(bams) != length(outsams) ||
+     !all(file.exists(bams))){
+    stop("Error during sam to bam conversions. Some bam files are missing.")
+  }
+
   invisible(bams)
 }
 

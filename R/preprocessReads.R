@@ -29,7 +29,7 @@ preprocessReads <- function() {
     
     ## release streamer
     FastQStreamer.release()
-     
+
     ## merge chunks
     chunkdirs <- getChunkDirs()
     save_dir <- getConfig("save_dir")
@@ -54,7 +54,12 @@ preprocessReadsChunk <- function(lreads, save_dir=NULL) {
   ## init
   if (missing(save_dir)) save_dir <- file.path(getConfig("save_dir"))
   setUpDirs(save_dir, overwrite="overwrite")
-  
+
+  ## do some simple checks on the data
+  if(any(duplicated(id(lreads[[1]])))){
+    stop("Some ids are duplicated. Check your input")
+  }
+
   ## determine read length and num mismatches
   total_reads <- length(lreads[[1]])
   if (total_reads>0) read_length <- width(lreads[[1]])[1]
@@ -67,10 +72,16 @@ preprocessReadsChunk <- function(lreads, save_dir=NULL) {
   if (length(z)>0) summary_preprocess <- c(summary_preprocess, input_min_read_length=min(z), input_max_read_length=max(z))
   else summary_preprocess <- c(summary_preprocess, input_min_read_length=NA, input_max_read_length=NA)
 
+  ## we sneak in the paired_ends setting for the steps that run before we actually merge
+  if (getConfig.logical("mergeReads.do")) {
+       updateConfig(list("paired_ends"=TRUE))
+  }
+  
   ## trim reads by hard length cutoff
   if (getConfig("trimReads.do")) {
     trim_len <- getConfig.integer("trimReads.length")
-    lreads <- trimReads(lreads, trim_len)
+    trim5 <- getConfig.integer("trimReads.trim5")
+    lreads <- trimReads(lreads, trim_len, trim5)
   }
 
   ## filter reads
@@ -78,6 +89,13 @@ preprocessReadsChunk <- function(lreads, save_dir=NULL) {
     lreads <- filterQuality(lreads)
     summary_preprocess$highqual_reads <- length(lreads[[1]])
   } else summary_preprocess$highqual_reads <- 0
+
+  ## merge reads
+  if (getConfig.logical("mergeReads.do")) {
+    lreads <- list(mergeReads(lreads, save_dir=save_dir))
+    ## from now one we are single ended
+    updateConfig(list("paired_ends"=FALSE))
+  }
 
   ## detect adapter contamination
   if(getConfig.logical("detectAdapterContam.do")){

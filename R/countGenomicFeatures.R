@@ -5,19 +5,22 @@
 ##' @author Gegoire Pau
 ##' @keywords internal
 ##' @export
-##' @importMethodsFrom IRanges "%in%"
 ##' @importFrom GenomicRanges seqnames
-##' @importFrom S4Vectors split
+##' @importFrom IRanges split
 countGenomicFeatures <- function() {
   safeExecute({
     loginfo("countGenomicFeatures.R/countGenomicFeatures: starting...")
     
     ## rebuild lbams from chunk files
     chunkdirs <- getChunkDirs()
+
+    ## load "genomic_features": pre-calculated granges of exons, genes, cds, etc to count overlaps
+    filename <- file.path(getConfig("path.genomic_features"), getConfig("countGenomicFeatures.gfeatures"))
+    genomic_features <- get(load(filename))
     
     ## schedule each chunk
     listIterator.init(chunkdirs)
-    processChunks(listIterator.next, function(chunkdir, save_dir) countGenomicFeaturesChunk(chunkdir))
+    processChunks(listIterator.next, function(chunkdir, save_dir) countGenomicFeaturesChunk(chunkdir, genomic_features))
     
     ## merge counts and summaries
     save_dir <- getConfig("save_dir")
@@ -27,7 +30,6 @@ countGenomicFeatures <- function() {
     writeGenomicFeaturesReport()
     loginfo("countGenomicFeatures.R/countGenomicFeatures: done...")
   }, memtracer=getConfig.logical("debug.tracemem"))
-
 }
 
 ##' Count reads by genomic Feature
@@ -37,31 +39,21 @@ countGenomicFeatures <- function() {
 ##' and quantify miRNA/ncRNA contaminatino 
 ##' @title Count reads by genomic Feature
 ##' @param save_dir PAth to a pipeline run's save dir
+##' @param genomic_features A list of genomic features to tally
 ##' @return Nothing
 ##' @author Cory Barr
 ##' @keywords internal
 ##' @export
-countGenomicFeaturesChunk <- function(save_dir) {
+countGenomicFeaturesChunk <- function(save_dir, genomic_features) {
   ## get config parameters
   paired_ends <- getConfig.logical("paired_ends")
   prepend_str <- getConfig("prepend_str")
   loginfo("countGenomicFeatures.R/countGenomicFeaturesChunk: starting...")
   
-  ## read gsnap results
+  ## read bam file
   bams <-  dir(file.path(save_dir, "bams"), full.names=TRUE)
   analyzedbam <- grep("analyzed\\.bam$", bams, value=TRUE)
-  reads <- readRNASeqEnds(analyzedbam)
-  
-  ## load "genomic_features": pre-calculated granges of exons, genes, cds, etc to count overlaps
-  filename <- file.path(getConfig("path.genomic_features"), getConfig("countGenomicFeatures.gfeatures"))
-  genomic_features <- get(load(filename))
-  
-  ## consolidate (i.e. pair) read ends
-  if (paired_ends) reads <- consolidateByRead(reads)
-
-  ## remove read names to save ~50% of memory space
-  reads <- unname(reads)
-  gc()
+  reads <- readRNASeqEnds(analyzedbam, paired_ends, remove.strandness=TRUE)
   
   ## count genomic featuress
   counts <- countFeatures(reads, genomic_features)
@@ -81,28 +73,6 @@ countGenomicFeaturesChunk <- function(save_dir) {
   createSummaryCounts(counts, save_dir, prepend_str)
   
   loginfo("countGenomicFeatures.R/countGenomicFeaturesChunk: done") 
-}
-
-##' Consolidate GRangesList of Paired-End Data by Read Name
-##'
-##' Given a GRangesList with the paired-end IDs stored as the names,
-##' this function will regroup the GRangesList ignoring read-end
-##' number
-##' @title Consolidate Paired-End Alignments by Read Names
-##' @param grl A GRangesList
-##' @return A consolidated GRangesList
-##' @author Cory Barr
-##' @importMethodsFrom IRanges unlist
-##' @keywords internal
-##' @export
-consolidateByRead <- function(grl) {
-  loginfo("countGenomicFeatures.R/consolidateByRead: starting...")
-  read_names <- names(grl)
-  read_names <- sub("#.*$", "", read_names, perl=TRUE)
-  unlisted <- unlist(grl, use.names=FALSE)  
-  grl_by_read <- split(unlisted, rep(read_names, elementLengths(grl)))
-  loginfo("countGenomicFeatures.R/consolidateByRead: done")
-  grl_by_read
 }
 
 ##' Calculate RPKM

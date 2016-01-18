@@ -395,12 +395,24 @@ setChunkDir <- function() {
     chunk.dir <- file.path(getConfig("save_dir"), "chunks")
   }
   else {
-    chunk.dir <- file.path(tmp.dir, paste(c("chunks_", sample(letters,8)), collapse=""))
+    chunk.dir <- get.random.chunk.dir.name(tmp.dir)
     makeDir(chunk.dir)
   }
   updateConfig(list(chunk_dir=chunk.dir)) 
   return(chunk.dir)
 }
+
+# Recursively try out new random chunk dirs until we find a non-existing one.
+# This should happen rarely (we have |letters|^8 combinations, but with many parallel runs
+# at the same time we have seen it happen a few times.
+get.random.chunk.dir.name <- function(tmp.dir){
+  chunk.dir <- file.path(tmp.dir, paste(c("chunks_", sample(letters,8)), collapse=""))
+  if(file.exists(chunk.dir)){
+    chunk.dir <- get.random.chunk.dir.name(tmp.dir)
+  }
+  return(chunk.dir)
+}
+    
 
 ##' Get bam files of a pipeline run
 ##'

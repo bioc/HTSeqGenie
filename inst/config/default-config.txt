@@ -31,9 +31,14 @@ path.gsnap_genomes:
 debug.level: DEBUG ## possible choices: ERROR, WARN, INFO, DEBUG
 debug.tracemem: TRUE
 
+## merge paired reads using pear
+mergeReads.do: FALSE
+mergeReads.pear_param: ##optional parameter string passed to pear binary, uses defaults if empty
+
 ## trim reads
 trimReads.do: FALSE
 trimReads.length:
+trimReads.trim5: 0
 
 ## filter quality
 filterQuality.do: TRUE
@@ -88,6 +93,8 @@ analyzeVariants.dbsnp:    ## path to dbsnp whitelist in vcf format
 analyzeVariants.callingFilters: nonRef,nonNRef,readCount,likelihoodRatio ##comma separated list of VT calling Filters
 analyzeVariants.postFilters:  ##comma separated list of VT post Filters, for WGS activate avgNborCount
 analyzeVariants.positions: ## Path to a GRanges object as RDS used for limiting variant calling on this region
+analyzeVariants.genotype: FALSE ## toggles Genotyping via VT
+analyzeVariants.vep_options: ## If set toggles vep run
 
 ## GATK
 path.gatk_genomes:

@@ -24,10 +24,16 @@ filterQuality <- function(lreads) {
 
   ## trim reads based on low quality tail for illumina 1.5 and 1.8
   quality_encoding <- getConfig('quality_encoding')
+  min.qual=NULL
   if (quality_encoding == 'illumina1.5') {
-    lreads <- trimTailsByQuality(lreads, minqual='B')
+    min.qual = "B"
   } else if (quality_encoding == 'illumina1.8') {
-    lreads <- trimTailsByQuality(lreads, minqual='#')
+    min.qual = '#'
+  } else if (quality_encoding == 'GATK-rescaled') {
+    min.qual = '#'
+  }
+  if(!is.null(min.qual)){
+    lreads <- trimTailsByQuality(lreads, minqual=min.qual)
   }
   
   ## remove reads that got trimmed too short or already came in short
@@ -59,8 +65,9 @@ filterQuality <- function(lreads) {
 ##' @return A boolean vector indicating whether read is considered high quality.
 ##' @keywords internal
 ##' @export
-##' @importMethodsFrom Biostrings unlist
-##' @importMethodsFrom IRanges  unlist as.vector as.factor
+##' @importMethodsFrom Biostrings unlist quality
+##' @importClassesFrom Biostrings BStringSet
+##' @importMethodsFrom IRanges unlist
 isAboveQualityThresh <- function(reads, minquality, minfrac) {
   ## Going through the process of making a single concatted qual
   ## score so can use Bioc qual-score converter

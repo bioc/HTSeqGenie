@@ -100,9 +100,7 @@ test.wrap.callVariants.which <- function(){
               "run.callVariants() reports correct number of variants")
 }
 
-
-#de-activated until VariantAnnotatioon can handle simple VRanges
-notest.writeVCF.vcfStat <-  function(){
+test.writeVCF.vcfStat <-  function(){
   config.filename <- "test-data/test_config.txt"
   save.dir <- setupTestFramework(config.filename=config.filename, testname="test.writeVCF")
   vr = VRanges(
@@ -117,9 +115,10 @@ notest.writeVCF.vcfStat <-  function(){
     sampleNames = 'foo'
     )
 
-  vcf.filename <- writeVCF(vr)
-  checkTrue(file.exists(file.path(save.dir, "results",
-                                  "test_pe.variants.vcf.gz")),
+  filename <- file.path(save.dir, "results",
+                        "test_pe.variants.vcf")
+  vcf.filename <- writeVCF(vr, filename=filename)
+  checkTrue(file.exists(vcf.filename),
             "writeVCF() write vcf file")
 
   ## check vcfStat
@@ -134,7 +133,72 @@ test.writeVCF.NULL <-  function(){
   save.dir <- setupTestFramework(config.filename=config.filename,
                                  testname="test.writeVCF")
   gr = GRanges()
-  checkEquals(writeVCF(gr), NULL, 
+  checkEquals(writeVCF(gr, file.path(save.dir,"bla.vcf.gz")), NULL, 
                  "writeVCF() returns NULL")
 }
 
+##Ideally I'd like to test the genotype function on a single variant,
+## but VT does not seem to like it, so I give up for now.
+not.yet.test.callGenotypes <- function() {
+  config.filename <- "test-data/test_config.txt"
+  save.dir <- setupTestFramework(config.filename=config.filename, testname="test.callGenotypes")
+
+  genome.name <- gmapR:::geneGenomeName('TP53')
+ 
+  vr = VRanges(
+    ranges=IRanges(start=50, end=50),
+    seqnames=Rle(c('TP53')),
+    seqinfo = Seqinfo("TP53", 2025772, NA, genome.name),
+    alt='G',
+    ref='A',
+    altDepth=c(5),
+    refDepth=c(1),
+    totalDepth=c(6),
+    location='TP53',
+    sampleNames = 'foo'
+    )
+ 
+  cov <- as(RleList('TP53' = RleList('1' = c(1:2025772))), "SimpleRleList")
+  HTSeqGenie:::saveCoverage(cov, save.dir, "test_pe")
+
+  observed <- HTSeqGenie:::.callGenotypes(vr)
+}
+
+test.callVariantsVariantTools.genotype <- function(){
+  config.filename <- "test-data/test_config.txt"  
+  save.dir <- setupTestFramework(config.filename=config.filename,
+                                 config.update=list(num_cores=1,
+                                   analyzeVariants.genotype=TRUE),
+                                 testname="test.genotype")
+  
+  bam <- getPackageFile("test-data/variant_calling/tp53_test.bam")
+  cov <- computeCoverage(bam)
+  HTSeqGenie:::saveCoverage(cov, save.dir, "test_pe")
+
+  ## When analyzeVariants.genotype=TRUE, this function
+  ## creates a genotypes.vcf.gz file as side effect, for which we test 
+  observed <- HTSeqGenie:::callVariantsVariantTools(bam)
+  geno.file <- sub("variants", "genotypes", observed)
+
+  checkTrue(file.exists(geno.file), "The genotypes.vcf file is created")
+  checkTrue( length(geno(readVcf(geno.file, genome='bla'))$GT) > 1,
+            "and it has some genotypes annotated")
+}
+
+test.annotateVariants <- function(){
+  if (HTSeqGenie:::checkVEP()){
+    vcf <- getPackageFile("test-data/braf_v600.vcf")
+    config.filename <- "test-data/test_config.txt"  
+    save.dir <- setupTestFramework(config.filename=config.filename,
+                                   config.update=list(num_cores=2,
+                                     analyzeVariants.vep_options="--vcf --sift b --polyphen b --protein --check_existing --check_alleles --symbol --canonical --ccds --maf_1kg --maf_esp --cache --force_overwrite --no_stats"),
+                                   testname="test.annotateVariants")
+    
+    anno.file <- annotateVariants(vcf)
+    checkTrue(file.exists(anno.file))
+    checkEquals(1, length(info(readVcf(anno.file, genome="GRCh38"))$CSQ),
+                "vcf contains consequence info")
+  } else {
+    DEACTIVATED("Skipped annotateVariants() test")
+  }
+}

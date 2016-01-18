@@ -113,6 +113,7 @@ buildGsnapParams <- function() {
 }
 
 ## create the analyzed bam
+##' @importMethodsFrom Rsamtools mergeBam
 buildAnalyzedBam <- function(bam_dir, prepend_str) {
   ## get config parameters
   paired_ends <- getConfig.logical("paired_ends")

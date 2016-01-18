@@ -1,3 +1,103 @@
+version 4.1.11:
+- fixed NGSPIPE-182: updated the documentation of generateSingleGeneDERs(), highlighting that
+  the function generates DEXSeq-ready exons by disjoining the whole exon set, keeping only the exons of coding regions
+  and keeping only the exons that belong to unique genes.
+
+version 4.1.10:
+- add simple check for duplicate ids to prepocessReads. Note this will only catch dups within a chunk.
+
+version 4.1.9:
+- fixed a small glitch that prevented truncateReads to work with trimReads.trim5 config parameter
+  only (without length truncation)
+
+version 4.1.8:
+- fixed NGSPIPE-167: added 5'-read trimming with the configuration parameter trimReads.trim5
+  (code, unit test, configuration check code, handling corner cases)
+
+version 4.1.7:
+- fixed the NGSPIPE-150 ticket: cleaned up readRNASeqEnds and removed consolidateByRead
+  
+version 4.1.6:
+- fixed a buglet (absence of summary_alignment.tab file) that prevented test.callVariantsVariantTools.genotype()
+  to run
+- moved the loading of genomic_features in countGenomicFeatures and not countGenomicFeaturesChunk, for speedup
+- R CMD check ok  
+
+version 4.1.5:
+- fixed the NGSPIPE-172 ticket on "variant calling slow on GRCH38". The selftest took about 1.5 h to complete,
+  due to the analyzeVariants() phase of the two test.runPipeline.Exome() tests, each lasting about 0.6 h.
+  This was due to (1) a wrong loading of the huge dbSNP database for avgNborCount filtering (needed only if
+  the avgNborCount keyword is present in the config parameter "analyzeVariants.postFilters". And due to (2) a
+  costly tiling of the genome, which is not required for small datasets (with a number of reads lower
+  than 100e6). The selftest now takes about 34 minutes to complete.
+
+version 4.1.4:
+- added test.readRNASeqEnds.dupmark() to test if readRNASeqEnds() handles properly dups (which is the case; the 
+  bug NGSPIPE-180 on "Ignore Dup marked reads during feature counting" is due to the fact that markdup is done
+  on whole bams, while featuring counting is done on chunks). This revision closes NGSPIPE-180.
+
+version 4.1.3:
+- filter out alignments that are marked as dups and QC failed using the proper bam flag before feature counting and coverage
+
+version 4.1.2:
+- activate read quality trimming for GATK-rescaled
+- move sanger quality at the end of the list of possible qualities, as we do not do quality trimming for real sanger.
+  Current and Recent data from illuma should always come with illumina 1.5 or 1.8 range, so we want to make
+  sure the read triming is triggered.
+
+version 4.1.1:
+ - createTmpDir() is now more robust and retries if dir already exists. 
+   this is needed as the indel realigner step uses this function to parallelize by chromosomes.
+   For genomes with lots of chromomes/cotigs such as GRC38 (>200) this fixed a rare bug.
+
+version 4.1.0: 
+- starting new dev cycle
+
+version 3.17.9:
+- add variant_effec_predictor step
+
+version 3.17.8:
+- make sure chunk_dir points to some non-existant dir
+
+version 3.17.7:
+ - VT changed its default Filters, probebaly due to an error.
+   Until that is resolved, we manually create out Filterset ourselves.
+
+version 3.17.6:
+- de-activate indel Realignment step in mergeLanes again.
+  Doesn't work as expected as chunk_firs are set to <merged> in config which throws up
+  indel realignment step.
+
+version 3.17.5:
+- update buildGenomicFeaturesFromTxdb with GNE internal version
+- add tests
+
+version 3.17.4:
+- add config mergeReads.pear_param passed down to pear binary view peared::pear()
+
+version 3.17.3:
+- activate indel Realignment step in mergeLanes
+
+version 3.17.2:
+- add mergeReads step using pear
+
+version 3.17.1
+- new dev cycle
+- fix some missing imports that causes problems when functions re-used in other package
+
+version 3.15.7
+- use less cores for VT genotyping to use less memory
+
+version 3.15.6
+- adapt to changes in API of VariantTools BSgenome.Hsapiens.UCSC.hg19
+- use GeneGenome from gmapR to create test genomes
+
+version 3.15.5
+- call genotypes via VariantTools controlled by config value
+
+version 3.15.4 
+- do some cleanup and gc during coverage computation
+
 version 3.15.3
 - parallelize Indel realignment by chromosome
 

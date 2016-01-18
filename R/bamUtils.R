@@ -31,6 +31,7 @@ getEndNumber <- function(int) {
   ifelse(isFirstFrag, 1L, 2L)
 }
 
+##' @importMethodsFrom Rsamtools indexBam
 mergeBams <- function(inbams, outbam, sort=TRUE, index=TRUE) {
   if (length(inbams)>1) {
     ## merge
@@ -56,19 +57,26 @@ mergeBams <- function(inbams, outbam, sort=TRUE, index=TRUE) {
 
 ## Rsamtools does not expose samtools cat, so we have to use the cmd line
 ## check new htslib/Rsamtool when it gets released
+##' @importMethodsFrom Rsamtools indexBam
 catBams <- function(inbams, outbam){
 
-  if(length(inbams)==1) return(inbams[[1]])
-  if(system2("samtools", stderr=FALSE) == 0){
-    ## this is mostly to make sure it runs on the test servers, which might not have samtools installed
-    warning("Problems calling samtools. Falling back to Rsamtools merge, which might be slower")
-    return(mergeBams(inbams, outbam))
-  }
-  args <- paste( c("cat", "-o", paste(outbam), inbams))
-  
-  retcode <- system2( "samtools", args)
-  if(retcode != 0){
-    stop( paste("samtools command [ ", paste(args, collapse=" "), "] failed."))
+  if(length(inbams)==1){
+    ## renaming across file systems fails, so we have to copy instead.
+    ## since bams are large we try renaming first, then copying
+    file.rename(inbams[[1]], outbam) || file.copy(inbams[[1]], outbam)
+  } else {
+    if(system2("samtools", stderr=FALSE) == 0){
+      ## this is mostly to make sure it runs on the test servers, which might not have samtools installed
+      logwarn("Problems calling samtools. Falling back to Rsamtools merge, which might be slower")
+      ## mergeBams already indexes, so we can return early 
+      return(mergeBams(inbams, outbam))
+    }
+    args <- paste( c("cat", "-o", paste(outbam), inbams))
+    
+    retcode <- system2( "samtools", args)
+    if(retcode != 0){
+      stop( paste("samtools command [ ", paste(args, collapse=" "), "] failed."))
+    }
   }
   indexBam(outbam)
   return(outbam)

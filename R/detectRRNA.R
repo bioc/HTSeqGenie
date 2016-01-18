@@ -29,7 +29,6 @@ detectRRNA <- function (lreads, remove_tmp_dir=TRUE, save_dir=NULL) {
   
   ## write forward reads for alignement
   filepaths <- writeFastQFiles(lreads, dir=tmp_rRNA_contam_dir, filename1="input1.fastq", filename2="input2.fastq")
-
   if(length(filepaths) == 1){
     file2 <- NULL
   } else{
@@ -56,8 +55,8 @@ detectRRNA <- function (lreads, remove_tmp_dir=TRUE, save_dir=NULL) {
   is_contaminated <- all_ids %in% contam_ids
   names(is_contaminated) <- all_ids
 
-  if(sum(is_contaminated)!=length(contam_ids)) {
-    stop("ERROR: rRNA contam removal failed.")
+  if(sum(is_contaminated) != length(contam_ids)) {
+    stop("ERROR: rRNA contam removal failed. Number of ids from gsnap output does not match ids found in fastq.")
   }
 
   loginfo(paste("detectRRNA.R/detectRRNA: contaminated fraction=", mean(is_contaminated)))

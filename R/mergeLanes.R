@@ -69,6 +69,12 @@ doMergeLanes <- function(indirs) {
   mergePreprocessReads(indirs, outdir, prepend_str)
   mergeAlignReads(indirs, outdir, prepend_str, num_cores)
   writePreprocessAlignReport()
+
+# doesn't work as expected due to chunk_dir changed to <merged> in config
+#  if (getConfig.logical("realignIndels.do")) {
+#    realignIndels()
+#  }
+  
   if (getConfig.logical("countGenomicFeatures.do")) {
     safeExecute({mergeCountGenomicFeatures(indirs, outdir, prepend_str)}, memtracer=FALSE)
   }
