@@ -1,3 +1,6 @@
+version 3.20.1:
+- fixed the 'BSgenome.Hsapiens.UCSC.hg19' import warning during R CMD check phase
+
 version 3.15.3
 - parallelize Indel realignment by chromosome
 
