@@ -1,3 +1,7 @@
+Version: 4.1.13:
+- fixing NGSPIPE-191: removed mergeReads and peared references ; changed BioC imports ; should build on the BioC server (but cannot
+  right now due to VariantTools::tallyVariants memory issues)
+
 version 4.1.11:
 - fixed NGSPIPE-182: updated the documentation of generateSingleGeneDERs(), highlighting that
   the function generates DEXSeq-ready exons by disjoining the whole exon set, keeping only the exons of coding regions

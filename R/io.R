@@ -510,7 +510,7 @@ readRNASeqEnds <- function(filename, paired_ends, remove.strandness=TRUE) {
   else bamfile <- BamFile(filename)
 
   ## read bam
-  reads <- readGAlignmentsFromBam(bamfile, param=sbp, use.names=FALSE, with.which_label=FALSE)
+  reads <- readGAlignments(bamfile, param=sbp, use.names=FALSE, with.which_label=FALSE)
   if (remove.strandness) strand(reads) <- "*"
   groupid <- values(reads)$groupid
   reads <- grglist(reads) ## use cigar information to split gapped reads into granges

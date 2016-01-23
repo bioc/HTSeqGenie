@@ -164,7 +164,6 @@ computeCoverage <- function(bamfile, extendReads=FALSE, paired_ends=FALSE, fragm
 ## global fragmentLength estimation is computed using a weighted mean on reads per chromosomes
 ## (to minimize inaccurate fragment estimation on chromosomes with few reads)
 ##' @importMethodsFrom chipseq estimate.mean.fraglen
-##' @importMethodsFrom BiocGenerics table
 estimateFragmentLength <- function(reads) {
   fraglen.chr <- estimate.mean.fraglen(reads, method="coverage")
   ctfrag.chr <- table(seqnames(reads))

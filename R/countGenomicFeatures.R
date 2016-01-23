@@ -6,7 +6,7 @@
 ##' @keywords internal
 ##' @export
 ##' @importFrom GenomicRanges seqnames
-##' @importFrom IRanges split
+##' @importFrom S4Vectors split
 countGenomicFeatures <- function() {
   safeExecute({
     loginfo("countGenomicFeatures.R/countGenomicFeatures: starting...")

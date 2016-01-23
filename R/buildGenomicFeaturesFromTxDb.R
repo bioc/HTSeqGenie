@@ -75,7 +75,6 @@ buildGenomicFeaturesFromTxDb <- function(txdb) {
 ##' @return single gene DERs
 ##' @importFrom GenomicFeatures exonsBy cdsBy
 ##' @importMethodsFrom GenomicRanges seqnames start end
-##' @importMethodsFrom BiocGenerics unlist
 ##' @importFrom IRanges findOverlaps disjoin
 generateSingleGeneDERs <- function(txdb) {
    ## build coding exons

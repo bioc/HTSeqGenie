@@ -138,7 +138,6 @@ hashVector <- function(x) sum(x*(1:length(x)))
 ##' @param cov A SimpleRleList object
 ##' @return A numeric
 ##' @author Gregoire Pau
-##' @importMethodsFrom BiocGenerics sapply
 ##' @export
 hashCoverage <- function(cov) hashVector(sapply(cov, function(c) sum(runLength(c)*runValue(c))))
 

@@ -1,6 +1,7 @@
 Package: HTSeqGenie
 Imports:
     BiocGenerics (>= 0.2.0),
+    S4Vectors,
     IRanges (>= 1.21.39),
     GenomicRanges (>= 1.7.12),
     Rsamtools (>= 1.8.5),
@@ -22,10 +23,9 @@ Type: Package
 LazyLoad: yes
 Author: Gregoire Pau, Jens Reeder
 Description: Libraries to perform NGS analysis.
-Version: 4.1.11
+Version: 4.1.13
 Depends:
     R (>= 3.0.0),
-    peared,
     gmapR (>= 1.8.0),
     ShortRead (>= 1.19.13),
     VariantAnnotation (>= 1.8.3)

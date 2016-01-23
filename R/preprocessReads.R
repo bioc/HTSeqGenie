@@ -90,13 +90,6 @@ preprocessReadsChunk <- function(lreads, save_dir=NULL) {
     summary_preprocess$highqual_reads <- length(lreads[[1]])
   } else summary_preprocess$highqual_reads <- 0
 
-  ## merge reads
-  if (getConfig.logical("mergeReads.do")) {
-    lreads <- list(mergeReads(lreads, save_dir=save_dir))
-    ## from now one we are single ended
-    updateConfig(list("paired_ends"=FALSE))
-  }
-
   ## detect adapter contamination
   if(getConfig.logical("detectAdapterContam.do")){
     adapter_contaminated <- detectAdapterContam(lreads, save_dir=save_dir)
