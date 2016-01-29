@@ -109,8 +109,8 @@ buildTallyParam <- function(){
   
   ## we use the low level interface here, so we have access to the raw variants
   args <- list(gmap.genome,
-               high_base_quality = bqual,
-               indels = indels)
+               high_base_quality=as.integer(bqual),
+               indels=indels)
 
   if(!is.null(rmask.file)){
     loginfo("analyzeVariants.R/buildTallyParam: Using repeat masker track for tally filtering")
