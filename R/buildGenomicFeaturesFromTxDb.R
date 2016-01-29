@@ -55,7 +55,7 @@ buildGenomicFeaturesFromTxDb <- function(txdb) {
   gene <- transcriptsBy(txdb, "gene")
   intron <- psetdiff(gene[names(gene_exonic_reduced)],
                      gene_exonic_reduced[names(gene_exonic_reduced)]) ## set difference
-  gene_name <- rep(names(intron), elementLengths(intron))
+  gene_name <- rep(names(intron), elementNROWS(intron))
   intron <- unlist(intron) ## flatten all introns
   names(intron) <- paste(gene_name, ".", seqnames(intron), ":", start(ranges(intron)), "-", end(ranges(intron)), sep="") ## name introns
   genomic_features$intron <- intron

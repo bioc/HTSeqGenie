@@ -6,7 +6,6 @@
 ##' @keywords internal
 ##' @export
 ##' @importFrom GenomicRanges seqnames
-##' @importFrom S4Vectors split
 countGenomicFeatures <- function() {
   safeExecute({
     loginfo("countGenomicFeatures.R/countGenomicFeatures: starting...")
@@ -105,7 +104,7 @@ mergeCounts <- function(dirs_to_merge, merged_dir, prepend_str) {
                                  dir(x, full.names=TRUE),
                                  value=TRUE)
                           })
-  lens <- elementLengths(count_files)
+  lens <- elementNROWS(count_files)
   if (!all(lens[1] == lens))
     stop("countGenomicFeatures.R/mergeCounts: there are a differing number of files storing hits by genomic features across the experiments")
   if (all(lens==0)) stop("countGenomicFeatures.R/mergeCounts: no counts_* files were found")

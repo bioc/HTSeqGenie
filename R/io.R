@@ -517,7 +517,7 @@ readRNASeqEnds <- function(filename, paired_ends, remove.strandness=TRUE) {
   
   ## pair reads
   if (paired_ends) {
-    z <- rep(groupid, elementLengths(reads))
+    z <- rep(groupid, elementNROWS(reads))
     reads <- unlist(reads)
     reads <- split(reads, z)
   }

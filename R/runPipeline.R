@@ -7,7 +7,7 @@
 ##' @param ... A list of parameters. See the vignette for details.
 ##' @return The path to the NGS output directory.
 ##' @author Jens Reeder, Gregoire Pau
-##' @import BiocGenerics
+##' @import BiocGenerics S4Vectors
 ##' @seealso TP53Genome, TP53GenomicFeatures
 ##' @examples \dontrun{
 ##' ## build genome and genomic features
