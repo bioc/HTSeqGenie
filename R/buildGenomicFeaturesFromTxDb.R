@@ -10,7 +10,6 @@
 ##'   genomic_features <- buildGenomicFeaturesFromTxDb(txdb)
 ##' }
 ##' @importMethodsFrom GenomicFeatures transcriptsBy exonsBy cdsBy transcripts exons
-##' @importMethodsFrom IRanges psetdiff
 ##' @export
 buildGenomicFeaturesFromTxDb <- function(txdb) {
   ## genes
@@ -53,8 +52,8 @@ buildGenomicFeaturesFromTxDb <- function(txdb) {
   ## introns
   gene_exonic_reduced <- reduce(gene_exonic) ## union overlapping exons
   gene <- transcriptsBy(txdb, "gene")
-  intron <- psetdiff(gene[names(gene_exonic_reduced)],
-                     gene_exonic_reduced[names(gene_exonic_reduced)]) ## set difference
+  intron <- setdiff(gene[names(gene_exonic_reduced)],
+                    gene_exonic_reduced[names(gene_exonic_reduced)]) ## set difference
   gene_name <- rep(names(intron), elementNROWS(intron))
   intron <- unlist(intron) ## flatten all introns
   names(intron) <- paste(gene_name, ".", seqnames(intron), ":", start(ranges(intron)), "-", end(ranges(intron)), sep="") ## name introns
@@ -81,7 +80,7 @@ generateSingleGeneDERs <- function(txdb) {
    tx <- exonsBy(txdb)
    cds <- range(cdsBy(txdb, "tx"))
    tx <- tx[names(cds)]
-   tx <- pintersect(tx, cds)
+   tx <- intersect(tx, cds)
    gene <- exonsBy(txdb, "gene")
 
    ## disjoin exons
