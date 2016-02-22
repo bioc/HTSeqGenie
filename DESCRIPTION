@@ -23,7 +23,7 @@ Type: Package
 LazyLoad: yes
 Author: Gregoire Pau, Jens Reeder
 Description: Libraries to perform NGS analysis.
-Version: 4.1.16
+Version: 4.1.17
 Depends:
     R (>= 3.0.0),
     gmapR (>= 1.8.0),

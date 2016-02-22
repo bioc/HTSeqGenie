@@ -143,7 +143,7 @@ excludeVariantsByRegions <- function(variants, mask) {
   }
   keep = rep(TRUE,len)
   ov = findOverlaps(variants, mask)
-  keep[ov@queryHits]=FALSE
+  keep[queryHits(ov)]=FALSE
   variants = variants[keep,]
  
   return(variants)
