@@ -31,7 +31,7 @@ getEndNumber <- function(int) {
   ifelse(isFirstFrag, 1L, 2L)
 }
 
-##' @importMethodsFrom Rsamtools indexBam
+##' @importMethodsFrom Rsamtools indexBam sortBam
 mergeBams <- function(inbams, outbam, sort=TRUE, index=TRUE) {
   if (length(inbams)>1) {
     ## merge

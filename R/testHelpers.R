@@ -46,6 +46,7 @@ setupTestFramework <- function(config.filename, config.update=list(), testname="
 ##' @keywords internal
 ##' @importFrom gmapR TP53Genome
 ##' @importMethodsFrom gmapR directory
+##' @importMethodsFrom GenomeInfoDb genome
 buildTP53GenomeTemplate <- function(){
 
   tp53Genome <- TP53Genome()
@@ -73,7 +74,7 @@ buildTP53GenomeTemplate <- function(){
 ##' @title buildTP53FastaGenome
 ##' @return Path to tp53 genome directory
 ##' @author Jens Reeder
-##' @importFrom rtracklayer export
+##' @importMethodsFrom rtracklayer export
 ##' @importFrom gmapR TP53Genome
 ##' @keywords internal
 ##' @export
@@ -88,6 +89,7 @@ buildTP53FastaGenome <- function() {
   return(tempdir())
 }
 
+##' @importMethodsFrom Rsamtools indexFa
 buildAnyFastaGenome <- function(genes) {
   gnome <- gmapR:::GeneGenome(genes)
   genome.name <- genome(gnome)

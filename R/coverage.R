@@ -73,6 +73,7 @@ isSparse <- function(cov, threshold=0.1) {
 ##' @return Nothing
 ##' @author Jens Reeder
 ##' @keywords internal
+##' @importMethodsFrom GenomeInfoDb seqlengths seqlengths<- 
 ##' @export
 mergeCoverage <- function(indirs, outdir, prepend_str) {
 
@@ -171,7 +172,6 @@ estimateFragmentLength <- function(reads) {
   return(fragmentLength)
 }
 
-##' @importFrom rtracklayer export
 saveCoverage <- function(cov, save_dir, prepend_str) {
   ## save coverage as a RData file
   saveWithID(cov, "coverage", prepend_str, save_dir=file.path(save_dir, "results"), compress=FALSE)
@@ -196,6 +196,7 @@ saveCoverage <- function(cov, save_dir, prepend_str) {
   invisible(TRUE)
 }
 
+##' @importFrom stats setNames
 computeCoverageStats <- function(cov){
   cm <- sapply(1:length(cov), function(i) mean(cov[[i]]))
   chr.length <- as.numeric(seqlengths(cov))

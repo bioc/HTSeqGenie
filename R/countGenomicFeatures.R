@@ -5,7 +5,7 @@
 ##' @author Gegoire Pau
 ##' @keywords internal
 ##' @export
-##' @importFrom GenomicRanges seqnames
+##' @importMethodsFrom GenomicRanges seqnames
 countGenomicFeatures <- function() {
   safeExecute({
     loginfo("countGenomicFeatures.R/countGenomicFeatures: starting...")
@@ -93,6 +93,7 @@ computeWidth <- function(gf) {
   else width(gf)
 }
 
+##' @importFrom utils read.table
 mergeCounts <- function(dirs_to_merge, merged_dir, prepend_str) {
   loginfo("countGenomicFeatures.R/mergeCounts: starting...")
 

@@ -96,6 +96,7 @@ getNumberOfReadsInFASTQFile <- function(filename) {
 ##' @seealso FastQStreamer.getReads
 ##' @return Nothing. 
 ##' @author Gregoire Pau
+##' @importFrom stats runif
 ##' @export
 ##' @keywords internal
 FastQStreamer.init <- function(input_file, input_file2=NULL, chunk_size, subsample_nbreads=NULL, max_nbchunks=NULL) {
@@ -228,6 +229,7 @@ FastQStreamer.release <- function() {
 ##' @param compress Save the data compressed or not
 ##' @param format Choice of 'RData' or 'tab'(ular)
 ##' @return Name of the stored file
+##' @importFrom utils write.table
 ##' @export
 ##' @keywords internal
 saveWithID <- function(data, orig_name, id, save_dir, compress=TRUE, format="RData") {
@@ -501,7 +503,8 @@ safe.file.rename <- function(from, to){
 ##' @keywords internal
 ##' @importMethodsFrom Rsamtools ScanBamParam 
 ##' @importFrom Rsamtools scanBamFlag
-##' @importFrom GenomicAlignments readGAlignments
+##' @importMethodsFrom GenomicAlignments readGAlignments grglist
+##' @importFrom Rsamtools BamFile
 readRNASeqEnds <- function(filename, paired_ends, remove.strandness=TRUE) {
   ## bam file
   scf <- scanBamFlag(isNotPassingQualityControls=FALSE, isDuplicate=FALSE)

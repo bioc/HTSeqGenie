@@ -58,7 +58,8 @@ callVariantsVariantTools <- function(bam.file) {
 ##' @return Variants as Vranges
 ##' @author Jens Reeder
 ##' @export
-##' @importFrom VariantTools TallyVariantsParam tallyVariants VariantPostFilters callVariants postFilterVariants VariantCallingFilters
+##' @importFrom VariantTools TallyVariantsParam VariantPostFilters postFilterVariants VariantCallingFilters
+##' @importMethodsFrom VariantTools callVariants tallyVariants
 ##' @importFrom BiocParallel MulticoreParam
 wrap.callVariants <- function(bam.file) {
   ## get config parameters
@@ -223,8 +224,8 @@ buildCallingFilters <- function(){
 ##' @return VCF file name
 ##' @author Jens Reeder
 ##' @export
-##' @importFrom VariantAnnotation writeVcf sampleNames sampleNames<-
-##' @importFrom Rsamtools bgzip
+##' @importMethodsFrom VariantAnnotation writeVcf sampleNames sampleNames<-
+##' @importFrom Rsamtools bgzip indexTabix
 writeVCF <- function(variants.vranges, filename){
   loginfo("analyzeVariants.R/writeVCF: writing vcf file...")
 

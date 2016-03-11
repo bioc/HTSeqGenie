@@ -1,4 +1,5 @@
 ##' @importMethodsFrom Rsamtools asBam 
+##' @importFrom parallel mclapply
 wrapGsnap <- function(fp1, fp2, gsnapParams, outputdir, prepend_str, remove.nomapping=FALSE) {
   ## get config parameters
   nbthreads_perchunk <- getConfig.integer("alignReads.nbthreads_perchunk")

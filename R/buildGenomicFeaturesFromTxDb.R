@@ -9,7 +9,8 @@
 ##'   txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 ##'   genomic_features <- buildGenomicFeaturesFromTxDb(txdb)
 ##' }
-##' @importMethodsFrom GenomicFeatures transcriptsBy exonsBy cdsBy transcripts exons
+##' @importMethodsFrom GenomicFeatures transcriptsBy exonsBy cdsBy transcripts exons genes
+##' @importMethodsFrom GenomicRanges reduce
 ##' @export
 buildGenomicFeaturesFromTxDb <- function(txdb) {
   ## genes
@@ -72,9 +73,8 @@ buildGenomicFeaturesFromTxDb <- function(txdb) {
 ##' @title generateSingleGeneDERs
 ##' @param txdb A transcript DB object
 ##' @return single gene DERs
-##' @importFrom GenomicFeatures exonsBy cdsBy
 ##' @importMethodsFrom GenomicRanges seqnames start end
-##' @importFrom IRanges findOverlaps disjoin
+##' @importMethodsFrom IRanges findOverlaps disjoin
 generateSingleGeneDERs <- function(txdb) {
    ## build coding exons
    tx <- exonsBy(txdb)

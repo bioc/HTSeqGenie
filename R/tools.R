@@ -137,6 +137,7 @@ processChunks <- function(inext, fun, nb.parallel.jobs) {
 ##' @param tracefun Callback function that will be executed in a separate thread 
 ##' @param tracefun.period Time intervall between calls to tracefun
 ##' @return Return value of applied function
+##' @importFrom parallel mccollect mckill
 ##' @export
 ##' @keywords internal
 sclapply <- function(inext, fun, max.parallel.jobs, ..., stop.onfail=TRUE, tracefun=NULL, tracefun.period=60) {

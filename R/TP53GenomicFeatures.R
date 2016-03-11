@@ -9,6 +9,7 @@
 ##' @return A list of GRanges objects containing the genomic features 
 ##' @author Gregoire Pau
 ##' @seealso TP53Genome, buildGenomicFeaturesFromTxDb, runPipeline
+##' @importFrom utils packageVersion
 ##' @export
 TP53GenomicFeatures <- function() {
   ## init

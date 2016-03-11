@@ -132,6 +132,7 @@ initLog <- function(save_dir, debug_level="INFO") {
 ##' @return Nothing
 ##' @author Gregoire Pau
 ##' @keywords internal
+##' @importFrom utils capture.output sessionInfo
 ##' @export
 writeAudit <- function(filename) {
   ## open file

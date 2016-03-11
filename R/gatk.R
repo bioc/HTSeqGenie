@@ -133,6 +133,7 @@ filterGATKVars <- function(vcf.file){
 ##' @param variants Variants as Vranges, GRanges or VCF object
 ##' @param mask region to mask, given as GRanges
 ##' @return The filtered variants 
+##' @importMethodsFrom SummarizedExperiment rowData
 ##' @author Jens Reeder 
 excludeVariantsByRegions <- function(variants, mask) {
 

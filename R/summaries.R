@@ -137,6 +137,7 @@ parseSummaries <- function(save.dirs, summary.name) {
   return(.heatmap(z, basename(save_dirs), filename))
 }
 
+##' @importFrom stats heatmap
 .heatmap <- function (data, labels, filename){
 
   ## hack to get the labels fit into the plot:
@@ -195,6 +196,9 @@ parseSummaries <- function(save.dirs, summary.name) {
 ##' @export
 ##' @keywords internal
 ##' @importFrom hwriter openPage hwrite hwriteImage
+##' @importFrom grDevices colorRampPalette dev.control dev.copy2pdf dev.off pdf png
+##' @importFrom graphics abline barplot hist lines par stripchart text
+##' @importFrom utils write.csv
 writeSummary <- function(dirs, cutoffs, outdir="./")  {
 
   ## This really only seems to work if outdir is the current dir.

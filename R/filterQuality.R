@@ -67,6 +67,7 @@ filterQuality <- function(lreads) {
 ##' @export
 ##' @importMethodsFrom Biostrings unlist quality
 ##' @importClassesFrom Biostrings BStringSet
+##' @importFrom Biostrings BStringSet
 ##' @importMethodsFrom IRanges unlist
 isAboveQualityThresh <- function(reads, minquality, minfrac) {
   ## Going through the process of making a single concatted qual

@@ -70,6 +70,7 @@ mergeDetectAdapterContam <- function (indirs, outdir, prepend_str, paired_ends) 
 ##' @param force_paired_end_adapter Force paired end adapters for single end reads?
 ##' @param pair_num 1 for forward read, 2 for reverse read
 ##' @return The adapter seq as string
+##' @importFrom Biostrings BStringSet DNAStringSet readDNAStringSet
 ##' @keywords internal
 getAdapterSeqs <- function(paired_ends, force_paired_end_adapter, pair_num=1) {
   if (paired_ends) {
@@ -107,6 +108,7 @@ getAdapterSeqs <- function(paired_ends, force_paired_end_adapter, pair_num=1) {
 ##' @export
 ##' @keywords internal
 ##' @importMethodsFrom ShortRead sread
+##' @importMethodsFrom Biostrings pairwiseAlignment
 isAdapter <- function(reads,
                       score_cutoff,
                       adapter_seqs){
@@ -131,6 +133,7 @@ isAdapter <- function(reads,
 ##' @param n Number of samples
 ##' @keywords internal
 ##' @importMethodsFrom ShortRead readFasta sread
+##' @importFrom Biostrings DNA_ALPHABET
 getRandomAlignCutoff <- function(read_len, n) {
   adapter_seqs <- readFasta(getPackageFile("extdata/adapter_data/Illumina_adapters.paired_end.fasta"))
   adapter_seqs<- as.character(sread(adapter_seqs))[1]
