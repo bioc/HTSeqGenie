@@ -12,7 +12,6 @@ checkConfig <- function() {
   checkConfig.output()
   checkConfig.system()
   checkConfig.debug()
-  checkConfig.mergeReads()
   checkConfig.trimReads()
   checkConfig.filterQuality()
   checkConfig.detectAdapterContam()
@@ -153,18 +152,6 @@ checkConfig.debug <- function() {
   level <- getConfig("debug.level", stop.ifempty=TRUE)
   if (!(level %in% c("ERROR", "WARN","INFO", "DEBUG"))) {
     stop("config parameter 'debug.level' must be either ERROR, WARN, INFO or DEBUG")
-  }
-}
-
-checkConfig.mergeReads <- function() {
-  mergeReads.do <- getConfig.logical("mergeReads.do", stop.ifempty=TRUE)
-  if (mergeReads.do) {
-    if(!getConfig.logical("paired_ends")) stop("mergeReads.do:TRUE  requires paired_ends:TRUE")      
-    version <- try(pear.version(), silent=TRUE)
-    if (class(version)=="try-error") stop("Can't execute or find pear binary")
-    updateConfig(list('paired_ends'=FALSE))
-    ## optional
-    getConfig("mergeReads.pear_param")
   }
 }
 

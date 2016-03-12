@@ -72,11 +72,6 @@ preprocessReadsChunk <- function(lreads, save_dir=NULL) {
   if (length(z)>0) summary_preprocess <- c(summary_preprocess, input_min_read_length=min(z), input_max_read_length=max(z))
   else summary_preprocess <- c(summary_preprocess, input_min_read_length=NA, input_max_read_length=NA)
 
-  ## we sneak in the paired_ends setting for the steps that run before we actually merge
-  if (getConfig.logical("mergeReads.do")) {
-       updateConfig(list("paired_ends"=TRUE))
-  }
-  
   ## trim reads by hard length cutoff
   if (getConfig("trimReads.do")) {
     trim_len <- getConfig.integer("trimReads.length")

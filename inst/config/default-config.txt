@@ -31,10 +31,6 @@ path.gsnap_genomes:
 debug.level: DEBUG ## possible choices: ERROR, WARN, INFO, DEBUG
 debug.tracemem: TRUE
 
-## merge paired reads using pear
-mergeReads.do: FALSE
-mergeReads.pear_param: ##optional parameter string passed to pear binary, uses defaults if empty
-
 ## trim reads
 trimReads.do: FALSE
 trimReads.length:

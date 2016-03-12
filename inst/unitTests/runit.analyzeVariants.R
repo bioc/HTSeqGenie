@@ -8,7 +8,7 @@ test.wrap.callVariants <- function(){
   observed <- wrap.callVariants(bam)
   
   ## only check if we actually get something, more detailed checks should be done in VariantTools
-  checkEquals(length(observed$filtered.variants), 75,
+  checkEquals(length(observed$filtered.variants), 77L,
               "run.callVariants() reports correct number of variants")
   checkEquals(sum(VariantAnnotation::isIndel(observed$filtered.variants)), 14,
               "run.callVariants() reports correct number of indels")
@@ -28,7 +28,7 @@ test.wrap.callVariants.parallel <- function(){
   bam <- getPackageFile("test-data/variant_calling/tp53_test.bam")
   observed <- wrap.callVariants(bam)
   ## only check if we actually get something, more detailed checks should be done in VariantTools
-  checkEquals(length(observed$filtered.variants), 75,
+  checkEquals(length(observed$filtered.variants), 77L,
               "wrap.callVariants() runs in parallel")
 }
 
