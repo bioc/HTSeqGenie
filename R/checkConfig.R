@@ -156,7 +156,6 @@ checkConfig.debug <- function() {
   }
 }
 
-##' @importFrom peared pear.version
 checkConfig.mergeReads <- function() {
   mergeReads.do <- getConfig.logical("mergeReads.do", stop.ifempty=TRUE)
   if (mergeReads.do) {
