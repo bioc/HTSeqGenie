@@ -15,7 +15,7 @@ Imports:
     tools,
     rtracklayer (>= 1.17.19),
     GenomicAlignments,
-    VariantTools (>= 1.7.7)
+    VariantTools (>= 1.7.7),
     GenomeInfoDb,
     SummarizedExperiment,
     methods
