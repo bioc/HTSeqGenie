@@ -191,7 +191,7 @@ test.annotateVariants <- function(){
     config.filename <- "test-data/test_config.txt"  
     save.dir <- setupTestFramework(config.filename=config.filename,
                                    config.update=list(num_cores=2,
-                                     analyzeVariants.vep_options="--vcf --sift b --polyphen b --protein --check_existing --check_alleles --symbol --canonical --ccds --maf_1kg --maf_esp --cache --force_overwrite --no_stats"),
+                                     analyzeVariants.vep_options="--vcf --sift b --polyphen b --protein --check_existing --check_alleles --symbol --canonical --ccds --maf_1kg --maf_esp --force_overwrite --no_stats"),
                                    testname="test.annotateVariants")
     
     anno.file <- annotateVariants(vcf)

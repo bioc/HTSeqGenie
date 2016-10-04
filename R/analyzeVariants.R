@@ -316,12 +316,12 @@ annotateVariants <- function(vcf.file){
   options   <- getConfig("analyzeVariants.vep_options")
   out.file  <- file.path(getConfig('save_dir'), "results",
                          paste(getConfig('prepend_str'),
-                               ".variants_vep.vcf", sep=""))
+                               ".variants_vep.vcf.bgz", sep=""))
   
   if(num.cores>1){
     options <- paste(options, "--fork", num.cores)
   }
-  options <- paste(options, "--input_file", vcf.file, "--output_file", out.file)
+  options <- paste(options, "--input_file", vcf.file, "--tabix", "--output_file", out.file)
 
   retval <- system2("variant_effect_predictor.pl", options, stderr=FALSE, stdout=FALSE)
   if (retval!=0){ 

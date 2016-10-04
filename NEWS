@@ -55,20 +55,20 @@ version 4.1.2:
 version 4.1.1:
  - createTmpDir() is now more robust and retries if dir already exists. 
    this is needed as the indel realigner step uses this function to parallelize by chromosomes.
-   For genomes with lots of chromomes/cotigs such as GRC38 (>200) this fixed a rare bug.
+   For genomes with lots of chromomes/contigs such as GRCh38 (>200) this fixed a rare bug.
 
 version 4.1.0: 
 - starting new dev cycle
 
 version 3.17.9:
-- add variant_effec_predictor step
+- add variant_effect_predictor step
 
 version 3.17.8:
 - make sure chunk_dir points to some non-existant dir
 
 version 3.17.7:
- - VT changed its default Filters, probebaly due to an error.
-   Until that is resolved, we manually create out Filterset ourselves.
+- VT changed its default Filters, probably due to an error.
+  Until that is resolved, we manually create out Filterset ourselves.
 
 version 3.17.6:
 - de-activate indel Realignment step in mergeLanes again.
