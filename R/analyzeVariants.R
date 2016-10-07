@@ -309,6 +309,12 @@ checkVEP <- function(){
   }
 }
 
+##' Annotate variants via vep
+##'
+##' @title  Annotate variants via vep
+##' @param vcf.file A character vector pointing to a VCF (or gzipped VCF) file
+##' @return Path to a vcf file with variant annotations
+##' @author Jens Reeder
 ##' @export
 annotateVariants <- function(vcf.file){  
   loginfo("analyzeVariants/annotateVariants: starting...")
