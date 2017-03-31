@@ -1,7 +1,16 @@
-Version 4.1.15:
+version 4.5.1:
+- changed variant calling tests in accordance with changes made to bam_tally in gmapR
+
+version 4.4: 
+- bioc release version bump
+
+version 4.2: 
+- bioc release version bump
+
+version 4.1.15:
 - investigating a memory fault produced by tallyVariants() in the test.callVariantsVariantTools.genotype() unit test
 
-Version: 4.1.13:
+version: 4.1.13:
 - fixing NGSPIPE-191: removed mergeReads and peared references ; changed BioC imports ; should build on the BioC server (but cannot
   right now due to VariantTools::tallyVariants memory issues)
 
