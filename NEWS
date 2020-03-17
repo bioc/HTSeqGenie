@@ -1,3 +1,6 @@
+version 4.17.1:
+- make countGenomicFeatuers work with subclasses of GRangesList
+
 version 4.5.1:
 - changed variant calling tests in accordance with changes made to bam_tally in gmapR
 

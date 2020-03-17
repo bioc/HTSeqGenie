@@ -89,7 +89,7 @@ rpkm <- function (counts, widths, nbreads)  {
 }
 
 computeWidth <- function(gf) {
-  if (is(gf, "GRangesList")) sapply(width(reduce(gf)), sum)
+  if (inherits(gf, "GRangesList")) sapply(width(reduce(gf)), sum)
   else width(gf)
 }
 
