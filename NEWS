@@ -1,4 +1,7 @@
 version 4.17.1:
+-  fix bug in targetLenght plotting in reportSummaryQC 
+
+version 4.17.1:
 - make countGenomicFeatuers work with subclasses of GRangesList
 
 version 4.5.1:

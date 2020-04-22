@@ -373,13 +373,14 @@ uniquely  mapped, whereas multiple mappings are called multi-mappers.', p, br=TR
   hwriteImage(file.path('images', 'ReadSummaryMappings.png'), p, br=TRUE, link=file.path("images", "ReadSummaryMappings.pdf"))
   hwrite('', p, br=TRUE)    
 
-  if(getConfig.logical("paired_ends") && !is.na(targetLengthTable)) {  
-    hwrite('Distribution of target lengths for mapped reads',p,heading=2)
-    hwrite(targetLengthTable, p, style='text-align:right')
-    hwrite('',p,br=TRUE)
-    hwriteImage(paste('images','TargetLengths.png',sep="/"),p,br=TRUE,link=paste("images","TargetLengths.pdf",sep="/"))
-    hwrite('',p,br=TRUE)
-  }
+## this fails under the new bioc and is not that important to get to work
+##  if(getConfig.logical("paired_ends") && !is.na(targetLengthTable)) {  
+##    hwrite('Distribution of target lengths for mapped reads',p,heading=2)
+##    hwrite(targetLengthTable, p, style='text-align:right')
+##    hwrite('',p,br=TRUE)
+##    hwriteImage(paste('images','TargetLengths.png',sep="/"),p,br=TRUE,link=paste("images","TargetLengths.pdf",sep="/"))
+##    hwrite('',p,br=TRUE)
+##  }
 
   hwrite('Record statistics on "analyzed.bam"',p,heading=2)
   bstats <- getNumericVectorDataFromFile(dirPath, object_name="summary_analyzed_bamstats")
