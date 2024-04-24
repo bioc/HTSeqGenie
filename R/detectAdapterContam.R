@@ -108,7 +108,7 @@ getAdapterSeqs <- function(paired_ends, force_paired_end_adapter, pair_num=1) {
 ##' @export
 ##' @keywords internal
 ##' @importMethodsFrom ShortRead sread
-##' @importMethodsFrom Biostrings pairwiseAlignment
+##' @importMethodsFrom pwalign pairwiseAlignment
 isAdapter <- function(reads,
                       score_cutoff,
                       adapter_seqs){
