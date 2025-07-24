@@ -73,7 +73,7 @@ isSparse <- function(cov, threshold=0.1) {
 ##' @return Nothing
 ##' @author Jens Reeder
 ##' @keywords internal
-##' @importMethodsFrom GenomeInfoDb seqlengths seqlengths<- 
+##' @importMethodsFrom Seqinfo seqlengths seqlengths<- 
 ##' @export
 mergeCoverage <- function(indirs, outdir, prepend_str) {
 

@@ -17,7 +17,7 @@ Imports:
     rtracklayer (>= 1.17.19),
     GenomicAlignments,
     VariantTools (>= 1.7.7),
-    GenomeInfoDb,
+    Seqinfo,
     SummarizedExperiment,
     methods
 Maintainer: Jens Reeder <reeder.jens@gene.com>
@@ -27,7 +27,7 @@ Type: Package
 LazyLoad: yes
 Author: Gregoire Pau, Jens Reeder
 Description: Libraries to perform NGS analysis.
-Version: 4.39.0
+Version: 4.39.1
 Depends:
     R (>= 3.0.0),
     gmapR (>= 1.8.0),

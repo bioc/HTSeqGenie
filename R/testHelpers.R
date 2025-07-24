@@ -46,7 +46,7 @@ setupTestFramework <- function(config.filename, config.update=list(), testname="
 ##' @keywords internal
 ##' @importFrom gmapR TP53Genome
 ##' @importMethodsFrom gmapR directory
-##' @importMethodsFrom GenomeInfoDb genome
+##' @importMethodsFrom Seqinfo genome
 buildTP53GenomeTemplate <- function(){
 
   tp53Genome <- TP53Genome()
